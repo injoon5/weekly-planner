@@ -4,6 +4,8 @@ import { readLegacyBoards, seedEvents } from './legacy.js';
 import { eventFields } from './models.js';
 import schema from './schema.js';
 
+// Instant persists recent query subscriptions to IndexedDB and syncs when
+// back online — no extra offline wiring needed for app data.
 export const db = init({ appId: APP_ID, schema });
 
 export function boardTx(userId, board, sortOrder) {
