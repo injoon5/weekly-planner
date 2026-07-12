@@ -7,6 +7,7 @@ const EASE_BACK = 'clip-path 180ms cubic-bezier(0.2, 0, 0, 1)';
 
 /**
  * Press-and-hold confirm. Red fill grows L→R via clip-path; release cancels.
+ * On complete, fill stays full until pointer lifts.
  */
 export function HoldToConfirm({
   onConfirm,
@@ -30,8 +31,8 @@ export function HoldToConfirm({
     rafRef.current = 0;
   };
 
-  const cancelHold = () => {
-    if (!holdingRef.current) return;
+  const endHold = () => {
+    if (!holdingRef.current && !doneRef.current) return;
     holdingRef.current = false;
     clearTick();
     if (doneRef.current) {
@@ -52,22 +53,20 @@ export function HoldToConfirm({
       holdingRef.current = false;
       doneRef.current = true;
       clearTick();
+      setProgress(1);
       try {
         navigator.vibrate?.(12);
       } catch {
         /* ignore */
       }
       onConfirm();
-      setProgress(0);
-      setEasingOut(false);
-      doneRef.current = false;
       return;
     }
     rafRef.current = requestAnimationFrame(tick);
   };
 
   const startHold = (e) => {
-    if (disabled || holdingRef.current) return;
+    if (disabled || holdingRef.current || doneRef.current) return;
     if (e.button != null && e.button !== 0) return;
     e.preventDefault();
     holdingRef.current = true;
@@ -95,7 +94,7 @@ export function HoldToConfirm({
 
   const onKeyUp = (e) => {
     if (e.key !== ' ' && e.key !== 'Enter') return;
-    cancelHold();
+    endHold();
   };
 
   const clipped = `inset(0 ${(1 - progress) * 100}% 0 0)`;
@@ -107,9 +106,9 @@ export function HoldToConfirm({
       disabled={disabled}
       title={title}
       onPointerDown={startHold}
-      onPointerUp={cancelHold}
-      onPointerCancel={cancelHold}
-      onLostPointerCapture={cancelHold}
+      onPointerUp={endHold}
+      onPointerCancel={endHold}
+      onLostPointerCapture={endHold}
       onKeyDown={onKeyDown}
       onKeyUp={onKeyUp}
       onContextMenu={(e) => e.preventDefault()}

@@ -77,6 +77,7 @@ export const auth = stylex.create({
   back: {
     marginTop: '10px',
     width: '100%',
+    justifyContent: 'center',
   },
   otp: {
     display: 'flex',
