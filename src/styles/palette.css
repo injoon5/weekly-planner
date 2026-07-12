@@ -1,0 +1,138 @@
+/* Event colors: driven by data-color + html[data-theme], not React theme props. */
+[data-color='coral'] {
+  --ev-bg: #ffe3dd;
+  --ev-fg: #a13a28;
+  --ev-accent: #e96d4f;
+}
+[data-color='amber'] {
+  --ev-bg: #ffebc6;
+  --ev-fg: #8a5a06;
+  --ev-accent: #e6a23c;
+}
+[data-color='green'] {
+  --ev-bg: #d9f0db;
+  --ev-fg: #22683a;
+  --ev-accent: #53ae6e;
+}
+[data-color='teal'] {
+  --ev-bg: #d3efea;
+  --ev-fg: #136259;
+  --ev-accent: #3fa99b;
+}
+[data-color='sky'] {
+  --ev-bg: #d8ebfa;
+  --ev-fg: #175e92;
+  --ev-accent: #4e9edb;
+}
+[data-color='violet'] {
+  --ev-bg: #e6e2fa;
+  --ev-fg: #4a3ea8;
+  --ev-accent: #8578de;
+}
+[data-color='pink'] {
+  --ev-bg: #fadfed;
+  --ev-fg: #a02c6e;
+  --ev-accent: #e063a8;
+}
+[data-color='graphite'] {
+  --ev-bg: #eaeaee;
+  --ev-fg: #41414b;
+  --ev-accent: #8f8f9c;
+}
+
+html[data-theme='dark'] [data-color='coral'] {
+  --ev-bg: #42241e;
+  --ev-fg: #ffb4a3;
+  --ev-accent: #e96d4f;
+}
+html[data-theme='dark'] [data-color='amber'] {
+  --ev-bg: #3e2f14;
+  --ev-fg: #f2c87e;
+  --ev-accent: #e6a23c;
+}
+html[data-theme='dark'] [data-color='green'] {
+  --ev-bg: #1d3524;
+  --ev-fg: #9ad8ac;
+  --ev-accent: #53ae6e;
+}
+html[data-theme='dark'] [data-color='teal'] {
+  --ev-bg: #173330;
+  --ev-fg: #8fd4c9;
+  --ev-accent: #3fa99b;
+}
+html[data-theme='dark'] [data-color='sky'] {
+  --ev-bg: #1b3145;
+  --ev-fg: #9ccbf0;
+  --ev-accent: #4e9edb;
+}
+html[data-theme='dark'] [data-color='violet'] {
+  --ev-bg: #2a2647;
+  --ev-fg: #c0b7f5;
+  --ev-accent: #8578de;
+}
+html[data-theme='dark'] [data-color='pink'] {
+  --ev-bg: #3e2233;
+  --ev-fg: #f0a8d0;
+  --ev-accent: #e063a8;
+}
+html[data-theme='dark'] [data-color='graphite'] {
+  --ev-bg: #2a2a31;
+  --ev-fg: #c2c2cc;
+  --ev-accent: #8f8f9c;
+}
+
+/*
+ * Print always uses the light palette. beforeprint theme flips are racy
+ * (and print-color-adjust: exact can keep screen-dark fills).
+ * Match dark-selector specificity so these win under @media print.
+ */
+@media print {
+  html[data-theme='dark'] [data-color='coral'],
+  [data-color='coral'] {
+    --ev-bg: #ffe3dd;
+    --ev-fg: #a13a28;
+    --ev-accent: #e96d4f;
+  }
+  html[data-theme='dark'] [data-color='amber'],
+  [data-color='amber'] {
+    --ev-bg: #ffebc6;
+    --ev-fg: #8a5a06;
+    --ev-accent: #e6a23c;
+  }
+  html[data-theme='dark'] [data-color='green'],
+  [data-color='green'] {
+    --ev-bg: #d9f0db;
+    --ev-fg: #22683a;
+    --ev-accent: #53ae6e;
+  }
+  html[data-theme='dark'] [data-color='teal'],
+  [data-color='teal'] {
+    --ev-bg: #d3efea;
+    --ev-fg: #136259;
+    --ev-accent: #3fa99b;
+  }
+  html[data-theme='dark'] [data-color='sky'],
+  [data-color='sky'] {
+    --ev-bg: #d8ebfa;
+    --ev-fg: #175e92;
+    --ev-accent: #4e9edb;
+  }
+  html[data-theme='dark'] [data-color='violet'],
+  [data-color='violet'] {
+    --ev-bg: #e6e2fa;
+    --ev-fg: #4a3ea8;
+    --ev-accent: #8578de;
+  }
+  html[data-theme='dark'] [data-color='pink'],
+  [data-color='pink'] {
+    --ev-bg: #fadfed;
+    --ev-fg: #a02c6e;
+    --ev-accent: #e063a8;
+  }
+  html[data-theme='dark'] [data-color='graphite'],
+  [data-color='graphite'] {
+    --ev-bg: #eaeaee;
+    --ev-fg: #41414b;
+    --ev-accent: #8f8f9c;
+  }
+}

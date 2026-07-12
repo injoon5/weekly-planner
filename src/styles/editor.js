@@ -1,0 +1,341 @@
+import * as stylex from '@stylexjs/stylex';
+import { colors } from '../tokens.stylex.js';
+
+const scrimIn = stylex.keyframes({
+  from: { opacity: 0 },
+});
+
+const dlgIn = stylex.keyframes({
+  from: { opacity: 0, transform: 'translateY(10px) scale(.97)' },
+});
+
+const sheetIn = stylex.keyframes({
+  from: { transform: 'translateY(102%)' },
+});
+
+export const editor = stylex.create({
+  scrim: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 100,
+    backgroundColor: colors.scrim,
+    WebkitBackdropFilter: 'blur(4px)',
+    backdropFilter: 'blur(4px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '16px',
+    animationName: scrimIn,
+    animationDuration: '.2s',
+    animationTimingFunction: 'ease',
+    transitionProperty: 'opacity',
+    transitionDuration: '.16s',
+    transitionTimingFunction: 'ease',
+  },
+
+  scrimOut: {
+    opacity: 0,
+    pointerEvents: 'none',
+  },
+
+  dlg: {
+    width: 'min(384px, 100%)',
+    maxHeight: 'calc(100dvh - 32px)',
+    overflow: 'auto',
+    overscrollBehavior: 'contain',
+    backgroundColor: colors.paper,
+    borderRadius: '16px',
+    padding: '14px 16px',
+    boxShadow: `0 0 0 1px ${colors.edge}, 0 4px 12px rgba(20,20,26,.08), 0 28px 60px -16px rgba(20,20,26,.40)`,
+    animationName: dlgIn,
+    animationDuration: '.24s',
+    animationTimingFunction: 'cubic-bezier(.2,0,0,1)',
+    transitionProperty: 'transform, opacity',
+    transitionDuration: '.16s',
+    transitionTimingFunction: 'ease',
+    '@media (max-width: 560px)': {
+      width: '100%',
+      maxHeight: 'calc(100dvh - 48px)',
+      borderRadius: '18px 18px 0 0',
+      paddingBottom: 'calc(14px + env(safe-area-inset-bottom))',
+      paddingTop: '16px',
+      paddingInline: '18px',
+      animationName: sheetIn,
+      animationDuration: '.34s',
+      animationTimingFunction: 'cubic-bezier(.32,.72,0,1)',
+      transitionDuration: '.22s',
+      transitionTimingFunction: 'cubic-bezier(.32,.72,0,1)',
+    },
+  },
+
+  dlgOut: {
+    opacity: 0,
+    transform: 'translateY(8px) scale(.98)',
+    '@media (max-width: 560px)': {
+      transform: 'translateY(100%)',
+      opacity: 1,
+    },
+  },
+
+  scrimBottom: {
+    '@media (max-width: 560px)': {
+      alignItems: 'flex-end',
+      padding: 0,
+    },
+  },
+
+  dhead: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '12px',
+    marginBottom: '12px',
+  },
+
+  dttl: {
+    fontSize: '17px',
+    fontWeight: 650,
+    color: colors.ink,
+    letterSpacing: '-0.018em',
+    lineHeight: 1.2,
+  },
+
+  icobtn: {
+    width: '32px',
+    height: '32px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0,
+    borderRadius: '8px',
+    flexShrink: 0,
+    backgroundColor: 'transparent',
+    color: colors.faint,
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    marginRight: '-6px',
+    transitionProperty: 'background-color, color, transform',
+    transitionDuration: '.15s',
+    transitionTimingFunction: 'ease',
+    ':hover': {
+      backgroundColor: colors.hov,
+      color: colors.ink,
+    },
+    ':active': {
+      transform: 'scale(.96)',
+    },
+    '@media (pointer: coarse)': {
+      position: 'relative',
+      '::after': {
+        content: '""',
+        position: 'absolute',
+        inset: '-8px',
+      },
+    },
+  },
+
+  inpt: {
+    width: '100%',
+    boxSizing: 'border-box',
+    fontFamily: 'inherit',
+    fontSize: '13.5px',
+    fontWeight: 500,
+    color: colors.ink,
+    backgroundColor: colors.field,
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'transparent',
+    borderRadius: '9px',
+    paddingBlock: '8px',
+    paddingInline: '11px',
+    outline: 'none',
+    transitionProperty: 'background-color, border-color, box-shadow',
+    transitionDuration: '.15s',
+    transitionTimingFunction: 'ease',
+    '::placeholder': {
+      color: colors.faint,
+      fontWeight: 450,
+    },
+    ':hover': {
+      backgroundColor: colors.fieldH,
+    },
+    ':focus': {
+      backgroundColor: colors.paper,
+      borderColor: colors.ink,
+      boxShadow: '0 0 0 3px rgba(27,27,32,.07)',
+    },
+  },
+
+  inptTitle: {
+    fontSize: '15px',
+    fontWeight: 600,
+    marginTop: '2px',
+  },
+
+  inptSelect: {
+    appearance: 'none',
+    WebkitAppearance: 'none',
+    fontVariantNumeric: 'tabular-nums',
+    paddingRight: '28px',
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M2 3.5 5 6.5 8 3.5' fill='none' stroke='%238A8A92' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right 10px center',
+    cursor: 'pointer',
+  },
+
+  inptTextarea: {
+    resize: 'none',
+    lineHeight: 1.5,
+    display: 'block',
+  },
+
+  field: {
+    marginTop: '13px',
+  },
+
+  lrow: {
+    display: 'flex',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    marginBottom: '6px',
+  },
+
+  lbl: {
+    fontSize: '11px',
+    fontWeight: 600,
+    color: colors.muted,
+    letterSpacing: '0.012em',
+  },
+
+  ldur: {
+    fontSize: '11px',
+    fontWeight: 550,
+    color: colors.faint,
+    fontVariantNumeric: 'tabular-nums',
+  },
+
+  swrow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
+
+  sw: {
+    width: '36px',
+    height: '36px',
+    padding: 0,
+    borderWidth: 0,
+    backgroundColor: 'none',
+    borderRadius: '99px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    '@media (pointer: coarse)': {
+      position: 'relative',
+      '::after': {
+        content: '""',
+        position: 'absolute',
+        inset: '-4px',
+      },
+    },
+  },
+
+  swDot: {
+    width: '21px',
+    height: '21px',
+    borderRadius: '99px',
+    backgroundColor: 'var(--ev-accent)',
+    transitionProperty: 'transform, box-shadow',
+    transitionDuration: '.15s',
+    transitionTimingFunction: 'cubic-bezier(.2,0,0,1)',
+  },
+
+  swDotHov: {
+    transform: 'scale(1.12)',
+  },
+
+  swDotActive: {
+    transform: 'scale(.96)',
+  },
+
+  swDotOn: {
+    boxShadow: `0 0 0 2px ${colors.paper}, 0 0 0 3.5px var(--ev-accent)`,
+  },
+
+  dayrow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
+
+  dayb: {
+    width: '34px',
+    height: '34px',
+    borderWidth: 0,
+    borderRadius: '99px',
+    backgroundColor: 'transparent',
+    fontSize: '12.5px',
+    fontWeight: 560,
+    color: colors.muted,
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    transitionProperty: 'background-color, color, transform',
+    transitionDuration: '.15s',
+    transitionTimingFunction: 'ease',
+    ':hover': {
+      backgroundColor: colors.hov,
+    },
+    ':active': {
+      transform: 'scale(.96)',
+    },
+    '@media (pointer: coarse)': {
+      position: 'relative',
+      '::after': {
+        content: '""',
+        position: 'absolute',
+        inset: '-5px',
+      },
+    },
+  },
+
+  daybSun: {
+    color: colors.sun,
+  },
+
+  daybSat: {
+    color: colors.sat,
+  },
+
+  daybOn: {
+    backgroundColor: colors.ink,
+    color: colors.onInk,
+  },
+
+  timerow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+
+  timerowSelect: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  arrow: {
+    color: colors.faint,
+    fontSize: '12px',
+    flexShrink: 0,
+  },
+
+  dfoot: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginTop: '18px',
+  },
+
+  sp: {
+    flex: 1,
+  },
+});

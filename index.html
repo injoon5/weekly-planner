@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>주간 계획표 · Weekly Planner</title>
+<meta name="theme-color" content="#F6F6F7">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%231B1B20'/%3E%3Crect x='8.5' y='13' width='6' height='11' rx='2' fill='%23E96D4F'/%3E%3Crect x='17.5' y='8' width='6' height='9' rx='2' fill='%234E9EDB'/%3E%3C/svg%3E">
+<script>
+/* apply the saved theme before first paint to avoid a flash */
+try{
+  var _t = localStorage.getItem('weekly-planner.theme');
+  if (_t !== 'dark' && _t !== 'light'){
+    var _s = JSON.parse(localStorage.getItem('weekly-planner.v2') || 'null');
+    _t = _s && _s.theme;
+  }
+  if (_t !== 'dark' && _t !== 'light') _t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  document.documentElement.dataset.theme = _t;
+}catch(e){}
+/* iOS Safari auto-zooms the page when focusing inputs; maximum-scale=1 stops that
+   (pinch zoom still works — Safari ignores the cap for user gestures). iOS only,
+   so Android keeps full zoom control. */
+try{
+  if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)){
+    var _v = document.querySelector('meta[name="viewport"]');
+    if (_v) _v.content += ', maximum-scale=1';
+  }
+}catch(e){}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css" />
+</head>
+<body>
+<div id="app"></div>
+<script type="module" src="/src/main.jsx"></script>
+</body>
+</html>

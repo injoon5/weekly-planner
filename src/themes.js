@@ -1,0 +1,32 @@
+import * as stylex from '@stylexjs/stylex';
+import { colors } from './tokens.stylex.js';
+
+export const darkTheme = stylex.createTheme(colors, {
+  bg: '#131316',
+  paper: '#1C1C21',
+  ink: '#ECECF1',
+  onInk: '#17171B',
+  muted: '#A4A4AE',
+  faint: '#75757E',
+  line: '#2A2A31',
+  gridHour: 'rgba(235,235,245,.085)',
+  gridHalf: 'rgba(235,235,245,.04)',
+  hov: 'rgba(235,235,245,.07)',
+  edge: 'rgba(235,235,245,.13)',
+  edgeH: 'rgba(235,235,245,.22)',
+  field: '#26262D',
+  fieldH: '#2C2C34',
+  glass: 'rgba(28,28,33,.84)',
+  glass2: 'rgba(28,28,33,.78)',
+  glass3: 'rgba(24,24,29,.82)',
+  scrim: 'rgba(0,0,0,.52)',
+  sel: '#2E4266',
+  chipBg: '#ECECF1',
+  chipFg: '#17171B',
+  now: '#F2555A',
+  nowHalo: 'rgba(28,28,33,.85)',
+  sun: '#E5736C',
+  sat: '#7AA3E8',
+  sb: 'rgba(235,235,245,.20)',
+  sbH: 'rgba(235,235,245,.34)',
+});
