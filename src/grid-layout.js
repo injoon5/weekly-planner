@@ -38,6 +38,24 @@ export function slotHeight(minutes) {
   return `calc(${layout.slotH} * ${minutes / SLOT_MIN} - 2px)`;
 }
 
+export function chipStyle(drag) {
+  return {
+    left: `calc(${layout.gutW} + (100% - ${layout.gutW}) * ${(drag.day / 7).toFixed(6)} + 6px)`,
+    top:
+      drag.start >= SLOT_MIN * 2
+        ? `calc(${layout.slotH} * ${drag.start / SLOT_MIN} - 29px)`
+        : `calc(${layout.slotH} * ${(drag.start + drag.dur) / SLOT_MIN} + 8px)`,
+  };
+}
+
+export function nowLineStyle(nowMin, nowDay) {
+  return {
+    top: `calc(${layout.slotH} * ${(nowMin / SLOT_MIN).toFixed(4)} - 1px)`,
+    left: `calc(${layout.gutW} + (100% - ${layout.gutW}) * ${(nowDay / 7).toFixed(6)})`,
+    width: `calc((100% - ${layout.gutW}) / 7)`,
+  };
+}
+
 /** Scroll pane so "now" is roughly in view when the board changes. */
 export function scrollPaneToNow(pane, body, gut, nowMin, nowDay) {
   if (!pane || !body) return;
@@ -49,5 +67,3 @@ export function scrollPaneToNow(pane, body, gut, nowMin, nowDay) {
     pane.scrollLeft = Math.max(0, nowDay * colW - 10);
   }
 }
-
-export { SLOTS, SLOT_MIN };

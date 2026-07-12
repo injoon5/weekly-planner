@@ -1,19 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { THEME_KEY } from '../config.js';
 import { db, persistThemeTx } from '../db.js';
-import { applyDocumentTheme } from '../theme-dom.js';
-
-function readBootTheme() {
-  const stored = localStorage.getItem(THEME_KEY);
-  if (stored === 'dark' || stored === 'light') return stored;
-  if (document.documentElement.dataset.theme === 'dark') return 'dark';
-  if (document.documentElement.dataset.theme === 'light') return 'light';
-  return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
+import { applyDocumentTheme, readBootTheme } from '../theme-dom.js';
 
 /**
- * Single theme owner: Instant settings → local cache → DOM.
- * Callers never prop-drill theme for palettes (CSS uses html[data-theme]).
+ * Single theme owner after boot: Instant settings → local cache → DOM.
+ * Print: beforeprint flips StyleX chrome to light; event colors use @media screen
+ * dark rules so print inherits the base light palette without a second CSS dump.
  */
 export function useTheme(settings) {
   const [theme, setTheme] = useState(readBootTheme);

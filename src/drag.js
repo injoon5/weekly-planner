@@ -1,4 +1,4 @@
-import { clamp, SLOT_MIN, SLOTS } from './time.js';
+import { clamp, DAY_MIN, SLOT_MIN, SLOTS } from './time.js';
 
 /**
  * Pure draft math for calendar gestures.
@@ -66,13 +66,13 @@ export function activateOffsets(session, point, bodyRect, gutWidth) {
 
 export function resolvePendingTap(session) {
   if (session.mode === 'create') {
-    const start = Math.min(session.payload.anchor * SLOT_MIN, 1440 - 60);
+    const start = Math.min(session.payload.anchor * SLOT_MIN, DAY_MIN - SLOT_MIN * 2);
     return {
       type: 'open-create',
       draft: {
         day: session.payload.day,
         start,
-        dur: 60,
+        dur: SLOT_MIN * 2,
         title: '',
         color: session.payload.color,
         memo: '',

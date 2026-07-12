@@ -3,8 +3,10 @@ import * as stylex from '@stylexjs/stylex';
 import { DAYS_KO, DAYS_EN, SLOTS, SLOT_MIN } from '../config.js';
 import { beginPointerGesture } from '../drag.js';
 import {
+  chipStyle,
   geoX,
   mergeDragView,
+  nowLineStyle,
   packView,
   scrollPaneToNow,
   slotHeight,
@@ -244,28 +246,12 @@ export function WeekGrid({
             })()}
 
             {drag && (
-              <div
-                {...stylex.props(grid.chip)}
-                style={{
-                  left: `calc(${layout.gutW} + (100% - ${layout.gutW}) * ${(drag.day / 7).toFixed(6)} + 6px)`,
-                  top:
-                    drag.start >= SLOT_MIN * 2
-                      ? `calc(${layout.slotH} * ${drag.start / SLOT_MIN} - 29px)`
-                      : `calc(${layout.slotH} * ${(drag.start + drag.dur) / SLOT_MIN} + 8px)`,
-                }}
-              >
+              <div {...stylex.props(grid.chip)} style={chipStyle(drag)}>
                 {fmt(drag.start)} – {fmt(drag.start + drag.dur)}
               </div>
             )}
 
-            <div
-              {...stylex.props(grid.nowLine)}
-              style={{
-                top: `calc(${layout.slotH} * ${(nowMin / SLOT_MIN).toFixed(4)} - 1px)`,
-                left: `calc(${layout.gutW} + (100% - ${layout.gutW}) * ${(nowDay / 7).toFixed(6)})`,
-                width: `calc((100% - ${layout.gutW}) / 7)`,
-              }}
-            />
+            <div {...stylex.props(grid.nowLine)} style={nowLineStyle(nowMin, nowDay)} />
           </div>
         </div>
       </div>

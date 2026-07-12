@@ -8,11 +8,9 @@ import {
   redirect,
 } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { THEME_KEY } from './config.js';
 import { db } from './db.js';
 import { Login } from './components/Login.jsx';
 import { Planner } from './components/Planner.jsx';
-import { applyDocumentTheme } from './theme-dom.js';
 import { reset } from './styles/ui.js';
 
 function toRouterAuth(auth) {
@@ -25,17 +23,6 @@ function toRouterAuth(auth) {
 
 function RootLayout() {
   const { auth } = rootRoute.useRouteContext();
-
-  useEffect(() => {
-    const stored = localStorage.getItem(THEME_KEY);
-    const theme =
-      stored === 'dark' || stored === 'light'
-        ? stored
-        : document.documentElement.dataset.theme === 'dark'
-          ? 'dark'
-          : 'light';
-    applyDocumentTheme(theme);
-  }, []);
 
   if (auth.isLoading) {
     return <div {...stylex.props(reset.boot)}>불러오는 중…</div>;

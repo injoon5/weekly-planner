@@ -2,14 +2,23 @@ import { useEffect, useRef, useState } from 'react';
 import { db, saveEventTx } from '../db.js';
 import { eventFields } from '../models.js';
 
+const CLOSE_MS = 200;
+
 /**
  * Draft-until-save session.
  * Policy: Done/Enter = save; X / scrim / Escape / Cancel = discard; Delete = hold-confirm only.
+ * Persist runs outside setState (Strict Mode safe).
  */
 export function useEditorSession({ events, createEvent, removeEvent }) {
   const [editing, setEditing] = useState(null);
   const eventsRef = useRef(events);
+  const editingRef = useRef(null);
+  const closeTimer = useRef(0);
+
   eventsRef.current = events;
+  editingRef.current = editing;
+
+  useEffect(() => () => clearTimeout(closeTimer.current), []);
 
   const openCreate = (draft) => {
     setEditing({ mode: 'create', draft: eventFields(draft), closing: false });
@@ -23,22 +32,28 @@ export function useEditorSession({ events, createEvent, removeEvent }) {
   };
 
   const closeEditor = (action, draft) => {
-    setEditing((ed) => {
-      if (!ed || ed.closing) return ed;
-      if (action === 'save') {
-        const fields = eventFields(draft || ed.draft);
-        if (ed.mode === 'create') createEvent(fields);
-        else if (ed.id) {
-          const tx = saveEventTx(ed.id, fields);
-          if (tx) db.transact(tx);
-        }
-      } else if (action === 'delete' && ed.mode === 'edit' && ed.id) {
-        removeEvent(ed.id);
+    const ed = editingRef.current;
+    if (!ed || ed.closing) return;
+
+    if (action === 'save') {
+      const fields = eventFields(draft || ed.draft);
+      if (ed.mode === 'create') createEvent(fields);
+      else if (ed.id) {
+        const tx = saveEventTx(ed.id, fields);
+        if (tx) db.transact(tx);
       }
-      // cancel / discard: no persist
-      setTimeout(() => setEditing(null), 200);
-      return { ...ed, closing: true };
-    });
+    } else if (action === 'delete' && ed.mode === 'edit' && ed.id) {
+      removeEvent(ed.id);
+    }
+
+    const closing = { ...ed, closing: true };
+    editingRef.current = closing;
+    setEditing(closing);
+    clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => {
+      editingRef.current = null;
+      setEditing(null);
+    }, CLOSE_MS);
   };
 
   const save = (draft) => closeEditor('save', draft);

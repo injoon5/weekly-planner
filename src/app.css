@@ -11,15 +11,17 @@ textarea {
   font: inherit;
 }
 
-/* Pre-React + body: StyleX theme class lives on #app descendants only until JS runs */
-html[data-theme='dark'] body {
-  background-color: #131316;
-  color: #ececf1;
-}
-
-html[data-theme='light'] body {
+/* Default / print: light. Dark body only on screen. */
+html body {
   background-color: #f6f6f7;
   color: #1b1b20;
+}
+
+@media screen {
+  html[data-theme='dark'] body {
+    background-color: #131316;
+    color: #ececf1;
+  }
 }
 
 ::selection {
