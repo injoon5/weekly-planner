@@ -11,6 +11,7 @@ import * as stylex from '@stylexjs/stylex';
 import { db } from './db.js';
 import { Login } from './components/Login.jsx';
 import { Planner } from './components/Planner.jsx';
+import { SharedPlanner } from './components/SharedPlanner.jsx';
 import { reset } from './styles/ui.js';
 
 function toRouterAuth(auth) {
@@ -63,7 +64,15 @@ const indexRoute = createRoute({
   },
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, loginRoute]);
+const shareRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/s/$token',
+  component: function SharePage() {
+    return <SharedPlanner />;
+  },
+});
+
+const routeTree = rootRoute.addChildren([indexRoute, loginRoute, shareRoute]);
 
 const router = createRouter({
   routeTree,

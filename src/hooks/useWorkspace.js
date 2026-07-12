@@ -1,17 +1,40 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { db, ensureWorkspace } from '../db.js';
 import { fromInstantEvents } from '../models.js';
 
+function ownerIdOf(board) {
+  if (!board?.owner) return null;
+  return typeof board.owner === 'object' ? board.owner.id : board.owner;
+}
+
+function editorIdsOf(board) {
+  return (board?.editors || []).map((e) => (typeof e === 'object' ? e.id : e)).filter(Boolean);
+}
+
+/** Write truth = boards.editors link (members.role is display cache). */
+function roleForBoard(board, userId) {
+  if (!board || !userId) return 'viewer';
+  if (ownerIdOf(board) === userId) return 'owner';
+  if (editorIdsOf(board).includes(userId)) return 'editor';
+  return 'viewer';
+}
+
 /**
  * Instant query + active board + one-shot workspace bootstrap.
- * Theme for settings seed is read from localStorage inside ensureWorkspace.
- * Module-level dedupe lives in ensureWorkspace.
+ * Includes owned and member boards (via Instant view perms).
  */
 export function useWorkspace() {
   const user = db.useUser();
   const { isLoading, error, data } = db.useQuery({
-    boards: { events: {} },
+    boards: {
+      owner: {},
+      events: {},
+      members: { user: {} },
+      editors: {},
+      shares: {},
+    },
     settings: {},
+    boardPrefs: { board: {}, user: {} },
   });
 
   const boards = [...(data?.boards || [])].sort(
@@ -19,6 +42,7 @@ export function useWorkspace() {
       (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || (a.createdAt ?? 0) - (b.createdAt ?? 0),
   );
   const settings = data?.settings?.[0] || null;
+  const allPrefs = data?.boardPrefs || [];
 
   const [activeId, setActiveId] = useState(null);
   const [ready, setReady] = useState(false);
@@ -26,6 +50,20 @@ export function useWorkspace() {
 
   const board = boards.find((b) => b.id === activeId) || boards[0] || null;
   const events = fromInstantEvents(board?.events);
+  const myRole = useMemo(() => roleForBoard(board, user?.id), [board, user?.id]);
+  const canEdit = myRole === 'owner' || myRole === 'editor';
+  const isOwner = myRole === 'owner';
+
+  const boardPrefs = useMemo(() => {
+    if (!board || !user) return null;
+    return (
+      allPrefs.find((p) => {
+        const bid = p.board?.id || p.board;
+        const uid = p.user?.id || p.user;
+        return bid === board.id && uid === user.id;
+      }) || null
+    );
+  }, [allPrefs, board, user]);
 
   useEffect(() => {
     if (!boards.length) {
@@ -40,8 +78,9 @@ export function useWorkspace() {
     let cancelled = false;
     (async () => {
       try {
+        const ownedCount = boards.filter((b) => ownerIdOf(b) === user.id).length;
         const result = await ensureWorkspace(user, {
-          boardCount: boards.length,
+          boardCount: ownedCount,
           hasSettings: Boolean(settings),
         });
         if (cancelled) return;
@@ -59,17 +98,16 @@ export function useWorkspace() {
     };
   }, [isLoading, user?.id, boards.length, settings?.id]);
 
-  useEffect(() => {
-    const el = document.querySelector('[data-active-tab="true"]');
-    if (el?.scrollIntoView) el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-  }, [activeId]);
-
   return {
     user,
     boards,
     board,
     events,
     settings,
+    boardPrefs,
+    myRole,
+    canEdit,
+    isOwner,
     activeId,
     setActiveId,
     isLoading,
@@ -79,3 +117,5 @@ export function useWorkspace() {
     clearBootNote: () => setBootNote(null),
   };
 }
+
+export { ownerIdOf, roleForBoard };

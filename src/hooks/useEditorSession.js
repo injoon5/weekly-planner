@@ -9,14 +9,16 @@ const CLOSE_MS = 200;
  * Policy: Done/Enter = save; X / scrim / Escape / Cancel = discard; Delete = hold-confirm only.
  * Persist runs outside setState (Strict Mode safe).
  */
-export function useEditorSession({ events, createEvent, removeEvent }) {
+export function useEditorSession({ events, createEvent, removeEvent, ruleParams = null }) {
   const [editing, setEditing] = useState(null);
   const eventsRef = useRef(events);
   const editingRef = useRef(null);
   const closeTimer = useRef(0);
+  const ruleParamsRef = useRef(ruleParams);
 
   eventsRef.current = events;
   editingRef.current = editing;
+  ruleParamsRef.current = ruleParams;
 
   useEffect(() => () => clearTimeout(closeTimer.current), []);
 
@@ -39,7 +41,7 @@ export function useEditorSession({ events, createEvent, removeEvent }) {
       const fields = eventFields(draft || ed.draft);
       if (ed.mode === 'create') createEvent(fields);
       else if (ed.id) {
-        const tx = saveEventTx(ed.id, fields);
+        const tx = saveEventTx(ed.id, fields, ruleParamsRef.current);
         if (tx) db.transact(tx);
       }
     } else if (action === 'delete' && ed.mode === 'edit' && ed.id) {

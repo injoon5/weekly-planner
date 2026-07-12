@@ -13,7 +13,16 @@ import { planner } from '../styles/planner.js';
  * Done / Enter → save. X / scrim / Escape / Cancel → discard.
  * Delete → HoldToConfirm only.
  */
-export function Editor({ draft, isNew, closing, onSave, onCancel, onDelete }) {
+export function Editor({
+  draft,
+  isNew,
+  closing,
+  onSave,
+  onCancel,
+  onDelete,
+  readOnly = false,
+  colorLabel,
+}) {
   const [local, setLocal] = useState(() => eventFields(draft));
   const [swHov, setSwHov] = useState(null);
   const [swActive, setSwActive] = useState(null);
@@ -56,9 +65,10 @@ export function Editor({ draft, isNew, closing, onSave, onCancel, onDelete }) {
         {...stylex.props(editor.dlg, closing && editor.dlgOut)}
         role="dialog"
         aria-modal="true"
-        aria-label={isNew ? '새 일정' : '일정 편집'}
+        aria-label={readOnly ? '일정' : isNew ? '새 일정' : '일정 편집'}
         ref={ref}
         onKeyDown={(e) => {
+          if (readOnly) return;
           if (
             e.key === 'Enter' &&
             e.target.tagName !== 'TEXTAREA' &&
@@ -70,7 +80,9 @@ export function Editor({ draft, isNew, closing, onSave, onCancel, onDelete }) {
         }}
       >
         <div {...stylex.props(editor.dhead)}>
-          <span {...stylex.props(editor.dttl)}>{isNew ? '새 일정' : '일정 편집'}</span>
+          <span {...stylex.props(editor.dttl)}>
+            {readOnly ? '일정' : isNew ? '새 일정' : '일정 편집'}
+          </span>
           <button {...stylex.props(editor.icobtn)} aria-label="닫기" onClick={onCancel}>
             <X size={16} strokeWidth={2} />
           </button>
@@ -80,6 +92,7 @@ export function Editor({ draft, isNew, closing, onSave, onCancel, onDelete }) {
           {...stylex.props(editor.inpt, editor.inptTitle)}
           placeholder="제목"
           value={local.title}
+          readOnly={readOnly}
           onInput={(e) => patch({ title: e.target.value })}
         />
 
@@ -93,9 +106,10 @@ export function Editor({ draft, isNew, closing, onSave, onCancel, onDelete }) {
                 key={c}
                 {...stylex.props(editor.sw)}
                 data-color={c}
-                aria-label={'색상 ' + c}
+                disabled={readOnly}
+                aria-label={(colorLabel ? colorLabel(c) : null) || '색상 ' + c}
                 aria-pressed={local.color === c}
-                onClick={() => patch({ color: c })}
+                onClick={() => !readOnly && patch({ color: c })}
                 onMouseEnter={() => setSwHov(c)}
                 onMouseLeave={() => setSwHov(null)}
                 onMouseDown={() => setSwActive(c)}
@@ -129,6 +143,7 @@ export function Editor({ draft, isNew, closing, onSave, onCancel, onDelete }) {
                   local.day === d && editor.daybOn,
                 )}
                 aria-pressed={local.day === d}
+                disabled={readOnly}
                 onClick={() => patch({ day: d })}
               >
                 {k}
@@ -147,6 +162,7 @@ export function Editor({ draft, isNew, closing, onSave, onCancel, onDelete }) {
               {...stylex.props(editor.inpt, editor.inptSelect, editor.timerowSelect)}
               aria-label="시작 시간"
               value={local.start}
+              disabled={readOnly}
               onChange={(e) => {
                 const s = +e.target.value;
                 patch({ start: s, dur: Math.min(local.dur, DAY_MIN - s) });
@@ -159,6 +175,7 @@ export function Editor({ draft, isNew, closing, onSave, onCancel, onDelete }) {
               {...stylex.props(editor.inpt, editor.inptSelect, editor.timerowSelect)}
               aria-label="종료 시간"
               value={local.start + local.dur}
+              disabled={readOnly}
               onChange={(e) => patch({ dur: +e.target.value - local.start })}
             >
               {endOpts}
@@ -175,12 +192,24 @@ export function Editor({ draft, isNew, closing, onSave, onCancel, onDelete }) {
             rows={2}
             placeholder="선택 사항"
             value={local.memo || ''}
+            readOnly={readOnly}
             onInput={(e) => patch({ memo: e.target.value })}
           />
         </div>
 
         <div {...stylex.props(editor.dfoot)}>
-          {isNew ? (
+          {readOnly ? (
+            <>
+              <span {...stylex.props(editor.sp)} />
+              <button
+                type="button"
+                {...stylex.props(planner.btn, planner.btnPrimary)}
+                onClick={onCancel}
+              >
+                닫기
+              </button>
+            </>
+          ) : isNew ? (
             <button type="button" {...stylex.props(planner.btn, planner.btnGhost)} onClick={onCancel}>
               취소
             </button>
@@ -193,14 +222,18 @@ export function Editor({ draft, isNew, closing, onSave, onCancel, onDelete }) {
               삭제
             </HoldToConfirm>
           )}
-          <span {...stylex.props(editor.sp)} />
-          <button
-            type="button"
-            {...stylex.props(planner.btn, planner.btnPrimary)}
-            onClick={() => onSave(local)}
-          >
-            {isNew ? '추가' : '완료'}
-          </button>
+          {!readOnly && (
+            <>
+              <span {...stylex.props(editor.sp)} />
+              <button
+                type="button"
+                {...stylex.props(planner.btn, planner.btnPrimary)}
+                onClick={() => onSave(local)}
+              >
+                {isNew ? '추가' : '완료'}
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

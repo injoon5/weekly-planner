@@ -114,6 +114,7 @@ export const planner = stylex.create({
     WebkitOverflowScrolling: 'touch',
     padding: '2px',
     margin: '-2px 0',
+    position: 'relative',
     [MOBILE]: {
       order: 4,
       flexBasis: '100%',
@@ -123,6 +124,29 @@ export const planner = stylex.create({
     '@media print': {
       display: 'none',
     },
+  },
+
+  tabPill: {
+    position: 'absolute',
+    top: '2px',
+    bottom: '2px',
+    left: 0,
+    borderRadius: '8px',
+    backgroundColor: colors.paper,
+    boxShadow: `inset 0 0 0 1px ${colors.edge}, 0 1px 2px rgba(20,20,26,.05)`,
+    pointerEvents: 'none',
+    zIndex: 0,
+    opacity: 0,
+    transitionProperty: 'transform, width, opacity',
+    transitionDuration: '180ms',
+    transitionTimingFunction: 'cubic-bezier(0.2, 0, 0, 1)',
+    '@media (prefers-reduced-motion: reduce)': {
+      transitionDuration: '0ms',
+    },
+  },
+
+  tabPillReady: {
+    opacity: 1,
   },
 
   tab: {
@@ -141,14 +165,15 @@ export const planner = stylex.create({
     backgroundColor: 'transparent',
     cursor: 'pointer',
     fontFamily: 'inherit',
-    transitionProperty: 'background-color, color, box-shadow',
+    position: 'relative',
+    zIndex: 1,
+    transitionProperty: 'color',
     transitionDuration: '.15s',
     transitionTimingFunction: 'ease',
     ':hover': {
-      backgroundColor: colors.hov,
+      color: colors.ink,
     },
     '@media (pointer: coarse)': {
-      position: 'relative',
       '::after': {
         content: '""',
         position: 'absolute',
@@ -162,8 +187,43 @@ export const planner = stylex.create({
 
   tabOn: {
     color: colors.ink,
-    backgroundColor: colors.paper,
-    boxShadow: `inset 0 0 0 1px ${colors.edge}, 0 1px 2px rgba(20,20,26,.05)`,
+    backgroundColor: 'transparent',
+    boxShadow: 'none',
+  },
+
+  banner: {
+    flexShrink: 0,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '6px 14px',
+    fontSize: '12px',
+    fontWeight: 550,
+    color: colors.muted,
+    backgroundColor: colors.hov,
+    borderBottom: `1px solid ${colors.line}`,
+    '@media print': {
+      display: 'none',
+    },
+  },
+
+  bannerStrong: {
+    color: colors.ink,
+    fontWeight: 600,
+  },
+
+  gridSwap: {
+    transitionProperty: 'opacity, filter',
+    transitionDuration: '0ms',
+    transitionTimingFunction: 'cubic-bezier(0.2, 0, 0, 1)',
+    '@media (prefers-reduced-motion: no-preference)': {
+      transitionDuration: '140ms',
+    },
+  },
+
+  gridSwapOut: {
+    opacity: 0.72,
+    filter: 'blur(2px)',
   },
 
   tabName: {
@@ -387,5 +447,50 @@ export const planner = stylex.create({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
+  },
+
+  presence: {
+    display: 'flex',
+    alignItems: 'center',
+    flexDirection: 'row-reverse',
+    paddingInline: '2px',
+    '@media print': {
+      display: 'none',
+    },
+  },
+
+  presenceDot: {
+    width: '24px',
+    height: '24px',
+    marginLeft: '-6px',
+    borderRadius: '99px',
+    borderWidth: '2px',
+    borderStyle: 'solid',
+    borderColor: colors.paper,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '10px',
+    fontWeight: 650,
+    color: '#fff',
+    letterSpacing: '-0.02em',
+    userSelect: 'none',
+    boxSizing: 'border-box',
+  },
+
+  presenceMore: {
+    marginRight: '4px',
+    fontSize: '11px',
+    fontWeight: 600,
+    color: colors.faint,
+    fontVariantNumeric: 'tabular-nums',
+  },
+
+  cursorsWrap: {
+    flex: 1,
+    minHeight: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    position: 'relative',
   },
 });

@@ -25,12 +25,31 @@ export function dt(v) {
   return typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : '';
 }
 
+export function isoDate(date = new Date()) {
+  return (
+    date.getFullYear() +
+    '-' +
+    pad(date.getMonth() + 1) +
+    '-' +
+    pad(date.getDate())
+  );
+}
+
+/** Default board period: today → today+7 days (local). */
+export function defaultBoardRange(now = new Date()) {
+  const from = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const to = new Date(from);
+  to.setDate(to.getDate() + 7);
+  return { from: isoDate(from), to: isoDate(to) };
+}
+
 export function fmtRange(a, b) {
-  const parse = s => {
+  const parse = (s) => {
     const [y, m, d] = s.split('-').map(Number);
     return { y, m, d };
   };
-  const format = (o, withYear) => (withYear ? o.y + '.' : '') + o.m + '.' + o.d;
+  const format = (o, withYear) =>
+    (withYear ? o.y + '.' : '') + pad(o.m) + '.' + pad(o.d);
   if (a && b) {
     const A = parse(a);
     const B = parse(b);

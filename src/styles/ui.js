@@ -131,5 +131,6 @@ export const ui = stylex.create({
     paddingInline: '10px',
     fontSize: '12.5px',
     borderRadius: '8px',
+    fontVariantNumeric: 'tabular-nums',
   },
 });

@@ -1,28 +1,36 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {
   Plus,
   Printer,
-  ChevronDown,
   Moon,
   Sun,
   MoreHorizontal,
+  Eye,
+  Share2,
 } from 'lucide-react';
 import { db } from '../db.js';
-import { useBoardActions } from '../hooks/useBoardActions.js';
+import { useBoardLifecycle } from '../hooks/useBoardLifecycle.js';
+import { useBoardPresence } from '../hooks/useBoardPresence.js';
 import { useEditorSession } from '../hooks/useEditorSession.js';
+import { useEventMutations } from '../hooks/useEventMutations.js';
 import { useMenu } from '../hooks/useMenu.js';
+import { useShareActions } from '../hooks/useShareActions.js';
 import { useTheme } from '../hooks/useTheme.js';
 import { useToast } from '../hooks/useToast.js';
+import { useViewControls } from '../hooks/useViewControls.js';
 import { useWorkspace } from '../hooks/useWorkspace.js';
 import { pickLeastUsedColor } from '../models.js';
-import { fmtRange, nowOnGrid } from '../time.js';
+import { fmtRange } from '../time.js';
 import { planner } from '../styles/planner.js';
 import { menus } from '../styles/menus.js';
 import { BoardMenu } from './BoardMenu.jsx';
-import { Editor } from './Editor.jsx';
+import { BoardTabs } from './BoardTabs.jsx';
 import { MoreMenu, UserMenu } from './Menus.jsx';
-import { WeekGrid } from './WeekGrid.jsx';
+import { PresenceAvatars } from './PresenceAvatars.jsx';
+import { PlannerSurface, usePlannerClock } from './PlannerSurface.jsx';
+import { SharePanel } from './SharePanel.jsx';
+import { ViewControls } from './ViewControls.jsx';
 
 export function Planner() {
   const { note, toast } = useToast();
@@ -32,6 +40,10 @@ export function Planner() {
     board,
     events,
     settings,
+    boardPrefs,
+    myRole,
+    canEdit,
+    isOwner,
     setActiveId,
     isLoading,
     error,
@@ -40,10 +52,13 @@ export function Planner() {
     clearBootNote,
   } = useWorkspace();
 
+  const auth = db.useAuth();
   const { theme, toggleTheme } = useTheme(settings);
   const { menu, openMenu, closeMenu } = useMenu();
+  const { nowMin, nowDay, todayDow } = usePlannerClock();
 
-  const actions = useBoardActions({
+  const eventsApi = useEventMutations({ board, canEdit });
+  const lifecycle = useBoardLifecycle({
     user,
     boards,
     board,
@@ -51,19 +66,31 @@ export function Planner() {
     setActiveId,
     closeMenu,
     toast,
+    isOwner,
   });
+  const share = useShareActions({ board, isOwner, toast });
 
   const session = useEditorSession({
     events,
-    createEvent: actions.createEvent,
-    removeEvent: actions.removeEvent,
+    createEvent: eventsApi.createEvent,
+    removeEvent: eventsApi.removeEvent,
   });
 
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 30000);
-    return () => clearInterval(t);
-  }, []);
+  const views = useViewControls({
+    board,
+    boardPrefs,
+    user,
+    canRenameColors: isOwner,
+  });
+
+  const presence = useBoardPresence({
+    boardId: board?.id,
+    user,
+    role: myRole,
+  });
+
+  const [swapping, setSwapping] = useState(false);
+  const [swapBoardId, setSwapBoardId] = useState(board?.id);
 
   useEffect(() => {
     if (!bootNote) return;
@@ -72,30 +99,25 @@ export function Planner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot boot toast
   }, [bootNote]);
 
-  const { nowMin, nowDay, todayDow } = nowOnGrid(new Date(now));
+  useEffect(() => {
+    if (!board?.id || board.id === swapBoardId) return;
+    setSwapping(true);
+    const t = setTimeout(() => {
+      setSwapBoardId(board.id);
+      setSwapping(false);
+    }, 140);
+    return () => clearTimeout(t);
+  }, [board?.id, swapBoardId]);
 
-  const onGestureResult = (result) => {
-    switch (result.type) {
-      case 'open-create':
-        session.openCreate(result.draft);
-        break;
-      case 'open-edit':
-        session.openEdit(result.id);
-        break;
-      case 'patch':
-        actions.updateEvent(result.id, result.patch);
-        break;
-      case 'noop':
-        break;
-      default: {
-        const _exhaustive = result.type;
-        void _exhaustive;
-        break;
-      }
-    }
-  };
+  const readOnly = !canEdit;
+
+  const myMembership = useMemo(() => {
+    if (!board || !user) return null;
+    return (board.members || []).find((m) => (m.user?.id || m.user) === user.id) || null;
+  }, [board, user]);
 
   const addNew = () => {
+    if (readOnly) return;
     session.openCreate({
       day: todayDow,
       start: 720,
@@ -114,6 +136,13 @@ export function Planner() {
 
   return (
     <div {...stylex.props(planner.app)}>
+      {myRole === 'viewer' && !isOwner && (
+        <div {...stylex.props(planner.banner)}>
+          <span {...stylex.props(planner.bannerStrong)}>보기 전용</span>
+          <span>이 시간표는 보기만 할 수 있어요</span>
+        </div>
+      )}
+
       <header {...stylex.props(planner.top)}>
         <h1 {...stylex.props(planner.h1)}>
           주간 계획표
@@ -139,32 +168,17 @@ export function Planner() {
           </span>
         </div>
 
-        <nav {...stylex.props(planner.tabs)} aria-label="시간표 목록">
-          {boards.map((b) => (
-            <button
-              key={b.id}
-              {...stylex.props(planner.tab, b.id === board.id && planner.tabOn)}
-              data-active-tab={b.id === board.id ? 'true' : undefined}
-              aria-current={b.id === board.id ? 'true' : 'false'}
-              title={b.id === board.id ? '시간표 설정' : b.name}
-              onClick={(e) =>
-                b.id === board.id ? openMenu('board', e) : setActiveId(b.id)
-              }
-            >
-              <span {...stylex.props(planner.tabName)}>{b.name || '시간표'}</span>
-              {b.id === board.id && <ChevronDown size={11} strokeWidth={2} />}
-            </button>
-          ))}
-          <button
-            {...stylex.props(planner.tadd)}
-            aria-label="새 시간표 추가"
-            onClick={actions.addBoard}
-          >
-            <Plus size={13} strokeWidth={2} />
-          </button>
-        </nav>
+        <BoardTabs
+          boards={boards}
+          activeId={board.id}
+          canAdd={isOwner}
+          onSelect={setActiveId}
+          onOpenActive={(e) => openMenu('board', e)}
+          onAdd={lifecycle.addBoard}
+        />
 
         <div {...stylex.props(planner.hbtns)}>
+          <PresenceAvatars peers={presence.peers} />
           <button
             {...stylex.props(planner.userchip)}
             type="button"
@@ -174,6 +188,22 @@ export function Planner() {
           >
             <span {...stylex.props(planner.chipText)}>{user.email || '계정'}</span>
           </button>
+          <button
+            {...stylex.props(planner.ibtn)}
+            aria-label="보기 설정"
+            onClick={(e) => openMenu('view', e, 'right')}
+          >
+            <Eye size={15} strokeWidth={1.75} />
+          </button>
+          {(isOwner || myMembership) && (
+            <button
+              {...stylex.props(planner.ibtn)}
+              aria-label="공유"
+              onClick={(e) => openMenu('share', e, 'right')}
+            >
+              <Share2 size={15} strokeWidth={1.75} />
+            </button>
+          )}
           <button
             {...stylex.props(planner.ibtn)}
             aria-label={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
@@ -199,22 +229,27 @@ export function Planner() {
             <Printer size={14} strokeWidth={1.75} />
             <span {...stylex.props(planner.btnLabelHide)}>인쇄</span>
           </button>
-          <button {...stylex.props(planner.btn, planner.btnPrimary)} onClick={addNew}>
-            <Plus size={14} strokeWidth={2} />새 일정
-          </button>
+          {!readOnly && (
+            <button {...stylex.props(planner.btn, planner.btnPrimary)} onClick={addNew}>
+              <Plus size={14} strokeWidth={2} />새 일정
+            </button>
+          )}
         </div>
       </header>
 
-      <WeekGrid
+      <PlannerSurface
         boardId={board.id}
         events={events}
+        session={session}
+        views={views}
+        presence={presence}
+        readOnly={readOnly}
+        swapping={swapping}
+        updateEvent={eventsApi.updateEvent}
+        note={note}
         todayDow={todayDow}
         nowMin={nowMin}
         nowDay={nowDay}
-        editing={session.editing}
-        onOpenEdit={session.openEdit}
-        onGestureResult={onGestureResult}
-        gestureBlocked={Boolean(session.editing)}
       />
 
       {menu && (
@@ -223,16 +258,21 @@ export function Planner() {
           <div
             {...stylex.props(menus.pop)}
             role="menu"
-            style={{ left: `${menu.x}px`, top: `${menu.y}px` }}
+            style={{
+              left: `${menu.x}px`,
+              top: `${menu.y}px`,
+              width: menu.kind === 'share' || menu.kind === 'view' ? 260 : undefined,
+            }}
           >
             {menu.kind === 'board' ? (
               <BoardMenu
                 board={board}
                 solo={boards.length < 2}
-                onCommit={actions.commitBoard}
-                onDup={actions.duplicateBoard}
-                onClear={actions.clearBoard}
-                onDelete={actions.deleteBoard}
+                canEditMeta={isOwner}
+                onCommit={lifecycle.commitBoard}
+                onDup={lifecycle.duplicateBoard}
+                onClear={lifecycle.clearBoard}
+                onDelete={lifecycle.deleteBoard}
               />
             ) : menu.kind === 'user' ? (
               <UserMenu
@@ -242,38 +282,50 @@ export function Planner() {
                   db.auth.signOut();
                 }}
               />
+            ) : menu.kind === 'share' ? (
+              <SharePanel
+                board={board}
+                isOwner={isOwner}
+                user={user}
+                refreshToken={auth.user?.refresh_token}
+                myMembershipId={myMembership?.id}
+                onEnableShare={share.enableShare}
+                onDisableShare={share.disableShare}
+                onRotateShare={async () => {
+                  const url = await share.rotateShare();
+                  if (url) {
+                    try {
+                      await navigator.clipboard.writeText(url);
+                    } catch {
+                      /* ignore */
+                    }
+                  }
+                }}
+                onCopyLink={share.copyShareLink}
+                onInvite={share.inviteMember}
+                onUpdateRole={share.updateMemberRole}
+                onRemoveMember={share.removeMember}
+                onLeave={share.leaveBoard}
+              />
+            ) : menu.kind === 'view' ? (
+              <ViewControls views={views} />
             ) : (
-              <MoreMenu onExport={actions.doExport} onImport={actions.askImport} />
+              <MoreMenu
+                onExport={lifecycle.doExport}
+                onImport={isOwner ? lifecycle.askImport : null}
+              />
             )}
           </div>
         </>
-      )}
-
-      {note && (
-        <div key={note.key} {...stylex.props(menus.toast)} role="status">
-          {note.msg}
-        </div>
       )}
 
       <input
         type="file"
         accept=".json,application/json"
         style={{ display: 'none' }}
-        ref={actions.fileRef}
-        onChange={actions.onImportFile}
+        ref={lifecycle.fileRef}
+        onChange={lifecycle.onImportFile}
       />
-
-      {session.editing && (
-        <Editor
-          key={session.editing.mode + ':' + (session.editing.id || 'new')}
-          draft={session.editing.draft}
-          isNew={session.editing.mode === 'create'}
-          closing={session.editing.closing}
-          onSave={session.save}
-          onCancel={session.cancel}
-          onDelete={session.deleteEvent}
-        />
-      )}
     </div>
   );
 }

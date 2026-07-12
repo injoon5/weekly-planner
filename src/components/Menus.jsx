@@ -11,12 +11,14 @@ export function MoreMenu({ onExport, onImport }) {
         </span>
         <span {...stylex.props(menus.miLabel)}>JSON 내보내기</span>
       </button>
-      <button {...stylex.props(menus.mi)} onClick={onImport}>
-        <span {...stylex.props(menus.miIconWrap)}>
-          <Upload size={14} strokeWidth={1.75} />
-        </span>
-        <span {...stylex.props(menus.miLabel)}>JSON 가져오기</span>
-      </button>
+      {onImport && (
+        <button {...stylex.props(menus.mi)} onClick={onImport}>
+          <span {...stylex.props(menus.miIconWrap)}>
+            <Upload size={14} strokeWidth={1.75} />
+          </span>
+          <span {...stylex.props(menus.miLabel)}>JSON 가져오기</span>
+        </button>
+      )}
       <div {...stylex.props(menus.mdiv)} />
       <div {...stylex.props(menus.mcap, menus.hintFine)}>
         빈 칸을 클릭하거나 드래그해 일정을 만들고, 블록을 끌어 옮기거나 위·아래 가장자리로 길이를 조절할 수

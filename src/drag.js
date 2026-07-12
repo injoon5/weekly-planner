@@ -5,21 +5,35 @@ import { clamp, DAY_MIN, SLOT_MIN, SLOTS } from './time.js';
  * DOM capture / listeners stay in the caller; this only maps pointer → draft / commit.
  */
 
-export function locatePointer(point, bodyRect, gutWidth) {
-  const colW = (bodyRect.width - gutWidth) / 7;
+const DEFAULT_DAYS = [0, 1, 2, 3, 4, 5, 6];
+
+export function locatePointer(point, bodyRect, gutWidth, days = DEFAULT_DAYS) {
+  const n = days.length || 7;
+  const colW = (bodyRect.width - gutWidth) / n;
+  const col = clamp(Math.floor((point.x - bodyRect.left - gutWidth) / colW), 0, n - 1);
   const slotH = bodyRect.height / SLOTS;
   return {
     slotF: (point.y - bodyRect.top) / slotH,
-    day: clamp(Math.floor((point.x - bodyRect.left - gutWidth) / colW), 0, 6),
+    col,
+    day: days[col] ?? col,
   };
 }
 
 function sameDraft(a, b) {
-  return a && b && a.day === b.day && a.start === b.start && a.dur === b.dur && a.kind === b.kind && a.id === b.id;
+  return (
+    a &&
+    b &&
+    a.day === b.day &&
+    a.start === b.start &&
+    a.dur === b.dur &&
+    a.kind === b.kind &&
+    a.id === b.id
+  );
 }
 
 export function draftFromGesture(session, point, bodyRect, gutWidth) {
-  const l = locatePointer(point, bodyRect, gutWidth);
+  const days = session.days || DEFAULT_DAYS;
+  const l = locatePointer(point, bodyRect, gutWidth, days);
 
   if (session.mode === 'create') {
     const b = clamp(Math.floor(l.slotF), 0, SLOTS - 1);
@@ -36,7 +50,8 @@ export function draftFromGesture(session, point, bodyRect, gutWidth) {
 
   const ev = session.payload.ev;
   if (session.mode === 'move') {
-    const day = clamp(l.day - session.offDay, 0, 6);
+    const col = clamp(l.col - session.offCol, 0, days.length - 1);
+    const day = days[col];
     const start =
       clamp(Math.floor(l.slotF) - session.offSlot, 0, SLOTS - ev.dur / SLOT_MIN) * SLOT_MIN;
     return { kind: 'ev', id: ev.id, day, start, dur: ev.dur };
@@ -56,11 +71,13 @@ export function draftFromGesture(session, point, bodyRect, gutWidth) {
 
 export function activateOffsets(session, point, bodyRect, gutWidth) {
   if (session.mode !== 'move') return session;
-  const l = locatePointer(point, bodyRect, gutWidth);
+  const days = session.days || DEFAULT_DAYS;
+  const l = locatePointer(point, bodyRect, gutWidth, days);
+  const evCol = days.indexOf(session.payload.ev.day);
   return {
     ...session,
     offSlot: Math.floor(l.slotF) - session.payload.ev.start / SLOT_MIN,
-    offDay: l.day - session.payload.ev.day,
+    offCol: l.col - (evCol < 0 ? 0 : evCol),
   };
 }
 
@@ -125,6 +142,7 @@ export function beginPointerGesture(e, {
   gutEl,
   hrowEl,
   paneEl,
+  days = DEFAULT_DAYS,
   onDraft,
   onResult,
 }) {
@@ -132,6 +150,7 @@ export function beginPointerGesture(e, {
   let session = {
     mode,
     payload,
+    days,
     isTouch,
     ptr: e.pointerId,
     phase: 'pending',
@@ -140,7 +159,7 @@ export function beginPointerGesture(e, {
     last: { x: e.clientX, y: e.clientY },
     draft: null,
     offSlot: 0,
-    offDay: 0,
+    offCol: 0,
     tmr: 0,
     raf: 0,
   };

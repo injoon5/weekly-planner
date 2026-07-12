@@ -12,6 +12,7 @@ const schema = i.schema({
       to: i.string().optional(),
       createdAt: i.number().indexed(),
       sortOrder: i.number().indexed(),
+      colorLabels: i.string().optional(),
     }),
     events: i.entity({
       day: i.number().indexed(),
@@ -24,6 +25,26 @@ const schema = i.schema({
     }),
     settings: i.entity({
       theme: i.string().optional(),
+    }),
+    shares: i.entity({
+      token: i.string().unique().indexed(),
+      secret: i.string().indexed(),
+      editSecret: i.string().indexed().optional(),
+      mode: i.string(),
+      role: i.string(),
+      enabled: i.boolean(),
+      createdAt: i.number().indexed(),
+    }),
+    members: i.entity({
+      role: i.string().indexed(),
+      email: i.string().optional(),
+      createdAt: i.number().indexed(),
+    }),
+    boardPrefs: i.entity({
+      hiddenColors: i.string().optional(),
+      hideWeekend: i.boolean().optional(),
+      compact: i.boolean().optional(),
+      showMemos: i.boolean().optional(),
     }),
   },
   links: {
@@ -56,6 +77,74 @@ const schema = i.schema({
         onDelete: 'cascade',
       },
       reverse: { on: '$users', has: 'one', label: 'settings' },
+    },
+    shareBoard: {
+      forward: {
+        on: 'shares',
+        has: 'one',
+        label: 'board',
+        required: true,
+        onDelete: 'cascade',
+      },
+      reverse: { on: 'boards', has: 'many', label: 'shares' },
+    },
+    memberBoard: {
+      forward: {
+        on: 'members',
+        has: 'one',
+        label: 'board',
+        required: true,
+        onDelete: 'cascade',
+      },
+      reverse: { on: 'boards', has: 'many', label: 'members' },
+    },
+    memberUser: {
+      forward: {
+        on: 'members',
+        has: 'one',
+        label: 'user',
+        required: true,
+        onDelete: 'cascade',
+      },
+      reverse: { on: '$users', has: 'many', label: 'memberships' },
+    },
+    prefsBoard: {
+      forward: {
+        on: 'boardPrefs',
+        has: 'one',
+        label: 'board',
+        required: true,
+        onDelete: 'cascade',
+      },
+      reverse: { on: 'boards', has: 'many', label: 'prefs' },
+    },
+    prefsUser: {
+      forward: {
+        on: 'boardPrefs',
+        has: 'one',
+        label: 'user',
+        required: true,
+        onDelete: 'cascade',
+      },
+      reverse: { on: '$users', has: 'many', label: 'boardPrefs' },
+    },
+    boardEditors: {
+      forward: {
+        on: 'boards',
+        has: 'many',
+        label: 'editors',
+      },
+      reverse: { on: '$users', has: 'many', label: 'editableBoards' },
+    },
+  },
+  rooms: {
+    board: {
+      presence: i.entity({
+        name: i.string().optional(),
+        email: i.string().optional(),
+        color: i.string().optional(),
+        role: i.string().optional(),
+      }),
     },
   },
 });

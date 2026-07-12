@@ -2,18 +2,14 @@ import { useRef } from 'react';
 import {
   db,
   boardTx,
-  createEventTx,
-  patchEventTx,
   patchBoardTx,
 } from '../db.js';
 import { normBoards } from '../legacy.js';
-import {
-  nextBoardSortOrder,
-  nextBoardName,
-} from '../models.js';
-import { pad } from '../time.js';
+import { nextBoardSortOrder, nextBoardName } from '../models.js';
+import { defaultBoardRange, pad } from '../time.js';
 
-export function useBoardActions({
+/** Owner board CRUD + import/export. */
+export function useBoardLifecycle({
   user,
   boards,
   board,
@@ -21,28 +17,17 @@ export function useBoardActions({
   setActiveId,
   closeMenu,
   toast,
+  isOwner = true,
 }) {
   const fileRef = useRef(null);
 
-  const updateEvent = (eid, patch) => {
-    const tx = patchEventTx(eid, patch);
-    if (tx) db.transact(tx);
-  };
-
-  const removeEvent = (eid) => db.transact(db.tx.events[eid].delete());
-
-  const createEvent = (fields) => {
-    if (!board) return null;
-    const { eid, tx } = createEventTx(board.id, fields);
-    db.transact(tx);
-    return eid;
-  };
-
   const addBoard = () => {
+    if (!isOwner || !user) return;
     const sortOrder = nextBoardSortOrder(boards);
+    const range = defaultBoardRange();
     const { bid, txs } = boardTx(
       user.id,
-      { name: nextBoardName(boards), from: '', to: '', events: [] },
+      { name: nextBoardName(boards), from: range.from, to: range.to, events: [] },
       sortOrder,
     );
     db.transact(txs);
@@ -50,13 +35,13 @@ export function useBoardActions({
   };
 
   const commitBoard = (patch) => {
-    if (!board) return;
+    if (!isOwner || !board) return;
     const tx = patchBoardTx(board.id, patch);
     if (tx) db.transact(tx);
   };
 
   const duplicateBoard = () => {
-    if (!board) return;
+    if (!isOwner || !user || !board) return;
     const sortOrder = nextBoardSortOrder(boards);
     const { bid, txs } = boardTx(
       user.id,
@@ -65,6 +50,7 @@ export function useBoardActions({
         from: board.from || '',
         to: board.to || '',
         events,
+        colorLabels: board.colorLabels || '',
       },
       sortOrder,
     );
@@ -74,14 +60,14 @@ export function useBoardActions({
   };
 
   const clearBoard = () => {
-    if (!board) return;
+    if (!isOwner || !board) return;
     const txs = events.map((e) => db.tx.events[e.id].delete());
     if (txs.length) db.transact(txs);
     closeMenu();
   };
 
   const deleteBoard = () => {
-    if (!board || boards.length <= 1) return;
+    if (!isOwner || !board || boards.length <= 1) return;
     const i = boards.findIndex((b) => b.id === board.id);
     const next = boards.filter((b) => b.id !== board.id);
     db.transact(db.tx.boards[board.id].delete());
@@ -120,11 +106,13 @@ export function useBoardActions({
   };
 
   const askImport = () => {
+    if (!isOwner) return;
     closeMenu();
     fileRef.current?.click();
   };
 
   const onImportFile = (e) => {
+    if (!isOwner || !user) return;
     const f = e.target.files && e.target.files[0];
     e.target.value = '';
     if (!f) return;
@@ -143,10 +131,19 @@ export function useBoardActions({
           return;
         }
         const base = nextBoardSortOrder(boards);
+        const range = defaultBoardRange();
         const txs = [];
         let firstId = null;
         bs.forEach((b, i) => {
-          const { bid, txs: bt } = boardTx(user.id, b, base + i);
+          const { bid, txs: bt } = boardTx(
+            user.id,
+            {
+              ...b,
+              from: b.from || range.from,
+              to: b.to || range.to,
+            },
+            base + i,
+          );
           if (!firstId) firstId = bid;
           txs.push(...bt);
         });
@@ -163,9 +160,6 @@ export function useBoardActions({
 
   return {
     fileRef,
-    updateEvent,
-    removeEvent,
-    createEvent,
     addBoard,
     commitBoard,
     duplicateBoard,
