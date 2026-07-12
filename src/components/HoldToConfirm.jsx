@@ -41,8 +41,21 @@ export function HoldToConfirm({
     setProgress(0);
   };
 
-  const releaseHold = () => {
+  const isInside = (e) => {
+    const el = e.currentTarget;
+    if (!el?.getBoundingClientRect) return true;
+    const r = el.getBoundingClientRect();
+    const x = e.clientX;
+    const y = e.clientY;
+    return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+  };
+
+  const releaseHold = (e) => {
     if (!holdingRef.current) return;
+    if (e && !isInside(e)) {
+      abortHold();
+      return;
+    }
     holdingRef.current = false;
     clearTick();
     const armed = armedRef.current;
