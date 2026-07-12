@@ -6,8 +6,7 @@ const HOLD_MS = 900;
 const EASE_BACK = 'clip-path 180ms cubic-bezier(0.2, 0, 0, 1)';
 
 /**
- * Press-and-hold confirm. Red fill grows L→R via clip-path; release cancels.
- * On complete, fill stays full until pointer lifts.
+ * Press-and-hold confirm. Fill grows L→R; confirm only on release once full.
  */
 export function HoldToConfirm({
   onConfirm,
@@ -21,8 +20,10 @@ export function HoldToConfirm({
   const [easingOut, setEasingOut] = useState(false);
   const rafRef = useRef(0);
   const startRef = useRef(0);
-  const doneRef = useRef(false);
+  const armedRef = useRef(false);
   const holdingRef = useRef(false);
+  const confirmRef = useRef(onConfirm);
+  confirmRef.current = onConfirm;
 
   useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
 
@@ -31,14 +32,25 @@ export function HoldToConfirm({
     rafRef.current = 0;
   };
 
-  const endHold = () => {
-    if (!holdingRef.current && !doneRef.current) return;
+  const abortHold = () => {
+    if (!holdingRef.current) return;
+    holdingRef.current = false;
+    armedRef.current = false;
+    clearTick();
+    setEasingOut(true);
+    setProgress(0);
+  };
+
+  const releaseHold = () => {
+    if (!holdingRef.current) return;
     holdingRef.current = false;
     clearTick();
-    if (doneRef.current) {
-      doneRef.current = false;
+    const armed = armedRef.current;
+    armedRef.current = false;
+    if (armed) {
       setProgress(0);
       setEasingOut(false);
+      confirmRef.current?.();
       return;
     }
     setEasingOut(true);
@@ -50,8 +62,7 @@ export function HoldToConfirm({
     const p = Math.min(1, (now - startRef.current) / duration);
     setProgress(p);
     if (p >= 1) {
-      holdingRef.current = false;
-      doneRef.current = true;
+      armedRef.current = true;
       clearTick();
       setProgress(1);
       try {
@@ -59,18 +70,17 @@ export function HoldToConfirm({
       } catch {
         /* ignore */
       }
-      onConfirm();
       return;
     }
     rafRef.current = requestAnimationFrame(tick);
   };
 
   const startHold = (e) => {
-    if (disabled || holdingRef.current || doneRef.current) return;
+    if (disabled || holdingRef.current) return;
     if (e.button != null && e.button !== 0) return;
     e.preventDefault();
     holdingRef.current = true;
-    doneRef.current = false;
+    armedRef.current = false;
     setEasingOut(false);
     startRef.current = performance.now();
     setProgress(0);
@@ -94,7 +104,7 @@ export function HoldToConfirm({
 
   const onKeyUp = (e) => {
     if (e.key !== ' ' && e.key !== 'Enter') return;
-    endHold();
+    releaseHold();
   };
 
   const clipped = `inset(0 ${(1 - progress) * 100}% 0 0)`;
@@ -106,9 +116,8 @@ export function HoldToConfirm({
       disabled={disabled}
       title={title}
       onPointerDown={startHold}
-      onPointerUp={endHold}
-      onPointerCancel={endHold}
-      onLostPointerCapture={endHold}
+      onPointerUp={releaseHold}
+      onPointerCancel={abortHold}
       onKeyDown={onKeyDown}
       onKeyUp={onKeyUp}
       onContextMenu={(e) => e.preventDefault()}
