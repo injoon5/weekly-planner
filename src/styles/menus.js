@@ -1,26 +1,17 @@
 import * as stylex from '@stylexjs/stylex';
 import { colors } from '../tokens.stylex.js';
 
-const popIn = stylex.keyframes({
-  from: { opacity: 0, transform: 'translateY(-4px) scale(.98)' },
-});
-
-const toastIn = stylex.keyframes({
-  from: { opacity: 0, transform: 'translate(-50%, 8px)' },
-});
-
 export const menus = stylex.create({
+  // Invisible Popover.Backdrop: swallows the outside press so a click that
+  // dismisses a menu can't also activate whatever sits underneath.
   mscrim: {
     position: 'fixed',
     inset: 0,
     zIndex: 89,
   },
 
+  // Popover.Popup chrome; positioning + enter/exit motion live in base-ui.css.
   pop: {
-    position: 'fixed',
-    zIndex: 90,
-    width: '232px',
-    maxWidth: 'calc(100vw - 16px)',
     boxSizing: 'border-box',
     overflowY: 'auto',
     overscrollBehavior: 'contain',
@@ -29,10 +20,7 @@ export const menus = stylex.create({
     borderRadius: '12px',
     padding: '6px',
     boxShadow: `0 0 0 1px ${colors.edge}, 0 4px 10px rgba(20,20,26,.08), 0 16px 40px -12px rgba(20,20,26,.30)`,
-    transformOrigin: 'top',
-    animationName: popIn,
-    animationDuration: '.16s',
-    animationTimingFunction: 'cubic-bezier(.2,0,0,1)',
+    outline: 'none',
   },
 
   pin: {
@@ -284,38 +272,30 @@ export const menus = stylex.create({
     flex: 1,
   },
 
-  srOnly: {
-    position: 'absolute',
-    width: '1px',
-    height: '1px',
-    margin: '-1px',
-    padding: 0,
-    overflow: 'hidden',
-    clip: 'rect(0 0 0 0)',
-    whiteSpace: 'nowrap',
-    borderWidth: 0,
-  },
-
+  // Switch.Root doubles as the track.
   switchTrack: {
     boxSizing: 'border-box',
     flexShrink: 0,
     width: '30px',
     height: '18px',
     padding: '2px',
+    borderWidth: 0,
     borderRadius: '99px',
     display: 'inline-flex',
     backgroundColor: colors.edgeH,
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    outline: 'none',
     transitionProperty: 'background-color, box-shadow',
     transitionDuration: '.18s',
     transitionTimingFunction: 'ease',
+    ':focus-visible': {
+      boxShadow: `0 0 0 2px ${colors.paper}, 0 0 0 3.5px ${colors.ink}`,
+    },
   },
 
   switchTrackOn: {
     backgroundColor: colors.ink,
-  },
-
-  switchTrackFocus: {
-    boxShadow: `0 0 0 2px ${colors.paper}, 0 0 0 3.5px ${colors.ink}`,
   },
 
   switchThumb: {
@@ -389,26 +369,4 @@ export const menus = stylex.create({
     },
   },
 
-  toast: {
-    position: 'fixed',
-    left: '50%',
-    bottom: 'calc(20px + env(safe-area-inset-bottom))',
-    transform: 'translateX(-50%)',
-    zIndex: 120,
-    backgroundColor: colors.chipBg,
-    color: colors.chipFg,
-    fontSize: '12px',
-    fontWeight: 550,
-    padding: '8px 14px',
-    borderRadius: '99px',
-    whiteSpace: 'nowrap',
-    boxShadow: '0 8px 24px -6px rgba(0,0,0,.35)',
-    animationName: toastIn,
-    animationDuration: '.22s',
-    animationTimingFunction: 'cubic-bezier(.2,0,0,1)',
-    pointerEvents: 'none',
-    '@media print': {
-      display: 'none',
-    },
-  },
 });

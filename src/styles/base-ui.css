@@ -1,0 +1,168 @@
+/* Motion + fixed positioning for Base UI popups. StyleX cannot target Base UI's
+   lifecycle data attributes ([data-starting-style]/[data-ending-style]), so every
+   transform/opacity transition lives here; colors, spacing and shadows stay in
+   StyleX. Keep the two from overlapping properties on the same element. */
+
+/* ---- Popovers + select popups ------------------------------------------- */
+
+[data-ui-pop] {
+  transform-origin: var(--transform-origin);
+  max-height: var(--available-height);
+  transition:
+    opacity 0.16s cubic-bezier(0.2, 0, 0, 1),
+    transform 0.16s cubic-bezier(0.2, 0, 0, 1);
+}
+
+[data-ui-pop][data-starting-style],
+[data-ui-pop][data-ending-style] {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+}
+
+/* Item highlight is DOM-driven (no React re-render), so it must be plain CSS.
+   Values mirror colors.hov light/dark. */
+[data-ui-select-item][data-highlighted] {
+  background-color: rgba(27, 27, 32, 0.06);
+}
+
+/* Trigger keeps its engaged field color while its popup is open
+   (mirrors colors.fieldH light/dark). */
+[data-ui-select-trigger][data-popup-open] {
+  background-color: #eeeef1;
+}
+
+@media screen {
+  html[data-theme='dark'] [data-ui-select-item][data-highlighted] {
+    background-color: rgba(235, 235, 245, 0.09);
+  }
+
+  html[data-theme='dark'] [data-ui-select-trigger][data-popup-open] {
+    background-color: #2c2c34;
+  }
+}
+
+/* ---- Editor dialog: centered card on desktop, bottom sheet on mobile ---- */
+
+[data-ui-dialog-backdrop] {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  transition: opacity 0.18s ease;
+}
+
+[data-ui-dialog-backdrop][data-starting-style],
+[data-ui-dialog-backdrop][data-ending-style] {
+  opacity: 0;
+}
+
+[data-ui-dialog] {
+  position: fixed;
+  z-index: 101;
+  left: 50%;
+  top: 50%;
+  width: min(384px, calc(100vw - 32px));
+  transform: translate(-50%, -50%);
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease;
+}
+
+/* Slower, springier enter; the base rule above times the exit. */
+[data-ui-dialog][data-open] {
+  transition-duration: 0.24s;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+[data-ui-dialog][data-starting-style],
+[data-ui-dialog][data-ending-style] {
+  opacity: 0;
+  transform: translate(-50%, calc(-50% + 10px)) scale(0.97);
+}
+
+@media (max-width: 560px) {
+  [data-ui-dialog] {
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    transform: none;
+    transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  [data-ui-dialog][data-open] {
+    transition-duration: 0.34s;
+  }
+
+  [data-ui-dialog][data-starting-style],
+  [data-ui-dialog][data-ending-style] {
+    opacity: 1;
+    transform: translateY(102%);
+  }
+}
+
+/* ---- Toast pill ---------------------------------------------------------- */
+
+[data-ui-toast-viewport] {
+  position: fixed;
+  left: 50%;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  width: 0;
+  height: 0;
+  z-index: 120;
+}
+
+[data-ui-toast] {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  white-space: nowrap;
+  transform: translateX(calc(-50% + var(--toast-swipe-movement-x, 0px)))
+    translateY(var(--toast-swipe-movement-y, 0px));
+  transition:
+    transform 0.22s cubic-bezier(0.2, 0, 0, 1),
+    opacity 0.22s ease;
+}
+
+[data-ui-toast][data-starting-style] {
+  opacity: 0;
+  transform: translateX(-50%) translateY(8px);
+}
+
+[data-ui-toast][data-ending-style] {
+  opacity: 0;
+  transform: translateX(calc(-50% + var(--toast-swipe-movement-x, 0px)))
+    translateY(calc(var(--toast-swipe-movement-y, 0px) + 8px));
+}
+
+/* ---- Editor color swatches: dot scales on hover/press -------------------- */
+
+@media (hover: hover) {
+  [data-ui-swatch]:hover [data-ui-swatch-dot] {
+    transform: scale(1.12);
+  }
+}
+
+[data-ui-swatch]:active [data-ui-swatch-dot] {
+  transform: scale(0.96);
+}
+
+/* ---- Global -------------------------------------------------------------- */
+
+@media print {
+  [data-ui-pop],
+  [data-ui-dialog],
+  [data-ui-dialog-backdrop],
+  [data-ui-toast-viewport] {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ui-pop],
+  [data-ui-dialog],
+  [data-ui-dialog-backdrop],
+  [data-ui-toast] {
+    transition-duration: 0ms !important;
+  }
+}

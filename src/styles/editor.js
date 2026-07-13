@@ -1,45 +1,17 @@
 import * as stylex from '@stylexjs/stylex';
 import { colors } from '../tokens.stylex.js';
 
-const scrimIn = stylex.keyframes({
-  from: { opacity: 0 },
-});
-
-const dlgIn = stylex.keyframes({
-  from: { opacity: 0, transform: 'translateY(10px) scale(.97)' },
-});
-
-const sheetIn = stylex.keyframes({
-  from: { transform: 'translateY(102%)' },
-});
-
 export const editor = stylex.create({
+  // Dialog.Backdrop paint; fixed positioning + fade live in base-ui.css.
   scrim: {
-    position: 'fixed',
-    inset: 0,
-    zIndex: 100,
     backgroundColor: colors.scrim,
     WebkitBackdropFilter: 'blur(4px)',
     backdropFilter: 'blur(4px)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '16px',
-    animationName: scrimIn,
-    animationDuration: '.2s',
-    animationTimingFunction: 'ease',
-    transitionProperty: 'opacity',
-    transitionDuration: '.16s',
-    transitionTimingFunction: 'ease',
   },
 
-  scrimOut: {
-    opacity: 0,
-    pointerEvents: 'none',
-  },
-
+  // Dialog.Popup chrome; centering/sheet position + motion live in base-ui.css.
   dlg: {
-    width: 'min(384px, 100%)',
+    boxSizing: 'border-box',
     maxHeight: 'calc(100dvh - 32px)',
     overflow: 'auto',
     overscrollBehavior: 'contain',
@@ -47,40 +19,13 @@ export const editor = stylex.create({
     borderRadius: '16px',
     padding: '14px 16px',
     boxShadow: `0 0 0 1px ${colors.edge}, 0 4px 12px rgba(20,20,26,.08), 0 28px 60px -16px rgba(20,20,26,.40)`,
-    animationName: dlgIn,
-    animationDuration: '.24s',
-    animationTimingFunction: 'cubic-bezier(.2,0,0,1)',
-    transitionProperty: 'transform, opacity',
-    transitionDuration: '.16s',
-    transitionTimingFunction: 'ease',
+    outline: 'none',
     '@media (max-width: 560px)': {
-      width: '100%',
       maxHeight: 'calc(100dvh - 48px)',
       borderRadius: '18px 18px 0 0',
       paddingBottom: 'calc(14px + env(safe-area-inset-bottom))',
       paddingTop: '16px',
       paddingInline: '18px',
-      animationName: sheetIn,
-      animationDuration: '.34s',
-      animationTimingFunction: 'cubic-bezier(.32,.72,0,1)',
-      transitionDuration: '.22s',
-      transitionTimingFunction: 'cubic-bezier(.32,.72,0,1)',
-    },
-  },
-
-  dlgOut: {
-    opacity: 0,
-    transform: 'translateY(8px) scale(.98)',
-    '@media (max-width: 560px)': {
-      transform: 'translateY(100%)',
-      opacity: 1,
-    },
-  },
-
-  scrimBottom: {
-    '@media (max-width: 560px)': {
-      alignItems: 'flex-end',
-      padding: 0,
     },
   },
 
@@ -93,6 +38,7 @@ export const editor = stylex.create({
   },
 
   dttl: {
+    margin: 0,
     fontSize: '17px',
     fontWeight: 650,
     color: colors.ink,
@@ -172,17 +118,6 @@ export const editor = stylex.create({
     marginTop: '2px',
   },
 
-  inptSelect: {
-    appearance: 'none',
-    WebkitAppearance: 'none',
-    fontVariantNumeric: 'tabular-nums',
-    paddingRight: '28px',
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M2 3.5 5 6.5 8 3.5' fill='none' stroke='%238A8A92' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'right 10px center',
-    cursor: 'pointer',
-  },
-
   inptTextarea: {
     resize: 'none',
     lineHeight: 1.5,
@@ -219,7 +154,15 @@ export const editor = stylex.create({
     justifyContent: 'space-between',
   },
 
+  // Radio.Root renders a <span>, so centering + focus ring are explicit.
   sw: {
+    boxSizing: 'border-box',
+    alignItems: 'center',
+    justifyContent: 'center',
+    outline: 'none',
+    ':focus-visible': {
+      boxShadow: `0 0 0 2px ${colors.paper}, 0 0 0 4px ${colors.ink}`,
+    },
     width: {
       default: '36px',
       // 8 swatches × 36px would clip inside the sheet on 320px-class screens.
@@ -258,14 +201,6 @@ export const editor = stylex.create({
     transitionTimingFunction: 'cubic-bezier(.2,0,0,1)',
   },
 
-  swDotHov: {
-    transform: 'scale(1.12)',
-  },
-
-  swDotActive: {
-    transform: 'scale(.96)',
-  },
-
   swDotOn: {
     boxShadow: `0 0 0 2px ${colors.paper}, 0 0 0 3.5px var(--ev-accent)`,
   },
@@ -275,9 +210,14 @@ export const editor = stylex.create({
     justifyContent: 'space-between',
   },
 
+  // Radio.Root renders a <span>, so centering + focus ring are explicit.
   dayb: {
+    boxSizing: 'border-box',
     width: '34px',
     height: '34px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 0,
     borderRadius: '99px',
     backgroundColor: 'transparent',
@@ -286,6 +226,8 @@ export const editor = stylex.create({
     color: colors.muted,
     cursor: 'pointer',
     fontFamily: 'inherit',
+    userSelect: 'none',
+    outline: 'none',
     transitionProperty: 'background-color, color, transform',
     transitionDuration: '.15s',
     transitionTimingFunction: 'ease',
@@ -294,6 +236,9 @@ export const editor = stylex.create({
     },
     ':active': {
       transform: 'scale(.96)',
+    },
+    ':focus-visible': {
+      boxShadow: `0 0 0 2px ${colors.paper}, 0 0 0 4px ${colors.ink}`,
     },
     '@media (pointer: coarse)': {
       position: 'relative',
@@ -327,6 +272,15 @@ export const editor = stylex.create({
   timerowSelect: {
     flex: 1,
     minWidth: 0,
+  },
+
+  // Sizes the shared UiSelect trigger up to match the editor's other inputs.
+  timeTrigger: {
+    borderRadius: '9px',
+    paddingBlock: '8px',
+    paddingInline: '11px',
+    fontSize: '13.5px',
+    fontWeight: 500,
   },
 
   arrow: {

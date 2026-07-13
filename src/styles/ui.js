@@ -9,6 +9,8 @@ export const reset = stylex.create({
   body: {
     margin: 0,
     height: '100%',
+    // Base UI: anchors popup backdrops correctly on iOS 26+ Safari.
+    position: 'relative',
     backgroundColor: colors.bg,
     color: colors.ink,
     fontFamily: layout.font,
@@ -26,6 +28,9 @@ export const reset = stylex.create({
   },
   app: {
     height: '100%',
+    // Base UI: keep the app in its own stacking context so portaled popups
+    // (appended to <body>) always paint above page content.
+    isolation: 'isolate',
   },
   boot: {
     minHeight: '100dvh',
@@ -85,32 +90,6 @@ export const ui = stylex.create({
     color: colors.muted,
     ':hover': { backgroundColor: colors.hov },
   },
-  btnDanger: {
-    backgroundColor: 'transparent',
-    color: colors.now,
-    ':hover': { backgroundColor: 'rgba(229,72,77,.10)' },
-  },
-  ibtn: {
-    flexShrink: 0,
-    width: '31px',
-    height: '31px',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 0,
-    borderRadius: '9px',
-    backgroundColor: colors.paper,
-    color: colors.muted,
-    cursor: 'pointer',
-    boxShadow: `inset 0 0 0 1px ${colors.edge}, 0 1px 2px rgba(27,27,32,.05)`,
-    transitionProperty: 'color, box-shadow, transform',
-    transitionDuration: '150ms',
-    ':hover': {
-      color: colors.ink,
-      boxShadow: `inset 0 0 0 1px ${colors.edgeH}, 0 1px 2px rgba(27,27,32,.06)`,
-    },
-    ':active': { transform: 'scale(0.96)' },
-  },
   input: {
     width: '100%',
     boxSizing: 'border-box',
@@ -148,14 +127,5 @@ export const ui = stylex.create({
     fontSize: '12.5px',
     borderRadius: '8px',
     fontVariantNumeric: 'tabular-nums',
-  },
-  select: {
-    appearance: 'none',
-    WebkitAppearance: 'none',
-    paddingRight: '26px',
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M2 3.5 5 6.5 8 3.5' fill='none' stroke='%238A8A92' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'right 8px center',
-    cursor: 'pointer',
   },
 });

@@ -111,6 +111,7 @@ export function Login() {
               }}
             >
               <CodeInputs
+                value={code}
                 disabled={busy}
                 shake={shake}
                 onChange={setCode}

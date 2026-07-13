@@ -14,15 +14,12 @@ import { useBoardLifecycle } from '../hooks/useBoardLifecycle.js';
 import { useBoardPresence } from '../hooks/useBoardPresence.js';
 import { useEditorSession } from '../hooks/useEditorSession.js';
 import { useEventMutations } from '../hooks/useEventMutations.js';
-import { useMenu, menuPopStyle } from '../hooks/useMenu.js';
 import { useShareActions } from '../hooks/useShareActions.js';
 import { useTheme } from '../hooks/useTheme.js';
-import { useToast } from '../hooks/useToast.js';
 import { useViewControls } from '../hooks/useViewControls.js';
 import { useWorkspace } from '../hooks/useWorkspace.js';
 import { fmtRange, fmtRepeat } from '../time.js';
 import { planner } from '../styles/planner.js';
-import { menus } from '../styles/menus.js';
 import { BoardMenu } from './BoardMenu.jsx';
 import { BoardTabs } from './BoardTabs.jsx';
 import { MoreMenu, UserMenu } from './Menus.jsx';
@@ -30,9 +27,11 @@ import { PresenceAvatars } from './PresenceAvatars.jsx';
 import { PlannerSurface, usePlannerClock } from './PlannerSurface.jsx';
 import { SharePanel } from './SharePanel.jsx';
 import { ViewControls } from './ViewControls.jsx';
+import { IconSwap } from './ui/IconSwap.jsx';
+import { MenuPopover } from './ui/MenuPopover.jsx';
+import { toast } from './ui/Toaster.jsx';
 
 export function Planner() {
-  const { note, toast } = useToast();
   const {
     user,
     boards,
@@ -53,8 +52,12 @@ export function Planner() {
 
   const auth = db.useAuth();
   const { theme, toggleTheme } = useTheme(settings);
-  const { menu, openMenu, closeMenu } = useMenu();
   const { nowMin, nowDay, todayDow } = usePlannerClock();
+
+  // Board menu is anchored to the active tab inside BoardTabs, so it runs as a
+  // controlled popover instead of a trigger-based one.
+  const [boardMenuAnchor, setBoardMenuAnchor] = useState(null);
+  const closeBoardMenu = () => setBoardMenuAnchor(null);
 
   const eventsApi = useEventMutations({ board, canEdit });
   const lifecycle = useBoardLifecycle({
@@ -63,7 +66,7 @@ export function Planner() {
     board,
     events,
     setActiveId,
-    closeMenu,
+    closeMenu: closeBoardMenu,
     toast,
     isOwner,
   });
@@ -163,103 +166,67 @@ export function Planner() {
           activeId={board.id}
           canAdd={isOwner}
           onSelect={setActiveId}
-          onOpenActive={(e) => openMenu('board', e)}
+          onOpenActive={(e) => setBoardMenuAnchor(e.currentTarget)}
           onAdd={lifecycle.addBoard}
         />
 
+        <MenuPopover
+          open={Boolean(boardMenuAnchor)}
+          onOpenChange={(open) => {
+            if (!open) closeBoardMenu();
+          }}
+          anchor={boardMenuAnchor}
+          align="start"
+        >
+          <BoardMenu
+            board={board}
+            solo={boards.length < 2}
+            canEditMeta={isOwner}
+            onCommit={lifecycle.commitBoard}
+            onDup={lifecycle.duplicateBoard}
+            onClear={lifecycle.clearBoard}
+            onDelete={lifecycle.deleteBoard}
+          />
+        </MenuPopover>
+
         <div {...stylex.props(planner.hbtns)}>
           <PresenceAvatars peers={presence.peers} />
-          <button
-            {...stylex.props(planner.ibtn)}
-            type="button"
-            title={user.email || '계정'}
-            aria-label="계정 메뉴"
-            onClick={(e) => openMenu('user', e, 'right')}
+
+          <MenuPopover
+            trigger={
+              <button
+                {...stylex.props(planner.ibtn)}
+                type="button"
+                title={user.email || '계정'}
+                aria-label="계정 메뉴"
+              >
+                <CircleUserRound size={15} strokeWidth={1.75} />
+              </button>
+            }
           >
-            <CircleUserRound size={15} strokeWidth={1.75} />
-          </button>
-          <button
-            {...stylex.props(planner.ibtn)}
-            aria-label="보기 설정"
-            onClick={(e) => openMenu('view', e, 'right', 264)}
+            <UserMenu email={user.email} onSignOut={() => db.auth.signOut()} />
+          </MenuPopover>
+
+          <MenuPopover
+            width={264}
+            trigger={
+              <button {...stylex.props(planner.ibtn)} type="button" aria-label="보기 설정">
+                <Eye size={15} strokeWidth={1.75} />
+              </button>
+            }
           >
-            <Eye size={15} strokeWidth={1.75} />
-          </button>
+            <ViewControls views={views} />
+          </MenuPopover>
+
           {(isOwner || myMembership) && (
-            <button
-              {...stylex.props(planner.ibtn)}
-              aria-label="공유"
-              onClick={(e) => openMenu('share', e, 'right', 264)}
+            <MenuPopover
+              width={264}
+              trigger={
+                <button {...stylex.props(planner.ibtn)} type="button" aria-label="공유">
+                  <Share2 size={15} strokeWidth={1.75} />
+                </button>
+              }
             >
-              <Share2 size={15} strokeWidth={1.75} />
-            </button>
-          )}
-          <button
-            {...stylex.props(planner.ibtn)}
-            aria-label={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
-            onClick={toggleTheme}
-          >
-            {theme === 'dark' ? (
-              <Sun size={15} strokeWidth={1.75} />
-            ) : (
-              <Moon size={15} strokeWidth={1.75} />
-            )}
-          </button>
-          <button
-            {...stylex.props(planner.ibtn)}
-            aria-label="더보기"
-            onClick={(e) => openMenu('more', e, 'right')}
-          >
-            <MoreHorizontal size={15} strokeWidth={1.75} />
-          </button>
-          <button
-            {...stylex.props(planner.btn, planner.btnPlain)}
-            onClick={() => window.print()}
-          >
-            <Printer size={14} strokeWidth={1.75} />
-            <span {...stylex.props(planner.btnLabelHide)}>인쇄</span>
-          </button>
-        </div>
-      </header>
-
-      <PlannerSurface
-        boardId={board.id}
-        events={events}
-        session={session}
-        views={views}
-        presence={presence}
-        readOnly={readOnly}
-        swapping={swapping}
-        updateEvent={eventsApi.updateEvent}
-        note={note}
-        todayDow={todayDow}
-        nowMin={nowMin}
-        nowDay={nowDay}
-      />
-
-      {menu && (
-        <>
-          <div {...stylex.props(menus.mscrim)} onPointerDown={closeMenu} />
-          <div {...stylex.props(menus.pop)} role="menu" style={menuPopStyle(menu)}>
-            {menu.kind === 'board' ? (
-              <BoardMenu
-                board={board}
-                solo={boards.length < 2}
-                canEditMeta={isOwner}
-                onCommit={lifecycle.commitBoard}
-                onDup={lifecycle.duplicateBoard}
-                onClear={lifecycle.clearBoard}
-                onDelete={lifecycle.deleteBoard}
-              />
-            ) : menu.kind === 'user' ? (
-              <UserMenu
-                email={user.email}
-                onSignOut={() => {
-                  closeMenu();
-                  db.auth.signOut();
-                }}
-              />
-            ) : menu.kind === 'share' ? (
               <SharePanel
                 board={board}
                 isOwner={isOwner}
@@ -285,17 +252,57 @@ export function Planner() {
                 onRemoveMember={share.removeMember}
                 onLeave={share.leaveBoard}
               />
-            ) : menu.kind === 'view' ? (
-              <ViewControls views={views} />
-            ) : (
-              <MoreMenu
-                onExport={lifecycle.doExport}
-                onImport={isOwner ? lifecycle.askImport : null}
-              />
-            )}
-          </div>
-        </>
-      )}
+            </MenuPopover>
+          )}
+
+          <button
+            {...stylex.props(planner.ibtn)}
+            aria-label={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
+            onClick={toggleTheme}
+          >
+            <IconSwap
+              active={theme === 'dark'}
+              activeIcon={<Sun size={15} strokeWidth={1.75} />}
+              inactiveIcon={<Moon size={15} strokeWidth={1.75} />}
+            />
+          </button>
+
+          <MenuPopover
+            trigger={
+              <button {...stylex.props(planner.ibtn)} type="button" aria-label="더보기">
+                <MoreHorizontal size={15} strokeWidth={1.75} />
+              </button>
+            }
+          >
+            <MoreMenu
+              onExport={lifecycle.doExport}
+              onImport={isOwner ? lifecycle.askImport : null}
+            />
+          </MenuPopover>
+
+          <button
+            {...stylex.props(planner.btn, planner.btnPlain)}
+            onClick={() => window.print()}
+          >
+            <Printer size={14} strokeWidth={1.75} />
+            <span {...stylex.props(planner.btnLabelHide)}>인쇄</span>
+          </button>
+        </div>
+      </header>
+
+      <PlannerSurface
+        boardId={board.id}
+        events={events}
+        session={session}
+        views={views}
+        presence={presence}
+        readOnly={readOnly}
+        swapping={swapping}
+        updateEvent={eventsApi.updateEvent}
+        todayDow={todayDow}
+        nowMin={nowMin}
+        nowDay={nowDay}
+      />
 
       <input
         type="file"
