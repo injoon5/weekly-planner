@@ -14,8 +14,10 @@ A realtime weekly timetable with magic-code auth. **React + Vite + TanStack Rout
 
 ## Quick start
 
+Node 22–24 is supported.
+
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -27,6 +29,7 @@ Open `http://localhost:3000`, sign in with your email, enter the code Instant se
 |----------|---------------|---------|
 | `/login` | signed out    | Login   |
 | `/`      | authenticated | Planner |
+| `/s/:token` | public link | Shared planner |
 
 Auth uses Instant's React hooks (`db.useAuth` / `db.useUser` / `db.useQuery`) from `@instantdb/react`, injected into TanStack Router context; `beforeLoad` redirects, and `router.invalidate()` re-runs guards when auth changes.
 
@@ -66,6 +69,10 @@ npm run push:perms
 |-----------------------|------------------------------|
 | `npm run dev`         | Vite dev server (port 3000)  |
 | `npm run build`       | Production → `dist/`         |
+| `npm run lint`        | ESLint                        |
+| `npm run typecheck`   | Check core JavaScript modules |
+| `npm run test`        | Vitest regression tests       |
+| `npm run check`       | Lint, typecheck, test, build  |
 | `npm run preview`     | Preview production build     |
 | `npm run push:schema` | Push Instant schema          |
 | `npm run push:perms`  | Push Instant permissions     |

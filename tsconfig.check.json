@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM"],
+    "strict": false,
+    "noImplicitAny": false,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/config.js",
+    "src/drag.js",
+    "src/grid-layout.js",
+    "src/legacy.js",
+    "src/member-role.js",
+    "src/models.js",
+    "src/prefs.js",
+    "src/print-prefs.js",
+    "src/share.js",
+    "src/theme-dom.js",
+    "src/time.js",
+    "src/transaction.js",
+    "src/workspace-bootstrap.js"
+  ]
+}

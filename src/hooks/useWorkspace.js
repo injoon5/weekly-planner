@@ -26,45 +26,67 @@ function roleForBoard(board, userId) {
  */
 export function useWorkspace() {
   const user = db.useUser();
-  const { isLoading, error, data } = db.useQuery({
+  const workspace = db.useQuery({
     boards: {
       owner: {},
-      events: {},
-      members: { user: {} },
-      editors: {},
-      shares: {},
     },
     settings: {},
-    boardPrefs: { board: {}, user: {} },
   });
 
-  const boards = [...(data?.boards || [])].sort(
-    (a, b) =>
-      (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || (a.createdAt ?? 0) - (b.createdAt ?? 0),
+  const boards = useMemo(
+    () =>
+      [...(workspace.data?.boards || [])].sort(
+        (a, b) =>
+          (a.sortOrder ?? 0) - (b.sortOrder ?? 0) ||
+          (a.createdAt ?? 0) - (b.createdAt ?? 0),
+      ),
+    [workspace.data?.boards],
   );
-  const settings = data?.settings?.[0] || null;
-  const allPrefs = data?.boardPrefs || [];
+  const settings = workspace.data?.settings?.[0] || null;
 
   const [activeId, setActiveId] = useState(null);
   const [ready, setReady] = useState(false);
   const [bootNote, setBootNote] = useState(null);
 
-  const board = boards.find((b) => b.id === activeId) || boards[0] || null;
-  const events = fromInstantEvents(board?.events);
+  const activeBoardId =
+    boards.find((candidate) => candidate.id === activeId)?.id || boards[0]?.id || null;
+  const detail = db.useQuery(
+    activeBoardId
+      ? {
+          boards: {
+            $: { where: { id: activeBoardId } },
+            owner: {},
+            events: {},
+            members: { user: {} },
+            editors: {},
+            shares: {},
+          },
+        }
+      : null,
+  );
+  const prefsQuery = db.useQuery(
+    activeBoardId && user?.id
+      ? {
+          boardPrefs: {
+            $: {
+              where: {
+                'board.id': activeBoardId,
+                'user.id': user.id,
+              },
+            },
+            board: {},
+            user: {},
+          },
+        }
+      : null,
+  );
+  const board = detail.data?.boards?.[0] || null;
+  const events = useMemo(() => fromInstantEvents(board?.events), [board?.events]);
   const myRole = useMemo(() => roleForBoard(board, user?.id), [board, user?.id]);
   const canEdit = myRole === 'owner' || myRole === 'editor';
   const isOwner = myRole === 'owner';
 
-  const boardPrefs = useMemo(() => {
-    if (!board || !user) return null;
-    return (
-      allPrefs.find((p) => {
-        const bid = p.board?.id || p.board;
-        const uid = p.user?.id || p.user;
-        return bid === board.id && uid === user.id;
-      }) || null
-    );
-  }, [allPrefs, board, user]);
+  const boardPrefs = prefsQuery.data?.boardPrefs?.[0] || null;
 
   useEffect(() => {
     if (!boards.length) {
@@ -80,17 +102,15 @@ export function useWorkspace() {
   }, [boards, activeId]);
 
   useEffect(() => {
-    if (isLoading || !user) return;
+    if (workspace.isLoading || !user) return;
     let cancelled = false;
     (async () => {
       try {
-        const ownedCount = boards.filter((b) => ownerIdOf(b) === user.id).length;
         const result = await ensureWorkspace(user, {
-          boardCount: ownedCount,
+          accessibleBoardCount: boards.length,
           hasSettings: Boolean(settings),
         });
         if (cancelled) return;
-        if (result.firstId) setActiveId(result.firstId);
         if (result.migrated) setBootNote('이 기기의 시간표를 계정으로 옮겼어요');
       } catch (ex) {
         console.error(ex);
@@ -102,7 +122,7 @@ export function useWorkspace() {
     return () => {
       cancelled = true;
     };
-  }, [isLoading, user?.id, boards.length, settings?.id]);
+  }, [workspace.isLoading, user?.id, boards.length, settings?.id]);
 
   return {
     user,
@@ -116,8 +136,11 @@ export function useWorkspace() {
     isOwner,
     activeId,
     setActiveId,
-    isLoading,
-    error,
+    isLoading:
+      workspace.isLoading ||
+      Boolean(activeBoardId && detail.isLoading) ||
+      Boolean(activeBoardId && user?.id && prefsQuery.isLoading),
+    error: workspace.error || detail.error || prefsQuery.error,
     ready,
     bootNote,
     clearBootNote: () => setBootNote(null),

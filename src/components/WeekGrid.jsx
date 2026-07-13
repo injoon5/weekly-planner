@@ -1,22 +1,31 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import { DAYS_KO, DAYS_EN, SLOTS, SLOT_MIN } from '../config.js';
-import { beginPointerGesture } from '../drag.js';
 import {
-  COMPACT_SLOT,
+  DAYS_KO,
+  DAYS_EN,
+  NEXT_DAY_START_MIN,
+  SLOTS,
+  SLOT_MIN,
+} from '../config.js';
+import {
+  beginPointerGesture,
+  locatePointer,
+  measureGridGeometry,
+} from '../drag.js';
+import {
   chipStyle,
   geoX,
+  gridGeometryStyle,
   mergeDragView,
   nowLineStyle,
   packView,
   scrollPaneToNow,
   slotHeight,
   slotTop,
-  slotUnit as slotUnitCss,
 } from '../grid-layout.js';
 import { pickLeastUsedColor } from '../models.js';
 import { clamp, fmt } from '../time.js';
-import { layout } from '../tokens.stylex.js';
+import { compactLayout, layout } from '../tokens.stylex.js';
 import { grid } from '../styles/grid.js';
 import { planner } from '../styles/planner.js';
 
@@ -31,7 +40,6 @@ function Block({
   readOnly,
   dayCount,
   visualDay,
-  compact,
 }) {
   const [hov, setHov] = useState(false);
   const x = geoX(visualDay, p.col, p.cols, dayCount);
@@ -45,8 +53,8 @@ function Block({
     <div
       {...stylex.props(grid.blk, isSel && grid.blkSel, isDrag && grid.blkLift, isXs && grid.blkXs)}
       style={{
-        top: slotTop(ev.start, compact),
-        height: slotHeight(ev.dur, compact),
+        top: slotTop(ev.start),
+        height: slotHeight(ev.dur),
         left: x.left,
         width: x.width,
       }}
@@ -128,8 +136,10 @@ export function WeekGrid({
 
   const dayCount = days.length;
   const colTemplate = `${layout.gutW} repeat(${dayCount}, minmax(${layout.colMin}, 1fr))`;
-  const unit = slotUnitCss(compact);
-  const compactBodyH = compact ? { height: `calc(${COMPACT_SLOT} * 48)` } : undefined;
+  const bodyStyle = {
+    ...gridGeometryStyle(),
+    gridTemplateColumns: colTemplate,
+  };
 
   useEffect(() => {
     const visualCol = days.indexOf(nowDay);
@@ -165,9 +175,16 @@ export function WeekGrid({
     } else {
       const col = e.target.closest('[data-day]');
       if (!col) return;
-      const body = bodyRef.current.getBoundingClientRect();
-      const slotH = body.height / SLOTS;
-      const slotF = (e.clientY - body.top) / slotH;
+      const { bodyRect, gutWidth } = measureGridGeometry(
+        bodyRef.current,
+        gutRef.current,
+      );
+      const { slotF } = locatePointer(
+        { x: e.clientX, y: e.clientY },
+        bodyRect,
+        gutWidth,
+        days,
+      );
       mode = 'create';
       payload = {
         day: +col.dataset.day,
@@ -223,9 +240,9 @@ export function WeekGrid({
         </div>
 
         <div
-          {...stylex.props(grid.body)}
+          {...stylex.props(grid.body, compact && compactLayout)}
           ref={bodyRef}
-          style={{ gridTemplateColumns: colTemplate }}
+          style={bodyStyle}
           onPointerDown={onPointerDown}
           onClick={(e) => {
             if (!readOnly) return;
@@ -236,7 +253,7 @@ export function WeekGrid({
             if (gestureRef.current) e.preventDefault();
           }}
         >
-          <div {...stylex.props(grid.gutter)} ref={gutRef} style={compactBodyH}>
+          <div {...stylex.props(grid.gutter)} ref={gutRef}>
             {Array.from({ length: 23 }, (_, k) => {
               const h = k + 1;
               const m = h * 60;
@@ -244,10 +261,10 @@ export function WeekGrid({
                 <div
                   key={h}
                   {...stylex.props(grid.glab)}
-                  style={{ top: `calc(${unit} * ${h * 2})` }}
+                  style={{ top: slotTop(m) }}
                 >
                   {fmt(m)}
-                  {m >= 1080 && <i {...stylex.props(grid.glabSup)}>+1</i>}
+                  {m >= NEXT_DAY_START_MIN && <i {...stylex.props(grid.glabSup)}>+1</i>}
                 </div>
               );
             })}
@@ -258,16 +275,12 @@ export function WeekGrid({
               key={d}
               {...stylex.props(grid.col, i === 0 && grid.colFirst)}
               data-day={d}
-              style={compactBodyH}
             >
               {Array.from({ length: SLOTS }, (_, si) => (
                 <div
                   key={si}
                   {...stylex.props(grid.slot)}
-                  style={{
-                    top: `calc(${unit} * ${si})`,
-                    ...(compact ? { height: COMPACT_SLOT } : null),
-                  }}
+                  style={{ top: slotTop(si * SLOT_MIN) }}
                 />
               ))}
             </div>
@@ -293,7 +306,6 @@ export function WeekGrid({
                   readOnly={readOnly}
                   dayCount={dayCount}
                   visualDay={visualDay}
-                  compact={compact}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
@@ -314,8 +326,8 @@ export function WeekGrid({
                   {...stylex.props(grid.blk, grid.blkGhost)}
                   data-color={drag.color || 'graphite'}
                   style={{
-                    top: slotTop(drag.start, compact),
-                    height: slotHeight(drag.dur, compact),
+                    top: slotTop(drag.start),
+                    height: slotHeight(drag.dur),
                     left: x.left,
                     width: x.width,
                   }}
@@ -331,7 +343,6 @@ export function WeekGrid({
                 style={chipStyle(
                   { ...drag, visualCol: dayIndex.get(drag.day) },
                   dayCount,
-                  compact,
                 )}
               >
                 {fmt(drag.start)} – {fmt(drag.start + drag.dur)}
@@ -341,7 +352,7 @@ export function WeekGrid({
             {dayIndex.has(nowDay) && (
               <div
                 {...stylex.props(grid.nowLine)}
-                style={nowLineStyle(nowMin, dayIndex.get(nowDay), dayCount, compact)}
+                style={nowLineStyle(nowMin, dayIndex.get(nowDay), dayCount)}
               />
             )}
           </div>

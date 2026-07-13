@@ -1,4 +1,5 @@
 import { init, id } from '@instantdb/admin';
+import { isEditorRole, normalizeMemberRole } from '../src/member-role.js';
 import schema from '../src/schema.js';
 
 const APP_ID = process.env.INSTANT_APP_ID || process.env.VITE_INSTANT_APP_ID;
@@ -31,7 +32,7 @@ function readBody(req) {
 
 /**
  * Invite a registered Instant user to a board.
- * POST { refreshToken, boardId, email, role: 'viewer'|'editor' }
+ * POST { boardId, email, role: 'viewer'|'editor' }
  * Header `token` may also carry the refresh token.
  */
 export default async function handler(req, res) {
@@ -55,7 +56,7 @@ export default async function handler(req, res) {
   const refreshToken = req.headers.token || body.refreshToken;
   const boardId = body.boardId;
   const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
-  const role = body.role === 'editor' ? 'editor' : 'viewer';
+  const role = normalizeMemberRole(body.role);
 
   if (!refreshToken || !boardId || !email) {
     return json(res, 400, { error: '필수 값이 없어요' });
@@ -105,7 +106,7 @@ export default async function handler(req, res) {
     if (existing) {
       const uid = target.id;
       const txs = [db.tx.members[existing.id].update({ role })];
-      if (role === 'editor') txs.push(db.tx.boards[boardId].link({ editors: uid }));
+      if (isEditorRole(role)) txs.push(db.tx.boards[boardId].link({ editors: uid }));
       else txs.push(db.tx.boards[boardId].unlink({ editors: uid }));
       await db.transact(txs);
       return json(res, 200, { ok: true, memberId: existing.id, updated: true });
@@ -117,7 +118,7 @@ export default async function handler(req, res) {
         .update({ role, email, createdAt: Date.now() })
         .link({ board: boardId, user: target.id }),
     ];
-    if (role === 'editor') {
+    if (isEditorRole(role)) {
       txs.push(db.tx.boards[boardId].link({ editors: target.id }));
     }
     await db.transact(txs);

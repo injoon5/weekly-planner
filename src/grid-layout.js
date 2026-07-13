@@ -1,12 +1,17 @@
-import { SLOTS, SLOT_MIN } from './config.js';
+import { NEXT_DAY_START_SLOT, SLOTS, SLOT_MIN } from './config.js';
 import { pack } from './models.js';
 import { layout } from './tokens.stylex.js';
 
-export const COMPACT_SLOT = '22px';
-export const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
+const GRID_BODY_HEIGHT_PROPERTY = '--grid-body-height';
+const GRID_HOUR_HEIGHT_PROPERTY = '--grid-hour-height';
+const GRID_NEXT_DAY_TOP_PROPERTY = '--grid-next-day-top';
 
-export function slotUnit(compact) {
-  return compact ? COMPACT_SLOT : layout.slotH;
+export function gridGeometryStyle() {
+  return {
+    [GRID_BODY_HEIGHT_PROPERTY]: `calc(${layout.slotH} * ${SLOTS})`,
+    [GRID_HOUR_HEIGHT_PROPERTY]: `calc(${layout.slotH} * ${60 / SLOT_MIN})`,
+    [GRID_NEXT_DAY_TOP_PROPERTY]: `calc(${layout.slotH} * ${NEXT_DAY_START_SLOT})`,
+  };
 }
 
 /** Merge live drag draft into the visible event list. */
@@ -39,31 +44,30 @@ export function geoX(visualCol, col, cols, dayCount = 7) {
   };
 }
 
-export function slotTop(minutes, compact = false) {
-  return `calc(${slotUnit(compact)} * ${minutes / SLOT_MIN})`;
+export function slotTop(minutes) {
+  return `calc(${layout.slotH} * ${minutes / SLOT_MIN})`;
 }
 
-export function slotHeight(minutes, compact = false) {
-  return `calc(${slotUnit(compact)} * ${minutes / SLOT_MIN} - 2px)`;
+export function slotHeight(minutes) {
+  return `calc(${layout.slotH} * ${minutes / SLOT_MIN} - 2px)`;
 }
 
-export function chipStyle(drag, dayCount = 7, compact = false) {
+export function chipStyle(drag, dayCount = 7) {
   const n = dayCount || 7;
-  const h = slotUnit(compact);
   const visualCol = drag.visualCol ?? 0;
   return {
     left: `calc(${layout.gutW} + (100% - ${layout.gutW}) * ${(visualCol / n).toFixed(6)} + 6px)`,
     top:
       drag.start >= SLOT_MIN * 2
-        ? `calc(${h} * ${drag.start / SLOT_MIN} - 29px)`
-        : `calc(${h} * ${(drag.start + drag.dur) / SLOT_MIN} + 8px)`,
+        ? `calc(${layout.slotH} * ${drag.start / SLOT_MIN} - 29px)`
+        : `calc(${layout.slotH} * ${(drag.start + drag.dur) / SLOT_MIN} + 8px)`,
   };
 }
 
-export function nowLineStyle(nowMin, visualCol, dayCount = 7, compact = false) {
+export function nowLineStyle(nowMin, visualCol, dayCount = 7) {
   const n = dayCount || 7;
   return {
-    top: `calc(${slotUnit(compact)} * ${(nowMin / SLOT_MIN).toFixed(4)} - 1px)`,
+    top: `calc(${layout.slotH} * ${(nowMin / SLOT_MIN).toFixed(4)} - 1px)`,
     left: `calc(${layout.gutW} + (100% - ${layout.gutW}) * ${(visualCol / n).toFixed(6)})`,
     width: `calc((100% - ${layout.gutW}) / ${n})`,
   };

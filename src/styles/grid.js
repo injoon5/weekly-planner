@@ -3,6 +3,9 @@ import { colors, layout } from '../tokens.stylex.js';
 
 const MOBILE = '@media screen and (max-width: 720px)';
 const TPLC = `${layout.gutW} repeat(7, minmax(${layout.colMin}, 1fr))`;
+const GRID_BODY_HEIGHT = 'var(--grid-body-height)';
+const GRID_HOUR_HEIGHT = 'var(--grid-hour-height)';
+const GRID_NEXT_DAY_TOP = 'var(--grid-next-day-top)';
 
 const hintIn = stylex.keyframes({
   from: { opacity: 0, transform: 'translate(-50%, 6px)' },
@@ -211,6 +214,7 @@ export const grid = stylex.create({
     display: 'grid',
     gridTemplateColumns: TPLC,
     position: 'relative',
+    height: GRID_BODY_HEIGHT,
     touchAction: 'manipulation',
     userSelect: 'none',
     WebkitUserSelect: 'none',
@@ -221,7 +225,7 @@ export const grid = stylex.create({
     position: 'sticky',
     left: 0,
     zIndex: 25,
-    height: `calc(${layout.slotH} * 48)`,
+    height: '100%',
     backgroundColor: colors.glass3,
     WebkitBackdropFilter: 'blur(8px)',
     backdropFilter: 'blur(8px)',
@@ -272,11 +276,11 @@ export const grid = stylex.create({
 
   col: {
     position: 'relative',
-    height: `calc(${layout.slotH} * 48)`,
+    height: '100%',
     cursor: 'cell',
     backgroundImage: `
-      repeating-linear-gradient(to bottom, ${colors.gridHour} 0 1px, transparent 1px calc(${layout.slotH} * 2)),
-      repeating-linear-gradient(to bottom, transparent 0 ${layout.slotH}, ${colors.gridHalf} ${layout.slotH} calc(${layout.slotH} + 1px), transparent calc(${layout.slotH} + 1px) calc(${layout.slotH} * 2))
+      repeating-linear-gradient(to bottom, ${colors.gridHour} 0 1px, transparent 1px ${GRID_HOUR_HEIGHT}),
+      repeating-linear-gradient(to bottom, transparent 0 ${layout.slotH}, ${colors.gridHalf} ${layout.slotH} calc(${layout.slotH} + 1px), transparent calc(${layout.slotH} + 1px) ${GRID_HOUR_HEIGHT})
     `,
     borderLeft: `1px solid ${colors.line}`,
     '::after': {
@@ -284,7 +288,7 @@ export const grid = stylex.create({
       position: 'absolute',
       left: 0,
       right: 0,
-      top: `calc(${layout.slotH} * 36)`,
+      top: GRID_NEXT_DAY_TOP,
       bottom: 0,
       backgroundColor: colors.hov,
       opacity: 0.55,

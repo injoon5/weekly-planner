@@ -26,3 +26,6 @@ export const SLOT_MIN = 30;
 export const DAY_MIN = SLOTS * SLOT_MIN; // 1440
 /** Grid starts at 06:00 local time. */
 export const DAY_ORIGIN = 360;
+/** Minutes and slots from the grid origin until the next midnight. */
+export const NEXT_DAY_START_MIN = DAY_MIN - DAY_ORIGIN;
+export const NEXT_DAY_START_SLOT = NEXT_DAY_START_MIN / SLOT_MIN;

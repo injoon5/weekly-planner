@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { db, saveEventTx } from '../db.js';
 import { eventFields } from '../models.js';
 
 // Must outlast the dialog's CSS exit transition (base-ui.css: .18s / .22s sheet).
@@ -10,16 +9,15 @@ const CLOSE_MS = 260;
  * Policy: Done/Enter = save; X / scrim / Escape / Cancel = discard; Delete = hold-confirm only.
  * Persist runs outside setState (Strict Mode safe).
  */
-export function useEditorSession({ events, createEvent, removeEvent, ruleParams = null }) {
+export function useEditorSession({ events, eventsApi }) {
   const [editing, setEditing] = useState(null);
   const eventsRef = useRef(events);
   const editingRef = useRef(null);
   const closeTimer = useRef(0);
-  const ruleParamsRef = useRef(ruleParams);
+  const isCommittingRef = useRef(false);
 
   eventsRef.current = events;
   editingRef.current = editing;
-  ruleParamsRef.current = ruleParams;
 
   useEffect(() => () => clearTimeout(closeTimer.current), []);
 
@@ -34,19 +32,24 @@ export function useEditorSession({ events, createEvent, removeEvent, ruleParams 
     setEditing({ mode: 'edit', id: eid, draft: eventFields(fields), closing: false });
   };
 
-  const closeEditor = (action, draft) => {
+  const closeEditor = async (action, draft) => {
     const ed = editingRef.current;
-    if (!ed || ed.closing) return;
+    if (!ed || ed.closing || isCommittingRef.current) return;
 
     if (action === 'save') {
+      isCommittingRef.current = true;
       const fields = eventFields(draft || ed.draft);
-      if (ed.mode === 'create') createEvent(fields);
-      else if (ed.id) {
-        const tx = saveEventTx(ed.id, fields, ruleParamsRef.current);
-        if (tx) db.transact(tx);
-      }
+      const didSave =
+        ed.mode === 'create'
+          ? Boolean(await eventsApi.createEvent(fields))
+          : Boolean(ed.id && (await eventsApi.saveEvent(ed.id, fields)));
+      isCommittingRef.current = false;
+      if (!didSave) return;
     } else if (action === 'delete' && ed.mode === 'edit' && ed.id) {
-      removeEvent(ed.id);
+      isCommittingRef.current = true;
+      const didDelete = await eventsApi.removeEvent(ed.id);
+      isCommittingRef.current = false;
+      if (!didDelete) return;
     }
 
     const closing = { ...ed, closing: true };
@@ -59,9 +62,9 @@ export function useEditorSession({ events, createEvent, removeEvent, ruleParams 
     }, CLOSE_MS);
   };
 
-  const save = (draft) => closeEditor('save', draft);
-  const cancel = () => closeEditor('cancel');
-  const deleteEvent = () => closeEditor('delete');
+  const save = (draft) => void closeEditor('save', draft);
+  const cancel = () => void closeEditor('cancel');
+  const deleteEvent = () => void closeEditor('delete');
 
   return {
     editing,

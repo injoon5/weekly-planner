@@ -1,28 +1,33 @@
+import { useState } from 'react';
 import { Separator } from '@base-ui/react/separator';
-import { Switch } from '@base-ui/react/switch';
 import { Toggle } from '@base-ui/react/toggle';
 import * as stylex from '@stylexjs/stylex';
 import { menus } from '../styles/menus.js';
 import { ui } from '../styles/ui.js';
+import { SwitchRow } from './ui/SwitchRow.jsx';
 
-function SwitchRow({ label, checked, onChange }) {
+function ColorLabelInput({ color, label, onCommit }) {
+  const [draft, setDraft] = useState(label);
+
+  const commit = async () => {
+    const next = draft.trim().slice(0, 20);
+    if (next === label) return;
+    const didSave = await onCommit(color, next);
+    if (!didSave) setDraft(label);
+  };
+
   return (
-    <label {...stylex.props(menus.mi)}>
-      <span {...stylex.props(menus.miLabel, menus.miGrow)}>{label}</span>
-      <Switch.Root
-        checked={checked}
-        onCheckedChange={onChange}
-        className={(state) =>
-          stylex.props(menus.switchTrack, state.checked && menus.switchTrackOn).className
-        }
-      >
-        <Switch.Thumb
-          className={(state) =>
-            stylex.props(menus.switchThumb, state.checked && menus.switchThumbOn).className
-          }
-        />
-      </Switch.Root>
-    </label>
+    <input
+      {...stylex.props(ui.input, ui.inputSm, menus.drowInput)}
+      value={draft}
+      maxLength={20}
+      aria-label={`${color} 이름`}
+      onChange={(event) => setDraft(event.target.value)}
+      onBlur={() => void commit()}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') event.currentTarget.blur();
+      }}
+    />
   );
 }
 
@@ -59,12 +64,11 @@ export function ViewControls({ views }) {
               <span {...stylex.props(menus.swatchDot, !on && menus.swatchDotOff)} />
             </Toggle>
             {views.canRenameColors ? (
-              <input
-                {...stylex.props(ui.input, ui.inputSm, menus.drowInput)}
-                value={views.colorLabel(c)}
-                maxLength={20}
-                aria-label={`${c} 이름`}
-                onChange={(e) => views.setColorLabel(c, e.target.value)}
+              <ColorLabelInput
+                key={`${c}:${views.colorLabel(c)}`}
+                color={c}
+                label={views.colorLabel(c)}
+                onCommit={views.setColorLabel}
               />
             ) : (
               <span {...stylex.props(menus.miLabel)}>{views.colorLabel(c)}</span>

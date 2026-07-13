@@ -8,6 +8,7 @@ import {
   serializeColorLabels,
   serializeHiddenColors,
 } from '../prefs.js';
+import { commitTransaction } from '../transaction.js';
 
 const guestKey = (boardKey) => `weekly-planner.view.${boardKey || 'guest'}`;
 
@@ -40,6 +41,7 @@ export function useViewControls({
   user,
   canRenameColors,
   storageKey,
+  onError,
 }) {
   const boardId = board?.id;
   const labelsFromBoard = useMemo(() => parseColorLabels(board?.colorLabels), [board?.colorLabels]);
@@ -53,11 +55,6 @@ export function useViewControls({
   const [guestPrefs, setGuestPrefs] = useState(() =>
     user ? null : prefsFromDoc(readGuestPrefs(storageKey || boardId)),
   );
-  const [labelDrafts, setLabelDrafts] = useState(labelsFromBoard);
-
-  useEffect(() => {
-    setLabelDrafts(labelsFromBoard);
-  }, [labelsFromBoard]);
 
   useEffect(() => {
     if (user) {
@@ -71,16 +68,20 @@ export function useViewControls({
   const { hiddenColors, hideWeekend, compact, showMemos } = prefs;
 
   const persistRemote = useCallback(
-    (patch) => {
-      if (!user || !boardId) return;
+    async (patch) => {
+      if (!user || !boardId) return false;
       const tx = upsertBoardPrefsTx(boardPrefs?.id, user.id, boardId, patch);
-      if (tx) db.transact(tx);
+      if (!tx) return true;
+      return await commitTransaction((transaction) => db.transact(transaction), tx, {
+        message: '보기 설정을 저장하지 못했어요',
+        onError,
+      });
     },
-    [user, boardId, boardPrefs?.id],
+    [user, boardId, boardPrefs?.id, onError],
   );
 
   const applyPrefs = useCallback(
-    (partial) => {
+    async (partial) => {
       const next = {
         hiddenColors: partial.hiddenColors ?? hiddenColors,
         hideWeekend: partial.hideWeekend ?? hideWeekend,
@@ -91,10 +92,10 @@ export function useViewControls({
       if (!user) {
         setGuestPrefs(next);
         writeGuestPrefs(storageKey || boardId, next);
-        return;
+        return true;
       }
 
-      persistRemote({
+      return await persistRemote({
         hiddenColors: serializeHiddenColors(next.hiddenColors),
         hideWeekend: next.hideWeekend,
         compact: next.compact,
@@ -111,15 +112,18 @@ export function useViewControls({
     applyPrefs({ hiddenColors: next });
   };
 
-  const colorLabel = (color) => labelDrafts[color] || COLOR_LABELS_KO[color] || color;
+  const colorLabel = (color) => labelsFromBoard[color] || COLOR_LABELS_KO[color] || color;
 
-  const setColorLabel = (color, label) => {
-    if (!canRenameColors || !boardId) return;
-    const next = { ...labelDrafts, [color]: label };
+  const setColorLabel = async (color, label) => {
+    if (!canRenameColors || !boardId) return false;
+    const next = { ...labelsFromBoard, [color]: label };
     if (!label.trim()) delete next[color];
-    setLabelDrafts(next);
     const tx = patchBoardTx(boardId, { colorLabels: serializeColorLabels(next) });
-    if (tx) db.transact(tx);
+    if (!tx) return true;
+    return await commitTransaction((transaction) => db.transact(transaction), tx, {
+      message: '색상 이름을 저장하지 못했어요',
+      onError,
+    });
   };
 
   const visibleEvents = useCallback(
