@@ -141,9 +141,10 @@ const schema = i.schema({
   },
   rooms: {
     board: {
+      // Broadcast to everyone in the room (incl. anonymous share guests) —
+      // display name only, never the raw email.
       presence: i.entity({
         name: i.string().optional(),
-        email: i.string().optional(),
         color: i.string().optional(),
         role: i.string().optional(),
       }),

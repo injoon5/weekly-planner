@@ -26,17 +26,38 @@ function shortName(emailOrName) {
   return s.slice(0, 16);
 }
 
+const SEED_KEY = 'weekly-planner.presence.seed';
+
+/** Stable per-tab seed so anonymous guests get distinct colors (and their own idle room). */
+function sessionSeed() {
+  try {
+    let s = sessionStorage.getItem(SEED_KEY);
+    if (!s) {
+      s = Math.random().toString(36).slice(2, 10);
+      sessionStorage.setItem(SEED_KEY, s);
+    }
+    return s;
+  } catch {
+    return String(Date.now() % 1e9);
+  }
+}
+
 /**
  * Instant room presence for a board (presence-and-topics).
  * https://www.instantdb.com/docs/presence-and-topics
+ *
+ * Privacy: presence is broadcast to everyone in the room, including
+ * anonymous share-link guests — publish the short display name only,
+ * never the raw email.
  */
 export function useBoardPresence({ boardId, user, role, guestLabel }) {
   const active = Boolean(boardId);
-  const room = db.room('board', boardId || '__idle__');
+  // Hooks must run unconditionally; park boardless sessions in a per-tab
+  // room instead of one global "__idle__" room shared by every client.
+  const room = db.room('board', boardId || 'idle:' + sessionSeed());
 
   const name = user?.email ? shortName(user.email) : guestLabel || '손님';
-  const email = user?.email || '';
-  const color = peerColor(email || guestLabel || boardId || 'guest');
+  const color = peerColor(user?.email || sessionSeed());
 
   const { user: myPresence, peers: rawPeers, publishPresence } = db.rooms.usePresence(
     room,
@@ -44,7 +65,6 @@ export function useBoardPresence({ boardId, user, role, guestLabel }) {
       ? {
           initialPresence: {
             name,
-            email,
             color,
             role: role || 'viewer',
           },
@@ -56,18 +76,18 @@ export function useBoardPresence({ boardId, user, role, guestLabel }) {
     if (!active || !publishPresence) return;
     publishPresence({
       name,
-      email,
       color,
       role: role || 'viewer',
     });
-  }, [active, name, email, color, role, publishPresence]);
+  }, [active, name, color, role, publishPresence]);
 
   const peers = useMemo(() => {
     if (!active) return [];
     return Object.entries(rawPeers || {}).map(([id, peer]) => ({
       id,
-      name: peer.name || shortName(peer.email) || '동료',
-      email: peer.email || '',
+      // shortName(peer.email) keeps names readable for peers on older
+      // clients that still publish the email field.
+      name: peer.name || shortName(peer.email),
       color: peer.color || peerColor(id),
       role: peer.role || 'viewer',
     }));

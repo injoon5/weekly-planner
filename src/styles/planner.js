@@ -133,6 +133,23 @@ export const planner = stylex.create({
     },
   },
 
+  tabsFadeLeft: {
+    maskImage: 'linear-gradient(to right, transparent, #000 24px)',
+    WebkitMaskImage: 'linear-gradient(to right, transparent, #000 24px)',
+  },
+
+  tabsFadeRight: {
+    maskImage: 'linear-gradient(to left, transparent, #000 24px)',
+    WebkitMaskImage: 'linear-gradient(to left, transparent, #000 24px)',
+  },
+
+  tabsFadeBoth: {
+    maskImage:
+      'linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent)',
+    WebkitMaskImage:
+      'linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent)',
+  },
+
   tabPill: {
     position: 'absolute',
     // Track the strip's vertical padding (2px, 9px on mobile) so the pill
