@@ -10,12 +10,14 @@ export function BoardMenu({ board, solo, canEditMeta = true, onCommit, onDup, on
   const [name, setName] = useState(board.name || '');
   const [from, setFrom] = useState(board.from || '');
   const [to, setTo] = useState(board.to || '');
+  const [repeat, setRepeat] = useState(board.repeatEvery || 0);
 
   useEffect(() => {
     setName(board.name || '');
     setFrom(board.from || '');
     setTo(board.to || '');
-  }, [board.id, board.name, board.from, board.to]);
+    setRepeat(board.repeatEvery || 0);
+  }, [board.id, board.name, board.from, board.to, board.repeatEvery]);
 
   const flush = (patch) => {
     if (!canEditMeta) return;
@@ -69,6 +71,27 @@ export function BoardMenu({ board, solo, canEditMeta = true, onCommit, onDup, on
           onInput={(e) => setTo(e.target.value)}
           onChange={(e) => flush({ to: e.target.value })}
         />
+      </div>
+
+      <div {...stylex.props(menus.drow)}>
+        <span {...stylex.props(menus.drowLabel)}>반복</span>
+        <select
+          {...stylex.props(ui.input, ui.inputSm, ui.select, menus.drowInput)}
+          aria-label="반복"
+          value={repeat}
+          disabled={!canEditMeta}
+          onChange={(e) => {
+            const v = +e.target.value;
+            setRepeat(v);
+            flush({ repeatEvery: v });
+          }}
+        >
+          <option value={0}>반복 안 함</option>
+          <option value={1}>매주</option>
+          <option value={2}>2주마다</option>
+          <option value={3}>3주마다</option>
+          <option value={4}>4주마다</option>
+        </select>
       </div>
 
       {canEditMeta && (

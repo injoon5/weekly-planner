@@ -135,8 +135,16 @@ export const planner = stylex.create({
 
   tabPill: {
     position: 'absolute',
-    top: '2px',
-    bottom: '2px',
+    // Track the strip's vertical padding (2px, 9px on mobile) so the pill
+    // hugs the tab instead of stretching across the enlarged touch row.
+    top: {
+      default: '2px',
+      [MOBILE]: '9px',
+    },
+    bottom: {
+      default: '2px',
+      [MOBILE]: '9px',
+    },
     left: 0,
     borderRadius: '8px',
     backgroundColor: colors.paper,
@@ -401,60 +409,6 @@ export const planner = stylex.create({
     '@media print': {
       display: 'none',
     },
-  },
-
-  userchip: {
-    boxSizing: 'border-box',
-    height: '32px',
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    maxWidth: '168px',
-    borderWidth: 0,
-    borderRadius: '9px',
-    paddingBlock: 0,
-    paddingInline: '10px',
-    fontFamily: 'inherit',
-    fontSize: '11.5px',
-    fontWeight: 550,
-    lineHeight: 1,
-    color: colors.muted,
-    backgroundColor: colors.paper,
-    boxShadow: `inset 0 0 0 1px ${colors.edge}, 0 1px 2px rgba(27,27,32,.05)`,
-    cursor: 'pointer',
-    fontVariantNumeric: 'tabular-nums',
-    transitionProperty: 'color, box-shadow, transform',
-    transitionDuration: '.15s',
-    transitionTimingFunction: 'ease',
-    ':hover': {
-      color: colors.ink,
-      boxShadow: `inset 0 0 0 1px ${colors.edgeH}, 0 1px 2px rgba(27,27,32,.06)`,
-    },
-    ':active': {
-      transform: 'scale(.96)',
-    },
-    [MOBILE]: {
-      maxWidth: '120px',
-      paddingInline: '8px',
-    },
-    '@media (pointer: coarse)': {
-      position: 'relative',
-      '::after': {
-        content: '""',
-        position: 'absolute',
-        left: '-2px',
-        right: '-2px',
-        top: '-7px',
-        bottom: '-7px',
-      },
-    },
-  },
-
-  chipText: {
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
   },
 
   presence: {

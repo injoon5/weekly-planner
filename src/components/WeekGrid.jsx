@@ -69,7 +69,11 @@ function Block({
       onPointerLeave={() => setHov(false)}
       onKeyDown={onKeyDown}
     >
-      <div data-hh="t" {...stylex.props(grid.hh, grid.hhTop, showHandles && !isXs && grid.hhVisible)} />
+      {/* No handles on 30-min blocks: the (invisible) hit zones would swallow
+          nearly the whole block on touch, breaking long-press move. */}
+      {!isXs && (
+        <div data-hh="t" {...stylex.props(grid.hh, grid.hhTop, showHandles && grid.hhVisible)} />
+      )}
       <div {...stylex.props(grid.bt, isTall && grid.btTall)}>{ev.title || '일정'}</div>
       {ev.dur >= SLOT_MIN * 2 && (
         <div {...stylex.props(grid.bm)}>
@@ -79,7 +83,9 @@ function Block({
       {showMemos && ev.dur >= SLOT_MIN * 2 && ev.memo && (
         <div {...stylex.props(grid.bn, isXl && grid.bnXl)}>{ev.memo}</div>
       )}
-      <div data-hh="b" {...stylex.props(grid.hh, grid.hhBot, showHandles && !isXs && grid.hhVisible)} />
+      {!isXs && (
+        <div data-hh="b" {...stylex.props(grid.hh, grid.hhBot, showHandles && grid.hhVisible)} />
+      )}
     </div>
   );
 }

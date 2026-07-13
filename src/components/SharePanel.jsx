@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import { Copy, Link2, Link2Off, LogOut, RefreshCw, UserPlus, X } from 'lucide-react';
+import { Copy, KeyRound, Link2, Link2Off, LogOut, RefreshCw, UserPlus, X } from 'lucide-react';
 import { menus } from '../styles/menus.js';
 import { ui } from '../styles/ui.js';
 import { shareUrl } from '../share.js';
@@ -12,6 +12,7 @@ export function SharePanel({
   refreshToken,
   myMembershipId,
   onEnableShare,
+  onUpdateShare,
   onDisableShare,
   onRotateShare,
   onCopyLink,
@@ -29,6 +30,14 @@ export function SharePanel({
   const [busy, setBusy] = useState(false);
 
   const members = board?.members || [];
+
+  // Keep the local mode/role selects honest when the live share changes
+  // (e.g. after applying an update, or the popover staying open across sync).
+  useEffect(() => {
+    if (!share) return;
+    setMode(share.mode === 'password' ? 'password' : 'open');
+    setRole(share.role === 'editor' ? 'editor' : 'viewer');
+  }, [share?.id, share?.mode, share?.role]);
 
   const run = async (fn) => {
     setBusy(true);
@@ -50,6 +59,84 @@ export function SharePanel({
             {share.role === 'editor' ? '편집 가능' : '보기 전용'}
           </div>
           <div {...stylex.props(menus.shareUrl)}>{shareUrl(share.token)}</div>
+          {isOwner && (
+            <>
+              <div {...stylex.props(menus.drow)}>
+                <span {...stylex.props(menus.drowLabel)}>모드</span>
+                <select
+                  {...stylex.props(ui.input, ui.inputSm, ui.select, menus.drowInput)}
+                  aria-label="공유 모드"
+                  value={mode}
+                  disabled={busy}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setMode(v);
+                    // Password mode waits for the input below; open applies now.
+                    if (v === 'open' && share.mode !== 'open') {
+                      run(async () => {
+                        const ok = await onUpdateShare({ mode: 'open' });
+                        if (!ok) setMode('password');
+                      });
+                    }
+                  }}
+                >
+                  <option value="open">공개 링크</option>
+                  <option value="password">비밀번호</option>
+                </select>
+              </div>
+              <div {...stylex.props(menus.drow)}>
+                <span {...stylex.props(menus.drowLabel)}>권한</span>
+                <select
+                  {...stylex.props(ui.input, ui.inputSm, ui.select, menus.drowInput)}
+                  aria-label="공유 권한"
+                  value={role}
+                  disabled={busy}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setRole(v);
+                    run(async () => {
+                      const ok = await onUpdateShare({ role: v });
+                      if (!ok) setRole(share.role === 'editor' ? 'editor' : 'viewer');
+                    });
+                  }}
+                >
+                  <option value="viewer">보기</option>
+                  <option value="editor">편집</option>
+                </select>
+              </div>
+              {mode === 'password' && (
+                <>
+                  <div {...stylex.props(menus.pin)}>
+                    <input
+                      {...stylex.props(ui.input, ui.inputSm)}
+                      type="password"
+                      placeholder={share.mode === 'password' ? '새 비밀번호' : '비밀번호'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    {...stylex.props(menus.mi)}
+                    disabled={busy || !password}
+                    onClick={() =>
+                      run(async () => {
+                        const ok = await onUpdateShare({ mode: 'password', password });
+                        if (ok) setPassword('');
+                      })
+                    }
+                  >
+                    <span {...stylex.props(menus.miIconWrap)}>
+                      <KeyRound size={14} strokeWidth={1.75} />
+                    </span>
+                    <span {...stylex.props(menus.miLabel)}>
+                      {share.mode === 'password' ? '비밀번호 변경' : '비밀번호 설정'}
+                    </span>
+                  </button>
+                </>
+              )}
+            </>
+          )}
           <button
             type="button"
             {...stylex.props(menus.mi)}

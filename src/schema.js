@@ -10,6 +10,8 @@ const schema = i.schema({
       name: i.string(),
       from: i.string().optional(),
       to: i.string().optional(),
+      /** Repeat cadence in weeks anchored at `from` (0/absent = one-off). */
+      repeatEvery: i.number().optional(),
       createdAt: i.number().indexed(),
       sortOrder: i.number().indexed(),
       colorLabels: i.string().optional(),

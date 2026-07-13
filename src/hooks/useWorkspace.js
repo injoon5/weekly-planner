@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { db, ensureWorkspace } from '../db.js';
-import { fromInstantEvents } from '../models.js';
+import { boardCoversDate, fromInstantEvents } from '../models.js';
+import { isoDate } from '../time.js';
 
 function ownerIdOf(board) {
   if (!board?.owner) return null;
@@ -70,7 +71,12 @@ export function useWorkspace() {
       setActiveId(null);
       return;
     }
-    if (!boards.some((b) => b.id === activeId)) setActiveId(boards[0].id);
+    if (boards.some((b) => b.id === activeId)) return;
+    // No selection yet (or it vanished): open the schedule whose period
+    // covers today, falling back to the first board.
+    const today = isoDate();
+    const current = boards.find((b) => boardCoversDate(b, today)) || boards[0];
+    setActiveId(current.id);
   }, [boards, activeId]);
 
   useEffect(() => {

@@ -49,6 +49,7 @@ export function useBoardLifecycle({
         name: (board.name || '시간표') + ' 사본',
         from: board.from || '',
         to: board.to || '',
+        repeatEvery: board.repeatEvery || 0,
         events,
         colorLabels: board.colorLabels || '',
       },
@@ -84,6 +85,7 @@ export function useBoardLifecycle({
         name: b.name,
         from: b.from || '',
         to: b.to || '',
+        repeatEvery: b.repeatEvery || 0,
         events: (b.events || []).map(({ day, title, start, dur, color, memo }) => ({
           day,
           title,

@@ -8,7 +8,7 @@ import {
   patchShareTx,
   setMemberEditorTx,
 } from '../db.js';
-import { shareUrl } from '../share.js';
+import { hashSharePassword, shareUrl } from '../share.js';
 
 function activeShareOf(board) {
   return (board?.shares || []).find((s) => s.enabled) || board?.shares?.[0] || null;
@@ -44,6 +44,45 @@ export function useShareActions({ board, isOwner = true, toast }) {
     } catch (err) {
       toast(err instanceof Error ? err.message : '공유를 켜지 못했어요');
       return null;
+    }
+  };
+
+  /**
+   * Change mode/role/password of the live share while keeping its token,
+   * so the URL people already have stays valid. Row is replaced (not patched)
+   * so a stale editSecret can't survive a viewer demotion.
+   */
+  const updateShare = async ({ mode, role, password = '' } = {}) => {
+    if (!isOwner || !board) return false;
+    const share = activeShare();
+    if (!share?.token) return false;
+    const nextMode = mode ?? share.mode;
+    const nextRole = (role ?? share.role) === 'editor' ? 'editor' : 'viewer';
+    try {
+      let secret;
+      if (nextMode === 'password') {
+        if (password) secret = await hashSharePassword(share.token, password);
+        else if (share.mode === 'password') secret = share.secret;
+        if (!secret) throw new Error('비밀번호를 입력하세요');
+      } else {
+        secret = share.token;
+      }
+      await db.transact([
+        deleteShareTx(share.id),
+        createShareTx(board.id, {
+          token: share.token,
+          secret,
+          mode: nextMode,
+          role: nextRole,
+          enabled: true,
+          ...(nextRole === 'editor' ? { editSecret: secret } : {}),
+        }).tx,
+      ]);
+      toast('공유 설정을 바꿨어요');
+      return true;
+    } catch (err) {
+      toast(err instanceof Error ? err.message : '공유 설정을 바꾸지 못했어요');
+      return false;
     }
   };
 
@@ -153,6 +192,7 @@ export function useShareActions({ board, isOwner = true, toast }) {
   return {
     activeShare,
     enableShare,
+    updateShare,
     disableShare,
     rotateShare,
     copyShareLink,
