@@ -37,7 +37,7 @@ export function ViewControls({ views }) {
 
   return (
     <>
-      <div {...stylex.props(menus.mcap, menus.mcapFirst)}>보기</div>
+      <div {...stylex.props(menus.mcap, menus.mcapStrong, menus.mcapFirst)}>보기</div>
 
       <SwitchRow
         label="주말 숨기기"
@@ -48,12 +48,12 @@ export function ViewControls({ views }) {
       <SwitchRow label="메모 표시" checked={views.showMemos} onChange={views.setShowMemos} />
 
       <div {...stylex.props(menus.mdiv)} />
-      <div {...stylex.props(menus.mcap)}>색상 필터 · 이름</div>
+      <div {...stylex.props(menus.mcap, menus.mcapStrong)}>색상 필터 · 이름</div>
 
       {views.palette.map((c) => {
         const on = !views.hiddenColors.includes(c);
         return (
-          <div key={c} {...stylex.props(menus.drow)}>
+          <div key={c} {...stylex.props(menus.drow, menus.colorRow)}>
             <button
               type="button"
               {...stylex.props(menus.swatch)}

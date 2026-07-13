@@ -44,7 +44,9 @@ export const menus = stylex.create({
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    padding: '2px 3px 3px',
+    // Left-pads labels onto the popover's text rail (captions, item icons,
+    // member names all start at the same x) instead of outdenting past it.
+    padding: '2px 3px 3px 9px',
   },
 
   drowLabel: {
@@ -52,13 +54,14 @@ export const menus = stylex.create({
     width: '40px',
     fontSize: '11px',
     fontWeight: 600,
+    letterSpacing: '0.012em',
     color: colors.muted,
   },
 
   drowInput: {
     flex: 1,
     minWidth: 0,
-    fontSize: '12px',
+    fontSize: '12.5px',
     fontWeight: 550,
     paddingBlock: '6px',
     paddingInline: '9px',
@@ -75,7 +78,7 @@ export const menus = stylex.create({
     borderWidth: 0,
     backgroundColor: 'transparent',
     padding: '8px 9px',
-    borderRadius: '8px',
+    borderRadius: '6px',
     fontSize: '12.5px',
     fontWeight: 550,
     letterSpacing: '-0.002em',
@@ -162,6 +165,14 @@ export const menus = stylex.create({
     fontSize: '10.5px',
     lineHeight: 1.5,
     color: colors.faint,
+    textWrap: 'pretty',
+  },
+
+  // Section headings inside popovers — same size as hints, but weight +
+  // a touch of tracking separates "링크 공유" from body copy beneath it.
+  mcapStrong: {
+    fontWeight: 600,
+    letterSpacing: '0.02em',
   },
 
   mcapFirst: {
@@ -170,6 +181,19 @@ export const menus = stylex.create({
 
   mcapTight: {
     paddingTop: 0,
+  },
+
+  shareStatus: {
+    padding: '0 9px 6px',
+    fontSize: '11.5px',
+    fontWeight: 550,
+    letterSpacing: '-0.002em',
+    color: colors.muted,
+  },
+
+  colorRow: {
+    // Centers the 18px swatches on the same vertical axis as menu-item icons.
+    paddingLeft: '7px',
   },
 
   shareUrl: {
@@ -229,7 +253,7 @@ export const menus = stylex.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 0,
-    borderRadius: '7px',
+    borderRadius: '6px',
     padding: 0,
     backgroundColor: 'transparent',
     color: colors.now,
@@ -242,7 +266,15 @@ export const menus = stylex.create({
       backgroundColor: 'rgba(229,72,77,.10)',
     },
     ':active': {
-      transform: 'scale(.94)',
+      transform: 'scale(.96)',
+    },
+    '@media (pointer: coarse)': {
+      position: 'relative',
+      '::after': {
+        content: '""',
+        position: 'absolute',
+        inset: '-8px',
+      },
     },
   },
 

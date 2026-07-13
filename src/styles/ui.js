@@ -14,7 +14,9 @@ export const reset = stylex.create({
     fontFamily: layout.font,
     fontSize: '14px',
     lineHeight: 1.45,
+    fontSynthesis: 'none',
     WebkitFontSmoothing: 'antialiased',
+    MozOsxFontSmoothing: 'grayscale',
     textRendering: 'optimizeLegibility',
     WebkitTextSizeAdjust: '100%',
     WebkitTapHighlightColor: 'transparent',
@@ -107,7 +109,7 @@ export const ui = stylex.create({
       color: colors.ink,
       boxShadow: `inset 0 0 0 1px ${colors.edgeH}, 0 1px 2px rgba(27,27,32,.06)`,
     },
-    ':active': { transform: 'scale(0.94)' },
+    ':active': { transform: 'scale(0.96)' },
   },
   input: {
     width: '100%',

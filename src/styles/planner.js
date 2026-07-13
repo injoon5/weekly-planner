@@ -261,7 +261,7 @@ export const planner = stylex.create({
       color: colors.ink,
     },
     ':active': {
-      transform: 'scale(.92)',
+      transform: 'scale(.96)',
     },
     '@media (pointer: coarse)': {
       position: 'relative',
@@ -396,7 +396,7 @@ export const planner = stylex.create({
       boxShadow: `inset 0 0 0 1px ${colors.edgeH}, 0 1px 2px rgba(27,27,32,.06)`,
     },
     ':active': {
-      transform: 'scale(.94)',
+      transform: 'scale(.96)',
     },
     '@media print': {
       display: 'none',

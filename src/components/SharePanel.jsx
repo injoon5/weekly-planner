@@ -41,11 +41,11 @@ export function SharePanel({
 
   return (
     <>
-      <div {...stylex.props(menus.mcap, menus.mcapFirst)}>링크 공유</div>
+      <div {...stylex.props(menus.mcap, menus.mcapStrong, menus.mcapFirst)}>링크 공유</div>
 
       {share ? (
         <>
-          <div {...stylex.props(menus.mcap, menus.mcapTight)}>
+          <div {...stylex.props(menus.shareStatus)}>
             {share.mode === 'password' ? '비밀번호 필요 · ' : '공개 링크 · '}
             {share.role === 'editor' ? '편집 가능' : '보기 전용'}
           </div>
@@ -148,7 +148,7 @@ export function SharePanel({
       {isOwner && (
         <>
           <div {...stylex.props(menus.mdiv)} />
-          <div {...stylex.props(menus.mcap)}>멤버 초대</div>
+          <div {...stylex.props(menus.mcap, menus.mcapStrong)}>멤버 초대</div>
           <div {...stylex.props(menus.mcap, menus.mcapTight)}>
             등록된 계정만 초대할 수 있어요
           </div>
@@ -198,7 +198,7 @@ export function SharePanel({
       {members.length > 0 && (
         <>
           <div {...stylex.props(menus.mdiv)} />
-          <div {...stylex.props(menus.mcap)}>멤버</div>
+          <div {...stylex.props(menus.mcap, menus.mcapStrong)}>멤버</div>
           {members.map((m) => {
             const uid = m.user?.id || m.user;
             const label = m.email || m.user?.email || uid?.slice?.(0, 8) || '멤버';
