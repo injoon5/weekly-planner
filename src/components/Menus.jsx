@@ -36,9 +36,7 @@ export function UserMenu({ email, onSignOut }) {
   return (
     <>
       {email && (
-        <div {...stylex.props(menus.mcap)} style={{ paddingTop: '8px' }}>
-          {email}
-        </div>
+        <div {...stylex.props(menus.mcap, menus.mcapFirst)}>{email}</div>
       )}
       <button {...stylex.props(menus.mi, menus.miRed)} onClick={onSignOut}>
         <span {...stylex.props(menus.miIconWrap)}>

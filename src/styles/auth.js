@@ -132,6 +132,14 @@ export const auth = stylex.create({
     color: colors.ink,
     fontFamily: 'inherit',
     outline: 'none',
+    // Order matters: CodeInputs staggers the opacity/transform entrance with a
+    // per-cell inline transitionDelay list matching these five properties.
+    transitionProperty: 'background-color, border-color, box-shadow, opacity, transform',
+    transitionDuration: '.3s',
+    transitionTimingFunction: 'cubic-bezier(.2,0,0,1)',
+    '@media (prefers-reduced-motion: reduce)': {
+      transitionDuration: '0ms',
+    },
     ':focus': {
       boxShadow: `0 0 0 2px ${colors.paper}, 0 0 0 4px ${colors.ink}`,
     },

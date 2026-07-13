@@ -5,8 +5,7 @@ const MOBILE = '@media (max-width: 720px)';
 
 export const planner = stylex.create({
   app: {
-    height: '100vh',
-    height: '100dvh',
+    height: stylex.firstThatWorks('100dvh', '100vh'),
     display: 'flex',
     flexDirection: 'column',
     backgroundColor: colors.bg,
@@ -21,6 +20,14 @@ export const planner = stylex.create({
     color: colors.faint,
     fontSize: '13px',
     fontWeight: 550,
+  },
+
+  bootStack: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '12px',
+    textAlign: 'center',
   },
 
   top: {
@@ -254,7 +261,7 @@ export const planner = stylex.create({
       color: colors.ink,
     },
     ':active': {
-      transform: 'scale(.92)',
+      transform: 'scale(.96)',
     },
     '@media (pointer: coarse)': {
       position: 'relative',
@@ -294,6 +301,7 @@ export const planner = stylex.create({
     letterSpacing: '-0.002em',
     lineHeight: 1,
     color: colors.ink,
+    textDecorationLine: 'none',
     cursor: 'pointer',
     userSelect: 'none',
     touchAction: 'manipulation',
@@ -388,7 +396,7 @@ export const planner = stylex.create({
       boxShadow: `inset 0 0 0 1px ${colors.edgeH}, 0 1px 2px rgba(27,27,32,.06)`,
     },
     ':active': {
-      transform: 'scale(.94)',
+      transform: 'scale(.96)',
     },
     '@media print': {
       display: 'none',

@@ -12,6 +12,10 @@ export function BoardTabs({ boards, activeId, canAdd, onSelect, onOpenActive, on
   const [pill, setPill] = useState({ x: 0, w: 0, ready: false });
   const first = useRef(true);
 
+  // Pill coordinates live in the strip's content space, so they survive
+  // scrolling untouched — only tab/size changes need a re-measure. Keeping
+  // scrollIntoView out of the scroll path matters: snapping the active tab
+  // back into view while the user swipes the strip would fight their scroll.
   const measure = () => {
     const row = rowRef.current;
     const btn = btnRefs.current.get(activeId);
@@ -24,7 +28,6 @@ export function BoardTabs({ boards, activeId, canAdd, onSelect, onOpenActive, on
       ready: !first.current,
     });
     first.current = false;
-    btn.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
   };
 
   useLayoutEffect(() => {
@@ -32,16 +35,16 @@ export function BoardTabs({ boards, activeId, canAdd, onSelect, onOpenActive, on
   }, [activeId, boards]);
 
   useEffect(() => {
+    const btn = btnRefs.current.get(activeId);
+    btn?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+  }, [activeId]);
+
+  useEffect(() => {
     const row = rowRef.current;
     if (!row) return;
-    const onScroll = () => measure();
-    row.addEventListener('scroll', onScroll, { passive: true });
     const ro = new ResizeObserver(() => measure());
     ro.observe(row);
-    return () => {
-      row.removeEventListener('scroll', onScroll);
-      ro.disconnect();
-    };
+    return () => ro.disconnect();
   }, [activeId, boards]);
 
   return (

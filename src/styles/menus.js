@@ -20,6 +20,11 @@ export const menus = stylex.create({
     position: 'fixed',
     zIndex: 90,
     width: '232px',
+    maxWidth: 'calc(100vw - 16px)',
+    boxSizing: 'border-box',
+    overflowY: 'auto',
+    overscrollBehavior: 'contain',
+    WebkitOverflowScrolling: 'touch',
     backgroundColor: colors.paper,
     borderRadius: '12px',
     padding: '6px',
@@ -39,7 +44,9 @@ export const menus = stylex.create({
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    padding: '2px 3px 3px',
+    // Left-pads labels onto the popover's text rail (captions, item icons,
+    // member names all start at the same x) instead of outdenting past it.
+    padding: '2px 3px 3px 9px',
   },
 
   drowLabel: {
@@ -47,13 +54,14 @@ export const menus = stylex.create({
     width: '40px',
     fontSize: '11px',
     fontWeight: 600,
+    letterSpacing: '0.012em',
     color: colors.muted,
   },
 
   drowInput: {
     flex: 1,
     minWidth: 0,
-    fontSize: '12px',
+    fontSize: '12.5px',
     fontWeight: 550,
     paddingBlock: '6px',
     paddingInline: '9px',
@@ -70,7 +78,7 @@ export const menus = stylex.create({
     borderWidth: 0,
     backgroundColor: 'transparent',
     padding: '8px 9px',
-    borderRadius: '8px',
+    borderRadius: '6px',
     fontSize: '12.5px',
     fontWeight: 550,
     letterSpacing: '-0.002em',
@@ -79,7 +87,7 @@ export const menus = stylex.create({
     cursor: 'pointer',
     fontFamily: 'inherit',
     userSelect: 'none',
-    touchAction: 'none',
+    touchAction: 'manipulation',
     transitionProperty: 'background-color, color, transform',
     transitionDuration: '.13s',
     transitionTimingFunction: 'ease',
@@ -109,6 +117,10 @@ export const menus = stylex.create({
         backgroundColor: 'transparent',
       },
     },
+  },
+
+  hold: {
+    touchAction: 'none',
   },
 
   holdFill: {
@@ -153,6 +165,212 @@ export const menus = stylex.create({
     fontSize: '10.5px',
     lineHeight: 1.5,
     color: colors.faint,
+    textWrap: 'pretty',
+  },
+
+  // Section headings inside popovers — same size as hints, but weight +
+  // a touch of tracking separates "링크 공유" from body copy beneath it.
+  mcapStrong: {
+    fontWeight: 600,
+    letterSpacing: '0.02em',
+  },
+
+  mcapFirst: {
+    paddingTop: '7px',
+  },
+
+  mcapTight: {
+    paddingTop: 0,
+  },
+
+  shareStatus: {
+    padding: '0 9px 6px',
+    fontSize: '11.5px',
+    fontWeight: 550,
+    letterSpacing: '-0.002em',
+    color: colors.muted,
+  },
+
+  colorRow: {
+    // Centers the 18px swatches on the same vertical axis as menu-item icons.
+    paddingLeft: '7px',
+  },
+
+  shareUrl: {
+    boxSizing: 'border-box',
+    margin: '1px 3px 4px',
+    padding: '7px 9px',
+    borderRadius: '8px',
+    backgroundColor: colors.field,
+    fontSize: '11px',
+    lineHeight: 1.45,
+    fontWeight: 500,
+    color: colors.muted,
+    fontVariantNumeric: 'tabular-nums',
+    wordBreak: 'break-all',
+    userSelect: 'all',
+  },
+
+  memberRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '3px 3px 3px 9px',
+    minHeight: '32px',
+    boxSizing: 'border-box',
+  },
+
+  memberName: {
+    flex: 1,
+    minWidth: 0,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    fontSize: '12.5px',
+    fontWeight: 550,
+    letterSpacing: '-0.002em',
+    color: colors.ink,
+  },
+
+  memberRoleSelect: {
+    flexShrink: 0,
+    width: '76px',
+  },
+
+  memberRoleText: {
+    flexShrink: 0,
+    paddingRight: '6px',
+    fontSize: '11px',
+    fontWeight: 600,
+    color: colors.muted,
+  },
+
+  memberRemove: {
+    flexShrink: 0,
+    width: '28px',
+    height: '28px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0,
+    borderRadius: '6px',
+    padding: 0,
+    backgroundColor: 'transparent',
+    color: colors.now,
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    transitionProperty: 'background-color, transform',
+    transitionDuration: '.13s',
+    transitionTimingFunction: 'ease',
+    ':hover': {
+      backgroundColor: 'rgba(229,72,77,.10)',
+    },
+    ':active': {
+      transform: 'scale(.96)',
+    },
+    '@media (pointer: coarse)': {
+      position: 'relative',
+      '::after': {
+        content: '""',
+        position: 'absolute',
+        inset: '-8px',
+      },
+    },
+  },
+
+  miGrow: {
+    flex: 1,
+  },
+
+  srOnly: {
+    position: 'absolute',
+    width: '1px',
+    height: '1px',
+    margin: '-1px',
+    padding: 0,
+    overflow: 'hidden',
+    clip: 'rect(0 0 0 0)',
+    whiteSpace: 'nowrap',
+    borderWidth: 0,
+  },
+
+  switchTrack: {
+    boxSizing: 'border-box',
+    flexShrink: 0,
+    width: '30px',
+    height: '18px',
+    padding: '2px',
+    borderRadius: '99px',
+    display: 'inline-flex',
+    backgroundColor: colors.edgeH,
+    transitionProperty: 'background-color, box-shadow',
+    transitionDuration: '.18s',
+    transitionTimingFunction: 'ease',
+  },
+
+  switchTrackOn: {
+    backgroundColor: colors.ink,
+  },
+
+  switchTrackFocus: {
+    boxShadow: `0 0 0 2px ${colors.paper}, 0 0 0 3.5px ${colors.ink}`,
+  },
+
+  switchThumb: {
+    width: '14px',
+    height: '14px',
+    borderRadius: '99px',
+    backgroundColor: colors.paper,
+    boxShadow: '0 1px 2px rgba(0,0,0,.22), 0 0 0 0.5px rgba(0,0,0,.04)',
+    transform: 'translateX(0)',
+    transitionProperty: 'transform',
+    transitionDuration: '.18s',
+    transitionTimingFunction: 'cubic-bezier(.2,0,0,1)',
+    '@media (prefers-reduced-motion: reduce)': {
+      transitionDuration: '0ms',
+    },
+  },
+
+  switchThumbOn: {
+    transform: 'translateX(12px)',
+  },
+
+  swatch: {
+    flexShrink: 0,
+    width: '18px',
+    height: '18px',
+    padding: 0,
+    borderWidth: 0,
+    borderRadius: '99px',
+    backgroundColor: 'transparent',
+    display: 'flex',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    '@media (pointer: coarse)': {
+      position: 'relative',
+      '::after': {
+        content: '""',
+        position: 'absolute',
+        inset: '-6px',
+      },
+    },
+  },
+
+  swatchDot: {
+    width: '100%',
+    height: '100%',
+    borderRadius: '99px',
+    backgroundColor: 'var(--ev-accent)',
+    transitionProperty: 'transform, box-shadow, background-color, opacity',
+    transitionDuration: '.15s',
+    transitionTimingFunction: 'cubic-bezier(.2,0,0,1)',
+  },
+
+  swatchDotOff: {
+    backgroundColor: 'transparent',
+    boxShadow: 'inset 0 0 0 1.5px var(--ev-accent)',
+    opacity: 0.55,
+    transform: 'scale(.9)',
   },
 
   hintFine: {

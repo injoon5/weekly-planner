@@ -4,12 +4,11 @@ import { Moon, Printer, Sun, Eye } from 'lucide-react';
 import { useBoardPresence } from '../hooks/useBoardPresence.js';
 import { useEditorSession } from '../hooks/useEditorSession.js';
 import { useEventMutations } from '../hooks/useEventMutations.js';
-import { useMenu } from '../hooks/useMenu.js';
+import { useMenu, menuPopStyle } from '../hooks/useMenu.js';
 import { useSharedBoard } from '../hooks/useSharedBoard.js';
 import { useTheme } from '../hooks/useTheme.js';
 import { useToast } from '../hooks/useToast.js';
 import { useViewControls } from '../hooks/useViewControls.js';
-import { pickLeastUsedColor } from '../models.js';
 import { fmtRange } from '../time.js';
 import { planner } from '../styles/planner.js';
 import { menus } from '../styles/menus.js';
@@ -64,7 +63,7 @@ export function SharedPlanner() {
   if (shared.notFound || shared.disabled) {
     return (
       <div {...stylex.props(planner.boot)}>
-        <div style={{ textAlign: 'center', display: 'grid', gap: 12 }}>
+        <div {...stylex.props(planner.bootStack)}>
           <div>공유 링크를 찾을 수 없어요</div>
           <Link to="/login" {...stylex.props(planner.btn, planner.btnPlain)}>
             로그인
@@ -95,15 +94,16 @@ export function SharedPlanner() {
             placeholder="비밀번호"
           />
           {shared.unlockError && (
-            <p {...stylex.props(authStyles.err)}>{shared.unlockError}</p>
+            <div {...stylex.props(authStyles.err)} role="alert">
+              {shared.unlockError}
+            </div>
           )}
           <button
             type="submit"
-            {...stylex.props(planner.btn, planner.btnPrimary)}
+            {...stylex.props(ui.btn, ui.btnPrimary, authStyles.formPrimary)}
             disabled={shared.busy || !shared.password}
-            style={{ width: '100%', justifyContent: 'center' }}
           >
-            열기
+            {shared.busy ? '확인 중…' : '열기'}
           </button>
         </form>
       </div>
@@ -124,9 +124,6 @@ export function SharedPlanner() {
           {readOnly ? '보기 전용' : '공유 편집'}
         </span>
         <span>{board.name || '시간표'}</span>
-        {(board.from || board.to) && (
-          <span {...stylex.props(planner.prange)}>{fmtRange(board.from, board.to)}</span>
-        )}
       </div>
 
       <header {...stylex.props(planner.top)}>
@@ -142,7 +139,7 @@ export function SharedPlanner() {
           <button
             {...stylex.props(planner.ibtn)}
             aria-label="보기 설정"
-            onClick={(e) => openMenu('view', e, 'right')}
+            onClick={(e) => openMenu('view', e, 'right', 264)}
           >
             <Eye size={15} strokeWidth={1.75} />
           </button>
@@ -160,23 +157,6 @@ export function SharedPlanner() {
             <Printer size={14} strokeWidth={1.75} />
             <span {...stylex.props(planner.btnLabelHide)}>인쇄</span>
           </button>
-          {!readOnly && (
-            <button
-              {...stylex.props(planner.btn, planner.btnPrimary)}
-              onClick={() =>
-                session.openCreate({
-                  day: todayDow,
-                  start: 720,
-                  dur: 60,
-                  title: '',
-                  color: pickLeastUsedColor(shared.events),
-                  memo: '',
-                })
-              }
-            >
-              새 일정
-            </button>
-          )}
         </div>
       </header>
 
@@ -197,11 +177,7 @@ export function SharedPlanner() {
       {menu?.kind === 'view' && (
         <>
           <div {...stylex.props(menus.mscrim)} onPointerDown={closeMenu} />
-          <div
-            {...stylex.props(menus.pop)}
-            role="menu"
-            style={{ left: `${menu.x}px`, top: `${menu.y}px`, width: 260 }}
-          >
+          <div {...stylex.props(menus.pop)} role="menu" style={menuPopStyle(menu)}>
             <ViewControls views={views} />
           </div>
         </>

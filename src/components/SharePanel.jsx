@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import { Copy, Link2, Link2Off, RefreshCw, UserPlus } from 'lucide-react';
+import { Copy, Link2, Link2Off, LogOut, RefreshCw, UserPlus, X } from 'lucide-react';
 import { menus } from '../styles/menus.js';
 import { ui } from '../styles/ui.js';
 import { shareUrl } from '../share.js';
@@ -41,16 +41,15 @@ export function SharePanel({
 
   return (
     <>
-      <div {...stylex.props(menus.mcap)} style={{ paddingTop: 6 }}>
-        링크 공유
-      </div>
+      <div {...stylex.props(menus.mcap, menus.mcapStrong, menus.mcapFirst)}>링크 공유</div>
 
       {share ? (
         <>
-          <div {...stylex.props(menus.mcap, menus.hintFine)} style={{ paddingTop: 0 }}>
+          <div {...stylex.props(menus.shareStatus)}>
             {share.mode === 'password' ? '비밀번호 필요 · ' : '공개 링크 · '}
             {share.role === 'editor' ? '편집 가능' : '보기 전용'}
           </div>
+          <div {...stylex.props(menus.shareUrl)}>{shareUrl(share.token)}</div>
           <button
             type="button"
             {...stylex.props(menus.mi)}
@@ -62,32 +61,33 @@ export function SharePanel({
             </span>
             <span {...stylex.props(menus.miLabel)}>링크 복사</span>
           </button>
-          <button
-            type="button"
-            {...stylex.props(menus.mi)}
-            disabled={busy || share.mode === 'password'}
-            title={share.mode === 'password' ? '비밀번호 공유는 다시 설정하세요' : undefined}
-            onClick={() => run(onRotateShare)}
-          >
-            <span {...stylex.props(menus.miIconWrap)}>
-              <RefreshCw size={14} strokeWidth={1.75} />
-            </span>
-            <span {...stylex.props(menus.miLabel)}>새 링크</span>
-          </button>
-          <button
-            type="button"
-            {...stylex.props(menus.mi, menus.miRed)}
-            disabled={busy}
-            onClick={() => run(onDisableShare)}
-          >
-            <span {...stylex.props(menus.miIconWrap)}>
-              <Link2Off size={14} strokeWidth={1.75} />
-            </span>
-            <span {...stylex.props(menus.miLabel)}>공유 끄기</span>
-          </button>
-          <div {...stylex.props(menus.mcap, menus.hintFine)} style={{ wordBreak: 'break-all' }}>
-            {shareUrl(share.token)}
-          </div>
+          {isOwner && (
+            <>
+              <button
+                type="button"
+                {...stylex.props(menus.mi)}
+                disabled={busy || share.mode === 'password'}
+                title={share.mode === 'password' ? '비밀번호 공유는 다시 설정하세요' : undefined}
+                onClick={() => run(onRotateShare)}
+              >
+                <span {...stylex.props(menus.miIconWrap)}>
+                  <RefreshCw size={14} strokeWidth={1.75} />
+                </span>
+                <span {...stylex.props(menus.miLabel)}>새 링크</span>
+              </button>
+              <button
+                type="button"
+                {...stylex.props(menus.mi, menus.miRed)}
+                disabled={busy}
+                onClick={() => run(onDisableShare)}
+              >
+                <span {...stylex.props(menus.miIconWrap)}>
+                  <Link2Off size={14} strokeWidth={1.75} />
+                </span>
+                <span {...stylex.props(menus.miLabel)}>공유 끄기</span>
+              </button>
+            </>
+          )}
         </>
       ) : (
         isOwner && (
@@ -95,7 +95,7 @@ export function SharePanel({
             <div {...stylex.props(menus.drow)}>
               <span {...stylex.props(menus.drowLabel)}>모드</span>
               <select
-                {...stylex.props(ui.input, ui.inputSm, menus.drowInput)}
+                {...stylex.props(ui.input, ui.inputSm, ui.select, menus.drowInput)}
                 value={mode}
                 onChange={(e) => setMode(e.target.value)}
               >
@@ -106,7 +106,7 @@ export function SharePanel({
             <div {...stylex.props(menus.drow)}>
               <span {...stylex.props(menus.drowLabel)}>권한</span>
               <select
-                {...stylex.props(ui.input, ui.inputSm, menus.drowInput)}
+                {...stylex.props(ui.input, ui.inputSm, ui.select, menus.drowInput)}
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
               >
@@ -148,8 +148,8 @@ export function SharePanel({
       {isOwner && (
         <>
           <div {...stylex.props(menus.mdiv)} />
-          <div {...stylex.props(menus.mcap)}>멤버 초대</div>
-          <div {...stylex.props(menus.mcap, menus.hintFine)} style={{ paddingTop: 0 }}>
+          <div {...stylex.props(menus.mcap, menus.mcapStrong)}>멤버 초대</div>
+          <div {...stylex.props(menus.mcap, menus.mcapTight)}>
             등록된 계정만 초대할 수 있어요
           </div>
           <div {...stylex.props(menus.pin)}>
@@ -164,7 +164,7 @@ export function SharePanel({
           <div {...stylex.props(menus.drow)}>
             <span {...stylex.props(menus.drowLabel)}>역할</span>
             <select
-              {...stylex.props(ui.input, ui.inputSm, menus.drowInput)}
+              {...stylex.props(ui.input, ui.inputSm, ui.select, menus.drowInput)}
               value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value)}
             >
@@ -198,23 +198,20 @@ export function SharePanel({
       {members.length > 0 && (
         <>
           <div {...stylex.props(menus.mdiv)} />
-          <div {...stylex.props(menus.mcap)}>멤버</div>
+          <div {...stylex.props(menus.mcap, menus.mcapStrong)}>멤버</div>
           {members.map((m) => {
             const uid = m.user?.id || m.user;
             const label = m.email || m.user?.email || uid?.slice?.(0, 8) || '멤버';
             return (
-              <div key={m.id} {...stylex.props(menus.drow)} style={{ alignItems: 'center' }}>
-                <span
-                  {...stylex.props(menus.miLabel)}
-                  style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
-                >
+              <div key={m.id} {...stylex.props(menus.memberRow)}>
+                <span {...stylex.props(menus.memberName)} title={label}>
                   {label}
                 </span>
                 {isOwner ? (
                   <>
                     <select
-                      {...stylex.props(ui.input, ui.inputSm)}
-                      style={{ width: 72, paddingInline: 4 }}
+                      {...stylex.props(ui.input, ui.inputSm, ui.select, menus.memberRoleSelect)}
+                      aria-label={`${label} 역할`}
                       value={m.role === 'editor' ? 'editor' : 'viewer'}
                       onChange={(e) => onUpdateRole(m.id, uid, e.target.value)}
                     >
@@ -223,15 +220,16 @@ export function SharePanel({
                     </select>
                     <button
                       type="button"
-                      {...stylex.props(menus.mi, menus.miRed)}
-                      style={{ width: 'auto', padding: '6px 8px' }}
+                      {...stylex.props(menus.memberRemove)}
+                      title="제거"
+                      aria-label={`${label} 제거`}
                       onClick={() => onRemoveMember(m.id, uid)}
                     >
-                      제거
+                      <X size={14} strokeWidth={2} />
                     </button>
                   </>
                 ) : (
-                  <span {...stylex.props(menus.drowLabel)}>
+                  <span {...stylex.props(menus.memberRoleText)}>
                     {m.role === 'editor' ? '편집' : '보기'}
                   </span>
                 )}
@@ -249,6 +247,9 @@ export function SharePanel({
             {...stylex.props(menus.mi, menus.miRed)}
             onClick={() => onLeave(myMembershipId, user?.id)}
           >
+            <span {...stylex.props(menus.miIconWrap)}>
+              <LogOut size={14} strokeWidth={1.75} />
+            </span>
             <span {...stylex.props(menus.miLabel)}>나가기</span>
           </button>
         </>

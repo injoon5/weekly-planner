@@ -341,6 +341,15 @@ export function WeekGrid({
           </div>
         </div>
       </div>
+
+      {!readOnly && events.length === 0 && !drag && (
+        <div {...stylex.props(grid.emptyHint)} aria-hidden>
+          <span {...stylex.props(grid.emptyHintFine)}>
+            빈 칸을 클릭하거나 드래그해 일정을 만들어요
+          </span>
+          <span {...stylex.props(grid.emptyHintCoarse)}>빈 칸을 탭해 일정을 추가해요</span>
+        </div>
+      )}
     </main>
   );
 }
