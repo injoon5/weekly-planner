@@ -2,8 +2,8 @@
 
 const TOKEN_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
-/** Short base62 token (~59 bits at 10 chars). Older 32-char hex tokens stay valid. */
-export function randomToken(length = 10) {
+/** Short base62 token (~48 bits at 8 chars). Older hex / 10-char tokens stay valid. */
+export function randomToken(length = 8) {
   const out = [];
   // Rejection-sample so every character is uniform (256 % 62 ≠ 0).
   const limit = 256 - (256 % TOKEN_ALPHABET.length);
@@ -23,9 +23,13 @@ export async function hashSharePassword(token, password) {
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+export function sharePath(token) {
+  return `/s/${token}`;
+}
+
 export function shareUrl(token) {
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  return `${origin}/s/${token}`;
+  return `${origin}${sharePath(token)}`;
 }
 
 function unlockKey(token) {

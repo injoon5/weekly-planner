@@ -5,7 +5,7 @@ import { Copy, KeyRound, Link2, Link2Off, LogOut, RefreshCw, UserPlus, X } from 
 import { UiSelect } from './ui/UiSelect.jsx';
 import { menus } from '../styles/menus.js';
 import { ui } from '../styles/ui.js';
-import { shareUrl } from '../share.js';
+import { sharePath } from '../share.js';
 
 const MODE_OPTS = [
   { value: 'open', label: '공개 링크' },
@@ -70,7 +70,16 @@ export function SharePanel({
             {share.mode === 'password' ? '비밀번호 필요 · ' : '공개 링크 · '}
             {share.role === 'editor' ? '편집 가능' : '보기 전용'}
           </div>
-          <div {...stylex.props(menus.shareUrl)}>{shareUrl(share.token)}</div>
+          <button
+            type="button"
+            {...stylex.props(menus.shareUrl)}
+            title="클릭해서 전체 링크 복사"
+            aria-label={`공유 링크 ${sharePath(share.token)}, 클릭해서 복사`}
+            disabled={busy}
+            onClick={() => run(onCopyLink)}
+          >
+            {sharePath(share.token)}
+          </button>
           {isOwner && (
             <>
               <div {...stylex.props(menus.drow)}>

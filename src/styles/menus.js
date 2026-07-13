@@ -188,17 +188,29 @@ export const menus = stylex.create({
 
   shareUrl: {
     boxSizing: 'border-box',
+    display: 'block',
+    width: 'calc(100% - 6px)',
     margin: '1px 3px 4px',
     padding: '7px 9px',
+    border: 'none',
     borderRadius: '8px',
     backgroundColor: colors.field,
+    font: 'inherit',
     fontSize: '11px',
     lineHeight: 1.45,
     fontWeight: 500,
+    textAlign: 'left',
     color: colors.muted,
     fontVariantNumeric: 'tabular-nums',
     wordBreak: 'break-all',
-    userSelect: 'all',
+    cursor: 'pointer',
+    ':hover': {
+      color: colors.ink,
+    },
+    ':disabled': {
+      cursor: 'default',
+      opacity: 0.7,
+    },
   },
 
   memberRow: {
