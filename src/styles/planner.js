@@ -423,6 +423,19 @@ export const planner = stylex.create({
     ':active': {
       transform: 'scale(.96)',
     },
+    // Touch hit area: +12px tall (44px); +3px per side keeps the 7px-gapped
+    // neighbors' hit areas from overlapping.
+    '@media (pointer: coarse)': {
+      position: 'relative',
+      '::after': {
+        content: '""',
+        position: 'absolute',
+        left: '-3px',
+        right: '-3px',
+        top: '-6px',
+        bottom: '-6px',
+      },
+    },
     '@media print': {
       display: 'none',
     },

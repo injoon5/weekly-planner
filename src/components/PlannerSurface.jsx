@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import { BoardCanvas } from './BoardCanvas.jsx';
 import { Editor } from './Editor.jsx';
-import { menus } from '../styles/menus.js';
 import { nowOnGrid } from '../time.js';
 
 /** Shared gesture → editor/event wiring used by workspace + share shells. */
@@ -38,8 +36,8 @@ export function usePlannerClock(intervalMs = 30000) {
 }
 
 /**
- * Shared planner body: board canvas + toast + editor.
- * Headers / menus stay in each shell.
+ * Shared planner body: board canvas + editor.
+ * Headers / menus stay in each shell; toasts render via the global Toaster.
  */
 export function PlannerSurface({
   boardId,
@@ -50,7 +48,6 @@ export function PlannerSurface({
   readOnly,
   swapping = false,
   updateEvent,
-  note,
   todayDow,
   nowMin,
   nowDay,
@@ -83,12 +80,6 @@ export function PlannerSurface({
         colorLabel={views.colorLabel}
         swapping={swapping}
       />
-
-      {note && (
-        <div key={note.key} {...stylex.props(menus.toast)} role="status">
-          {note.msg}
-        </div>
-      )}
 
       {session.editing && (
         <Editor

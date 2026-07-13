@@ -1,9 +1,19 @@
 import { useState, useEffect } from 'react';
+import { Separator } from '@base-ui/react/separator';
 import * as stylex from '@stylexjs/stylex';
 import { Copy, Eraser, Trash2 } from 'lucide-react';
 import { HoldToConfirm } from './HoldToConfirm.jsx';
+import { UiSelect } from './ui/UiSelect.jsx';
 import { menus } from '../styles/menus.js';
 import { ui } from '../styles/ui.js';
+
+const REPEAT_OPTS = [
+  { value: 0, label: '반복 안 함' },
+  { value: 1, label: '매주' },
+  { value: 2, label: '2주마다' },
+  { value: 3, label: '3주마다' },
+  { value: 4, label: '4주마다' },
+];
 
 /** Commit name/dates on blur (or Enter), not on every keystroke. */
 export function BoardMenu({ board, solo, canEditMeta = true, onCommit, onDup, onClear, onDelete }) {
@@ -75,28 +85,22 @@ export function BoardMenu({ board, solo, canEditMeta = true, onCommit, onDup, on
 
       <div {...stylex.props(menus.drow)}>
         <span {...stylex.props(menus.drowLabel)}>반복</span>
-        <select
-          {...stylex.props(ui.input, ui.inputSm, ui.select, menus.drowInput)}
-          aria-label="반복"
+        <UiSelect
+          ariaLabel="반복"
+          items={REPEAT_OPTS}
           value={repeat}
           disabled={!canEditMeta}
-          onChange={(e) => {
-            const v = +e.target.value;
+          xstyle={menus.drowInput}
+          onValueChange={(v) => {
             setRepeat(v);
             flush({ repeatEvery: v });
           }}
-        >
-          <option value={0}>반복 안 함</option>
-          <option value={1}>매주</option>
-          <option value={2}>2주마다</option>
-          <option value={3}>3주마다</option>
-          <option value={4}>4주마다</option>
-        </select>
+        />
       </div>
 
       {canEditMeta && (
         <>
-          <div {...stylex.props(menus.mdiv)} />
+          <Separator {...stylex.props(menus.mdiv)} />
 
           <button type="button" {...stylex.props(menus.mi)} onClick={onDup}>
             <span {...stylex.props(menus.miIconWrap)}>

@@ -12,6 +12,7 @@ import { db } from './db.js';
 import { Login } from './components/Login.jsx';
 import { Planner } from './components/Planner.jsx';
 import { SharedPlanner } from './components/SharedPlanner.jsx';
+import { Toaster } from './components/ui/Toaster.jsx';
 import { reset } from './styles/ui.js';
 
 function toRouterAuth(auth) {
@@ -96,6 +97,7 @@ export function App() {
   return (
     <div {...stylex.props(reset.app)}>
       <InnerApp />
+      <Toaster />
     </div>
   );
 }

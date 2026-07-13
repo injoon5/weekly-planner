@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { db, saveEventTx } from '../db.js';
 import { eventFields } from '../models.js';
 
-const CLOSE_MS = 200;
+// Must outlast the dialog's CSS exit transition (base-ui.css: .18s / .22s sheet).
+const CLOSE_MS = 260;
 
 /**
  * Draft-until-save session.
@@ -61,15 +62,6 @@ export function useEditorSession({ events, createEvent, removeEvent, ruleParams 
   const save = (draft) => closeEditor('save', draft);
   const cancel = () => closeEditor('cancel');
   const deleteEvent = () => closeEditor('delete');
-
-  useEffect(() => {
-    if (!editing || editing.closing) return;
-    const onKey = (e) => {
-      if (e.key === 'Escape') cancel();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [editing]);
 
   return {
     editing,

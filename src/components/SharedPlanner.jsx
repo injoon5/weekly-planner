@@ -4,26 +4,23 @@ import { Moon, Printer, Sun, Eye } from 'lucide-react';
 import { useBoardPresence } from '../hooks/useBoardPresence.js';
 import { useEditorSession } from '../hooks/useEditorSession.js';
 import { useEventMutations } from '../hooks/useEventMutations.js';
-import { useMenu, menuPopStyle } from '../hooks/useMenu.js';
 import { useSharedBoard } from '../hooks/useSharedBoard.js';
 import { useTheme } from '../hooks/useTheme.js';
-import { useToast } from '../hooks/useToast.js';
 import { useViewControls } from '../hooks/useViewControls.js';
 import { fmtRange, fmtRepeat } from '../time.js';
 import { planner } from '../styles/planner.js';
-import { menus } from '../styles/menus.js';
 import { ui } from '../styles/ui.js';
 import { auth as authStyles } from '../styles/auth.js';
 import { PresenceAvatars } from './PresenceAvatars.jsx';
 import { PlannerSurface, usePlannerClock } from './PlannerSurface.jsx';
 import { ViewControls } from './ViewControls.jsx';
+import { IconSwap } from './ui/IconSwap.jsx';
+import { MenuPopover } from './ui/MenuPopover.jsx';
 
 export function SharedPlanner() {
   const { token } = useParams({ from: '/s/$token' });
   const shared = useSharedBoard(token);
-  const { note } = useToast();
   const { theme, toggleTheme } = useTheme(null);
-  const { menu, openMenu, closeMenu } = useMenu();
   const { nowMin, nowDay, todayDow } = usePlannerClock();
 
   const eventsApi = useEventMutations({
@@ -139,19 +136,26 @@ export function SharedPlanner() {
         )}
         <div {...stylex.props(planner.hbtns)}>
           <PresenceAvatars peers={presence.peers} />
-          <button
-            {...stylex.props(planner.ibtn)}
-            aria-label="보기 설정"
-            onClick={(e) => openMenu('view', e, 'right', 264)}
+          <MenuPopover
+            width={264}
+            trigger={
+              <button {...stylex.props(planner.ibtn)} type="button" aria-label="보기 설정">
+                <Eye size={15} strokeWidth={1.75} />
+              </button>
+            }
           >
-            <Eye size={15} strokeWidth={1.75} />
-          </button>
+            <ViewControls views={views} />
+          </MenuPopover>
           <button
             {...stylex.props(planner.ibtn)}
             aria-label={theme === 'dark' ? '라이트 모드' : '다크 모드'}
             onClick={toggleTheme}
           >
-            {theme === 'dark' ? <Sun size={15} strokeWidth={1.75} /> : <Moon size={15} strokeWidth={1.75} />}
+            <IconSwap
+              active={theme === 'dark'}
+              activeIcon={<Sun size={15} strokeWidth={1.75} />}
+              inactiveIcon={<Moon size={15} strokeWidth={1.75} />}
+            />
           </button>
           <button
             {...stylex.props(planner.btn, planner.btnPlain)}
@@ -171,20 +175,10 @@ export function SharedPlanner() {
         presence={presence}
         readOnly={readOnly}
         updateEvent={eventsApi.updateEvent}
-        note={note}
         todayDow={todayDow}
         nowMin={nowMin}
         nowDay={nowDay}
       />
-
-      {menu?.kind === 'view' && (
-        <>
-          <div {...stylex.props(menus.mscrim)} onPointerDown={closeMenu} />
-          <div {...stylex.props(menus.pop)} role="menu" style={menuPopStyle(menu)}>
-            <ViewControls views={views} />
-          </div>
-        </>
-      )}
     </div>
   );
 }

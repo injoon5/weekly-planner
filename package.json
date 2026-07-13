@@ -12,6 +12,7 @@
     "pull": "npx instant-cli@latest pull --yes"
   },
   "dependencies": {
+    "@base-ui/react": "^1.6.0",
     "@instantdb/admin": "^0.22.57",
     "@instantdb/react": "0.22.57",
     "@stylexjs/stylex": "0.19.0",
