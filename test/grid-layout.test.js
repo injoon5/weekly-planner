@@ -1,0 +1,117 @@
+import { describe, expect, it, vi } from 'vitest';
+import { NEXT_DAY_START_SLOT, SLOTS, SLOT_MIN } from '../src/config.js';
+
+vi.mock('../src/tokens.stylex.js', () => ({
+  layout: {
+    gutW: '54px',
+    slotH: '28px',
+  },
+}));
+
+import {
+  chipStyle,
+  geoX,
+  gridGeometryStyle,
+  mergeDragView,
+  nowLineStyle,
+  packView,
+  scrollPaneToNow,
+  slotHeight,
+  slotTop,
+} from '../src/grid-layout.js';
+import { layout } from '../src/tokens.stylex.js';
+
+describe('grid geometry', () => {
+  it('builds deterministic column geometry', () => {
+    expect(geoX(1, 0, 1, 5)).toEqual({
+      left: `calc(${layout.gutW} + (100% - ${layout.gutW}) * 0.200000 + 2px)`,
+      width: `calc((100% - ${layout.gutW}) * 0.200000 - 4px)`,
+    });
+    expect(geoX(0, 1, 2, 0).width).toBe(
+      `calc((100% - ${layout.gutW}) * 0.071429 - 4px)`,
+    );
+  });
+
+  it('maps all vertical geometry through one slot-height contract', () => {
+    expect(slotTop(60)).toBe(`calc(${layout.slotH} * 2)`);
+    expect(slotHeight(90)).toBe(`calc(${layout.slotH} * 3 - 2px)`);
+    expect(nowLineStyle(75, 2, 5)).toEqual({
+      top: `calc(${layout.slotH} * 2.5000 - 1px)`,
+      left: `calc(${layout.gutW} + (100% - ${layout.gutW}) * 0.400000)`,
+      width: `calc((100% - ${layout.gutW}) / 5)`,
+    });
+    expect(gridGeometryStyle()).toEqual({
+      '--grid-body-height': `calc(${layout.slotH} * ${SLOTS})`,
+      '--grid-hour-height': `calc(${layout.slotH} * ${60 / SLOT_MIN})`,
+      '--grid-next-day-top': `calc(${layout.slotH} * ${NEXT_DAY_START_SLOT})`,
+    });
+  });
+
+  it('places drag chips above or below the pointer area', () => {
+    expect(chipStyle({ visualCol: 2, start: 60, dur: 30 }, 5)).toEqual({
+      left: `calc(${layout.gutW} + (100% - ${layout.gutW}) * 0.400000 + 6px)`,
+      top: `calc(${layout.slotH} * 2 - 29px)`,
+    });
+    expect(chipStyle({ visualCol: 0, start: 0, dur: 30 }, 7).top).toBe(
+      `calc(${layout.slotH} * 1 + 8px)`,
+    );
+  });
+});
+
+describe('grid event views', () => {
+  it('merges only the actively dragged event', () => {
+    const events = [
+      { id: 'a', day: 1, start: 30, dur: 60 },
+      { id: 'b', day: 2, start: 90, dur: 30 },
+    ];
+
+    const view = mergeDragView(events, {
+      kind: 'ev',
+      id: 'a',
+      day: 4,
+      start: 120,
+      dur: 90,
+    });
+
+    expect(view).toEqual([
+      { id: 'a', day: 4, start: 120, dur: 90 },
+      events[1],
+    ]);
+    expect(events[0]).toEqual({ id: 'a', day: 1, start: 30, dur: 60 });
+  });
+
+  it('packs each day while excluding the dragged event', () => {
+    const packed = packView(
+      [
+        { id: 'a', day: 1, start: 0, dur: 60 },
+        { id: 'b', day: 1, start: 30, dur: 60 },
+        { id: 'c', day: 2, start: 0, dur: 30 },
+      ],
+      { kind: 'ev', id: 'b' },
+    );
+
+    expect(Object.fromEntries(packed)).toEqual({
+      a: { col: 0, cols: 1 },
+      c: { col: 0, cols: 1 },
+    });
+  });
+
+  it('scrolls now into view and reveals its visual column', () => {
+    const pane = {
+      scrollTop: 0,
+      scrollLeft: 0,
+      scrollWidth: 1200,
+      clientWidth: 400,
+    };
+    const body = {
+      offsetWidth: 1050,
+      getBoundingClientRect: () => ({ height: 1440 }),
+    };
+    const gut = { offsetWidth: 50 };
+
+    scrollPaneToNow(pane, body, gut, 600, 3, 5);
+
+    expect(pane.scrollTop).toBe(450);
+    expect(pane.scrollLeft).toBe(590);
+  });
+});

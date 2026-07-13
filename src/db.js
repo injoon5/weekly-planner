@@ -1,11 +1,13 @@
 import { init, id } from '@instantdb/react';
 import { APP_ID, THEME_KEY } from './config.js';
 import { readLegacyBoards, seedEvents } from './legacy.js';
+import { isEditorRole, normalizeMemberRole } from './member-role.js';
 import { eventFields } from './models.js';
 import schema from './schema.js';
 import { defaultBoardRange } from './time.js';
 import { serializeColorLabels } from './prefs.js';
 import { hashSharePassword, randomToken } from './share.js';
+import { workspaceBootstrapPlan } from './workspace-bootstrap.js';
 
 // Instant persists recent query subscriptions to IndexedDB and syncs when
 // back online — no extra offline wiring needed for app data.
@@ -150,13 +152,14 @@ export function deleteShareTx(shareId) {
 
 export function createMemberTx(boardId, userId, role, email = '') {
   const mid = id();
+  const normalizedRole = normalizeMemberRole(role);
   const txs = [
     db.tx.members[mid]
-      .update({ role, email: email || '', createdAt: Date.now() })
+      .update({ role: normalizedRole, email: email || '', createdAt: Date.now() })
       .link({ board: boardId, user: userId }),
   ];
   // Write authority = boards.editors link only (members.role is display cache).
-  if (role === 'editor') {
+  if (isEditorRole(normalizedRole)) {
     txs.push(db.tx.boards[boardId].link({ editors: userId }));
   }
   return { mid, txs };
@@ -170,10 +173,18 @@ export function setMemberEditorTx(boardId, userId, isEditor) {
 
 export function patchMemberTx(memberId, patch) {
   const clean = {};
-  if (patch.role !== undefined) clean.role = patch.role;
+  if (patch.role !== undefined) clean.role = normalizeMemberRole(patch.role);
   if (patch.email !== undefined) clean.email = patch.email;
   if (!Object.keys(clean).length) return null;
   return db.tx.members[memberId].update(clean);
+}
+
+export function setMemberRoleTxs(boardId, memberId, userId, role) {
+  const normalizedRole = normalizeMemberRole(role);
+  return [
+    patchMemberTx(memberId, { role: normalizedRole }),
+    setMemberEditorTx(boardId, userId, isEditorRole(normalizedRole)),
+  ].filter(Boolean);
 }
 
 export function deleteMemberTx(memberId) {
@@ -212,32 +223,28 @@ export async function buildShareSecrets({ mode, role, password, existingToken })
   };
 }
 
-const bootstrappedUsers = new Set();
 const inflight = new Map();
 
 /**
- * One-shot workspace setup per user session (module-level Set/Map dedupe):
- * migrate legacy localStorage boards, or seed a demo board; create settings once.
- * Safe across React Strict Mode double-invoke via inflight Map.
+ * Workspace setup deduped only while a transaction is in flight. Durable query
+ * state decides whether settings or a first board are still needed.
  */
-export async function ensureWorkspace(user, { boardCount, hasSettings }) {
-  if (!user?.id || bootstrappedUsers.has(user.id)) {
-    return { seeded: false, firstId: null, migrated: false };
-  }
+export async function ensureWorkspace(user, { accessibleBoardCount, hasSettings }) {
+  if (!user?.id) return { seeded: false, migrated: false };
   if (inflight.has(user.id)) return inflight.get(user.id);
 
   const run = (async () => {
-    if (boardCount > 0 && hasSettings) {
-      bootstrappedUsers.add(user.id);
-      return { seeded: false, firstId: null, migrated: false };
-    }
+    const { shouldSeedBoard, shouldCreateSettings } = workspaceBootstrapPlan({
+      accessibleBoardCount,
+      hasSettings,
+    });
+    if (!shouldSeedBoard && !shouldCreateSettings) return { seeded: false, migrated: false };
 
     const txs = [];
-    let firstId = null;
     let migrated = false;
     const range = defaultBoardRange();
 
-    if (boardCount === 0) {
+    if (shouldSeedBoard) {
       const legacy = readLegacyBoards();
       const source = legacy?.length
         ? legacy.map((b) => ({
@@ -248,20 +255,18 @@ export async function ensureWorkspace(user, { boardCount, hasSettings }) {
         : [{ name: '내 시간표', from: range.from, to: range.to, events: seedEvents() }];
       migrated = Boolean(legacy?.length);
       source.forEach((b, i) => {
-        const { bid, txs: bt } = boardTx(user.id, b, i);
-        if (!firstId) firstId = bid;
+        const { txs: bt } = boardTx(user.id, b, i);
         txs.push(...bt);
       });
     }
 
-    if (!hasSettings) {
+    if (shouldCreateSettings) {
       const themeVal = localStorage.getItem(THEME_KEY) || 'light';
       txs.push(db.tx.settings[id()].update({ theme: themeVal }).link({ owner: user.id }));
     }
 
     if (txs.length) await db.transact(txs);
-    bootstrappedUsers.add(user.id);
-    return { seeded: boardCount === 0, firstId, migrated };
+    return { seeded: shouldSeedBoard, migrated };
   })();
 
   inflight.set(user.id, run);

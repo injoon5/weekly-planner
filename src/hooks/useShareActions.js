@@ -4,9 +4,9 @@ import {
   createShareTx,
   deleteMemberTx,
   deleteShareTx,
-  patchMemberTx,
   patchShareTx,
   setMemberEditorTx,
+  setMemberRoleTxs,
 } from '../db.js';
 import { hashSharePassword, shareUrl } from '../share.js';
 
@@ -113,8 +113,14 @@ export function useShareActions({ board, isOwner = true, toast }) {
         deleteShareTx(share.id),
         createShareTx(board.id, { ...built, enabled: true }).tx,
       ]);
+      const url = shareUrl(built.token);
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch {
+        /* ignore */
+      }
       toast('새 링크를 만들었어요');
-      return shareUrl(built.token);
+      return url;
     } catch (err) {
       toast(err instanceof Error ? err.message : '링크를 바꾸지 못했어요');
       return null;
@@ -136,28 +142,40 @@ export function useShareActions({ board, isOwner = true, toast }) {
     }
   };
 
-  const updateMemberRole = (memberId, userId, role) => {
+  const updateMemberRole = async (memberId, userId, role) => {
     if (!isOwner || !board || !userId) return;
-    const txs = [setMemberEditorTx(board.id, userId, role === 'editor')];
-    const mt = patchMemberTx(memberId, { role });
-    if (mt) txs.unshift(mt);
-    db.transact(txs);
+    try {
+      await db.transact(setMemberRoleTxs(board.id, memberId, userId, role));
+    } catch (error) {
+      console.error(error);
+      toast('멤버 역할을 바꾸지 못했어요');
+    }
   };
 
-  const removeMember = (memberId, userId) => {
+  const removeMember = async (memberId, userId) => {
     if (!isOwner || !board) return;
     const txs = [deleteMemberTx(memberId)];
     if (userId) txs.push(setMemberEditorTx(board.id, userId, false));
-    db.transact(txs);
-    toast('멤버를 제거했어요');
+    try {
+      await db.transact(txs);
+      toast('멤버를 제거했어요');
+    } catch (error) {
+      console.error(error);
+      toast('멤버를 제거하지 못했어요');
+    }
   };
 
-  const leaveBoard = (memberId, userId) => {
+  const leaveBoard = async (memberId, userId) => {
     if (!memberId || !board) return;
     const txs = [deleteMemberTx(memberId)];
     if (userId) txs.push(setMemberEditorTx(board.id, userId, false));
-    db.transact(txs);
-    toast('시간표에서 나갔어요');
+    try {
+      await db.transact(txs);
+      toast('시간표에서 나갔어요');
+    } catch (error) {
+      console.error(error);
+      toast('시간표에서 나가지 못했어요');
+    }
   };
 
   const inviteMember = async ({ email, role, refreshToken }) => {
@@ -170,7 +188,6 @@ export function useShareActions({ board, isOwner = true, toast }) {
           token: refreshToken || '',
         },
         body: JSON.stringify({
-          refreshToken,
           boardId: board.id,
           email,
           role,

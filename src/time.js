@@ -1,4 +1,10 @@
-import { DAY_MIN, DAY_ORIGIN, SLOT_MIN, SLOTS } from './config.js';
+import {
+  DAY_MIN,
+  DAY_ORIGIN,
+  NEXT_DAY_START_MIN,
+  SLOT_MIN,
+  SLOTS,
+} from './config.js';
 
 export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 export const pad = n => String(n).padStart(2, '0');
@@ -11,7 +17,7 @@ export function fmt(m) {
 
 export function fmtOpt(m) {
   if (m === DAY_MIN) return '06:00';
-  return (m >= 1080 ? '익일 ' : '') + fmt(m);
+  return (m >= NEXT_DAY_START_MIN ? '익일 ' : '') + fmt(m);
 }
 
 export function fmtDur(m) {
@@ -50,7 +56,7 @@ function parseDate(s) {
 
 /** Whole days from ISO date `a` to ISO date `b` (local). */
 export function diffDays(a, b) {
-  return Math.round((parseDate(b) - parseDate(a)) / 86400000);
+  return Math.round((parseDate(b).getTime() - parseDate(a).getTime()) / 86400000);
 }
 
 export function fmtRepeat(weeks) {
@@ -82,14 +88,6 @@ export function snapMin(m, max = DAY_MIN - SLOT_MIN) {
 export function snapDur(start, dur) {
   const d = clamp(Math.round((+dur || SLOT_MIN) / SLOT_MIN) * SLOT_MIN, SLOT_MIN, DAY_MIN - start);
   return d;
-}
-
-export function slotOf(min) {
-  return min / SLOT_MIN;
-}
-
-export function minOf(slot) {
-  return slot * SLOT_MIN;
 }
 
 export function nowOnGrid(date = new Date()) {

@@ -57,3 +57,7 @@ export const layout = stylex.defineVars({
   font:
     '"Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif',
 });
+
+export const compactLayout = stylex.createTheme(layout, {
+  slotH: '22px',
+});

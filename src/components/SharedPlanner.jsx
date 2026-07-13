@@ -1,73 +1,33 @@
-import { useEffect, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { Link, useParams } from '@tanstack/react-router';
-import { Moon, Printer, Sun, Eye } from 'lucide-react';
-import { useBoardPresence } from '../hooks/useBoardPresence.js';
-import { useEditorSession } from '../hooks/useEditorSession.js';
-import { useEventMutations } from '../hooks/useEventMutations.js';
+import { usePlannerRuntime } from '../hooks/usePlannerRuntime.js';
 import { useSharedBoard } from '../hooks/useSharedBoard.js';
 import { useTheme } from '../hooks/useTheme.js';
-import { useViewControls } from '../hooks/useViewControls.js';
-import { defaultPrintPrefs, readPrintPrefs } from '../print-prefs.js';
-import { fmtRange, fmtRepeat } from '../time.js';
 import { planner } from '../styles/planner.js';
 import { ui } from '../styles/ui.js';
 import { auth as authStyles } from '../styles/auth.js';
-import { PresenceAvatars } from './PresenceAvatars.jsx';
 import { PrintDialog } from './PrintDialog.jsx';
-import { PrintMeta } from './PrintMeta.jsx';
-import { PlannerSurface, usePlannerClock } from './PlannerSurface.jsx';
-import { ViewControls } from './ViewControls.jsx';
-import { IconSwap } from './ui/IconSwap.jsx';
-import { MenuPopover } from './ui/MenuPopover.jsx';
+import { PlannerHeader } from './PlannerHeader.jsx';
+import { PlannerSurface } from './PlannerSurface.jsx';
+import { toast } from './ui/Toaster.jsx';
 
 export function SharedPlanner() {
   const { token } = useParams({ from: '/s/$token' });
   const shared = useSharedBoard(token);
-  const { theme, toggleTheme } = useTheme(null);
-  const { nowMin, nowDay, todayDow } = usePlannerClock();
-  const [printOpen, setPrintOpen] = useState(false);
-  const [printPrefs, setPrintPrefs] = useState(() => readPrintPrefs(null));
-
-  const eventsApi = useEventMutations({
+  const { theme, toggleTheme } = useTheme(null, toast);
+  const runtime = usePlannerRuntime({
     board: shared.board,
+    events: shared.events,
     canEdit: shared.canEdit,
     ruleParams: shared.ruleParams,
-  });
-
-  const session = useEditorSession({
-    events: shared.events,
-    createEvent: eventsApi.createEvent,
-    removeEvent: eventsApi.removeEvent,
-    ruleParams: shared.ruleParams,
-  });
-
-  const views = useViewControls({
-    board: shared.board,
     boardPrefs: null,
     user: null,
     canRenameColors: false,
     storageKey: token,
-  });
-
-  const presence = useBoardPresence({
-    boardId: shared.board?.id,
-    user: null,
     role: shared.role,
     guestLabel: shared.canEdit ? '공유 편집' : '공유 보기',
+    onError: toast,
   });
-
-  useEffect(() => {
-    const board = shared.board;
-    if (!board) return;
-    const stored = readPrintPrefs(board);
-    setPrintPrefs({
-      ...defaultPrintPrefs(board),
-      ...stored,
-      from: board.from || '',
-      to: board.to || '',
-    });
-  }, [shared.board?.id, shared.board?.from, shared.board?.to]);
 
   if (shared.isLoading) {
     return <div {...stylex.props(planner.boot)}>불러오는 중…</div>;
@@ -141,72 +101,30 @@ export function SharedPlanner() {
         <span>{board.name || '시간표'}</span>
       </div>
 
-      <header {...stylex.props(planner.top)}>
-        <h1 {...stylex.props(planner.h1)}>
-          주간 계획표
-          <span {...stylex.props(planner.pbname)}> · {board.name || '시간표'}</span>
-        </h1>
-        {(board.from || board.to) && (
-          <span {...stylex.props(planner.prange)}>
-            {fmtRange(board.from, board.to)}
-            {board.repeatEvery > 0 && ' · ' + fmtRepeat(board.repeatEvery)}
-          </span>
-        )}
-        <PrintMeta prefs={printPrefs} />
-        <div {...stylex.props(planner.hbtns)}>
-          <PresenceAvatars peers={presence.peers} />
-          <MenuPopover
-            width={264}
-            trigger={
-              <button {...stylex.props(planner.ibtn)} type="button" aria-label="보기 설정">
-                <Eye size={15} strokeWidth={1.75} />
-              </button>
-            }
-          >
-            <ViewControls views={views} />
-          </MenuPopover>
-          <button
-            {...stylex.props(planner.ibtn)}
-            aria-label={theme === 'dark' ? '라이트 모드' : '다크 모드'}
-            onClick={toggleTheme}
-          >
-            <IconSwap
-              active={theme === 'dark'}
-              activeIcon={<Sun size={15} strokeWidth={1.75} />}
-              inactiveIcon={<Moon size={15} strokeWidth={1.75} />}
-            />
-          </button>
-          <button
-            {...stylex.props(planner.btn, planner.btnPlain)}
-            type="button"
-            aria-label="인쇄"
-            onClick={() => setPrintOpen(true)}
-          >
-            <Printer size={14} strokeWidth={1.75} />
-            <span {...stylex.props(planner.btnLabelHide)}>인쇄</span>
-          </button>
-        </div>
-      </header>
+      <PlannerHeader
+        board={board}
+        printPrefs={runtime.print.prefs}
+        presence={runtime.presence}
+        views={runtime.views}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onPrint={runtime.print.open}
+      />
 
       <PlannerSurface
         boardId={board.id}
         events={shared.events}
-        session={session}
-        views={views}
-        presence={presence}
+        session={runtime.session}
+        views={runtime.views}
+        presence={runtime.presence}
         readOnly={readOnly}
-        updateEvent={eventsApi.updateEvent}
-        todayDow={todayDow}
-        nowMin={nowMin}
-        nowDay={nowDay}
+        updateEvent={runtime.eventsApi.updateEvent}
+        todayDow={runtime.clock.todayDow}
+        nowMin={runtime.clock.nowMin}
+        nowDay={runtime.clock.nowDay}
       />
 
-      <PrintDialog
-        open={printOpen}
-        onOpenChange={setPrintOpen}
-        board={board}
-        onPrintPrefs={setPrintPrefs}
-      />
+      <PrintDialog {...runtime.print.dialog} />
     </div>
   );
 }

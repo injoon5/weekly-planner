@@ -4,12 +4,13 @@ import stylex from '@stylexjs/unplugin';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  cacheDir: '.vite',
   plugins: [
     stylex.vite({ useCSSLayers: true }),
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.svg'],
       manifest: {
         name: '주간 계획표',
         short_name: '주간 계획표',
@@ -23,20 +24,9 @@ export default defineConfig({
         theme_color: '#F6F6F7',
         icons: [
           {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-          },
-          {
-            src: 'pwa-maskable-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable',
+            src: 'favicon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
           },
         ],
       },

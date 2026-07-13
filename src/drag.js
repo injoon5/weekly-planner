@@ -6,6 +6,7 @@ import { clamp, DAY_MIN, SLOT_MIN, SLOTS } from './time.js';
  */
 
 const DEFAULT_DAYS = [0, 1, 2, 3, 4, 5, 6];
+const EDGE_SCROLL_MARGIN = 36;
 
 export function locatePointer(point, bodyRect, gutWidth, days = DEFAULT_DAYS) {
   const n = days.length || 7;
@@ -16,6 +17,13 @@ export function locatePointer(point, bodyRect, gutWidth, days = DEFAULT_DAYS) {
     slotF: (point.y - bodyRect.top) / slotH,
     col,
     day: days[col] ?? col,
+  };
+}
+
+export function measureGridGeometry(bodyEl, gutEl) {
+  return {
+    bodyRect: bodyEl.getBoundingClientRect(),
+    gutWidth: gutEl.getBoundingClientRect().width,
   };
 }
 
@@ -118,7 +126,13 @@ export function resolveActiveUp(session) {
   };
 }
 
-export function edgeScrollDelta(pointer, paneRect, gutWidth, headHeight, margin = 36) {
+export function edgeScrollDelta(
+  pointer,
+  paneRect,
+  gutWidth,
+  headHeight,
+  margin = EDGE_SCROLL_MARGIN,
+) {
   const L = paneRect.left + gutWidth + 6;
   const R = paneRect.right - 6;
   const T = paneRect.top + headHeight + 4;
@@ -165,11 +179,9 @@ export function beginPointerGesture(e, {
   };
 
   const metrics = () => ({
-    body: bodyEl.getBoundingClientRect(),
-    gut: gutEl.getBoundingClientRect().width,
-    pane: paneEl.getBoundingClientRect(),
-    head: hrowEl.offsetHeight,
-    gutOffset: gutEl.offsetWidth,
+    ...measureGridGeometry(bodyEl, gutEl),
+    paneRect: paneEl.getBoundingClientRect(),
+    headHeight: hrowEl.offsetHeight,
   });
 
   const setDraft = d => {
@@ -180,13 +192,18 @@ export function beginPointerGesture(e, {
 
   const apply = point => {
     const m = metrics();
-    setDraft(draftFromGesture(session, point, m.body, m.gut));
+    setDraft(draftFromGesture(session, point, m.bodyRect, m.gutWidth));
   };
 
   const edgeLoop = () => {
     if (session.phase !== 'active') return;
     const m = metrics();
-    const { dx, dy } = edgeScrollDelta(session.last, m.pane, m.gutOffset, m.head);
+    const { dx, dy } = edgeScrollDelta(
+      session.last,
+      m.paneRect,
+      m.gutWidth,
+      m.headHeight,
+    );
     if (dx || dy) {
       paneEl.scrollBy(dx, dy);
       apply(session.last);
@@ -204,9 +221,8 @@ export function beginPointerGesture(e, {
       /* ignore */
     }
     if (session.isTouch && navigator.vibrate) navigator.vibrate(8);
-    document.body.classList.add('dragging');
     const m = metrics();
-    session = activateOffsets(session, session.last, m.body, m.gut);
+    session = activateOffsets(session, session.last, m.bodyRect, m.gutWidth);
     apply(session.last);
     edgeLoop();
   };
@@ -233,7 +249,6 @@ export function beginPointerGesture(e, {
     window.removeEventListener('pointercancel', cancel);
     window.removeEventListener('keydown', key);
     document.removeEventListener('touchmove', blockScroll);
-    document.body.classList.remove('dragging');
     onDraft(null);
     onResult(result);
   };

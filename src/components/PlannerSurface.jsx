@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { BoardCanvas } from './BoardCanvas.jsx';
 import { Editor } from './Editor.jsx';
-import { nowOnGrid } from '../time.js';
 
 /** Shared gesture → editor/event wiring used by workspace + share shells. */
 export function handleGridGesture(result, { readOnly, session, updateEvent }) {
@@ -18,21 +17,9 @@ export function handleGridGesture(result, { readOnly, session, updateEvent }) {
       break;
     case 'noop':
       break;
-    default: {
-      const _exhaustive = result.type;
-      void _exhaustive;
-      break;
-    }
+    default:
+      throw new Error(`Unknown grid gesture: ${result.type}`);
   }
-}
-
-export function usePlannerClock(intervalMs = 30000) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), intervalMs);
-    return () => clearInterval(t);
-  }, [intervalMs]);
-  return nowOnGrid(new Date(now));
 }
 
 /**

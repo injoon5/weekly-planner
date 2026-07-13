@@ -23,7 +23,9 @@ export function applyDocumentTheme(theme) {
   document.body.className = bodyBase;
 
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.content = theme === 'dark' ? '#131316' : '#F6F6F7';
+  if (meta instanceof HTMLMetaElement) {
+    meta.content = theme === 'dark' ? '#131316' : '#F6F6F7';
+  }
 }
 
 /** One-shot pre-React boot — only call from main.jsx. */
