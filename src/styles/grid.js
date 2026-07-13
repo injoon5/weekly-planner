@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex';
 import { colors, layout } from '../tokens.stylex.js';
 
-const MOBILE = '@media (max-width: 720px)';
+const MOBILE = '@media screen and (max-width: 720px)';
 const TPLC = `${layout.gutW} repeat(7, minmax(${layout.colMin}, 1fr))`;
 
 const hintIn = stylex.keyframes({
@@ -77,6 +77,8 @@ export const grid = stylex.create({
       borderBottom: 0,
     },
     '@media print': {
+      flex: 'none',
+      minHeight: 0,
       margin: 0,
       overflow: 'visible',
       borderRadius: '8px',
@@ -163,7 +165,7 @@ export const grid = stylex.create({
     fontWeight: 600,
     lineHeight: 1,
     '@media print': {
-      fontSize: '11px',
+      fontSize: '14px',
     },
   },
 
@@ -186,9 +188,9 @@ export const grid = stylex.create({
     justifyContent: 'center',
     fontSize: '12px',
     '@media print': {
-      width: '18px',
-      height: '18px',
-      fontSize: '10px',
+      width: '22px',
+      height: '22px',
+      fontSize: '12px',
     },
   },
 
@@ -198,7 +200,7 @@ export const grid = stylex.create({
     color: colors.faint,
     letterSpacing: '0.012em',
     '@media print': {
-      fontSize: '8.5px',
+      fontSize: '11px',
     },
   },
 
@@ -247,8 +249,8 @@ export const grid = stylex.create({
     letterSpacing: '0.012em',
     whiteSpace: 'nowrap',
     '@media print': {
-      fontSize: '8px',
-      right: '5px',
+      fontSize: '11px',
+      right: '6px',
     },
   },
 
@@ -261,7 +263,7 @@ export const grid = stylex.create({
     marginLeft: '2px',
     letterSpacing: 0,
     '@media print': {
-      fontSize: '6px',
+      fontSize: '8.5px',
     },
   },
 
@@ -355,7 +357,7 @@ export const grid = stylex.create({
       zIndex: 8,
     },
     '@media print': {
-      padding: '2px 4px 2px 8px',
+      padding: '3px 5px 3px 10px',
       borderRadius: '4px',
       boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--ev-accent) 35%, transparent)',
       printColorAdjust: 'exact',
@@ -415,7 +417,7 @@ export const grid = stylex.create({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     '@media print': {
-      fontSize: '8.5px',
+      fontSize: '12px',
     },
   },
 
@@ -436,8 +438,9 @@ export const grid = stylex.create({
     letterSpacing: '0.012em',
     lineHeight: 1.2,
     '@media print': {
-      fontSize: '7px',
-      marginTop: 0,
+      fontSize: '10.5px',
+      marginTop: '1px',
+      opacity: 0.85,
     },
   },
 
@@ -450,7 +453,12 @@ export const grid = stylex.create({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     '@media print': {
-      display: 'none',
+      fontSize: '10px',
+      opacity: 0.7,
+      whiteSpace: 'normal',
+      display: '-webkit-box',
+      WebkitLineClamp: 2,
+      WebkitBoxOrient: 'vertical',
     },
   },
 

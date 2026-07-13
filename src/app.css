@@ -33,3 +33,7 @@ html body {
     background: #2e4266;
   }
 }
+
+@page {
+  margin: 8mm;
+}

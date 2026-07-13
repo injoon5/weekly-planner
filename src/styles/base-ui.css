@@ -79,7 +79,7 @@
   transform: translate(-50%, calc(-50% + 10px)) scale(0.97);
 }
 
-@media (max-width: 560px) {
+@media screen and (max-width: 560px) {
   [data-ui-dialog] {
     left: 0;
     right: 0;
