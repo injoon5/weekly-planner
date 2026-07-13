@@ -42,13 +42,18 @@ export const planner = stylex.create({
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: '6px 10px',
-    padding: '10px 14px 8px',
+    // 12px matches grid.pane side margin so title + table share one left edge.
+    padding: '10px 12px 8px',
     [MOBILE]: {
       padding: '8px 10px 6px',
     },
     '@media print': {
-      padding: '0 0 10px',
-      gap: '10px',
+      // Same 0 horizontal inset as grid.pane on print.
+      padding: '0 0 8px',
+      gap: '8px 16px',
+      alignItems: 'baseline',
+      width: '100%',
+      boxSizing: 'border-box',
     },
   },
 
@@ -60,7 +65,7 @@ export const planner = stylex.create({
     letterSpacing: '-0.011em',
     lineHeight: 1.2,
     '@media print': {
-      fontSize: '17px',
+      fontSize: '15.5px',
     },
   },
 
@@ -70,7 +75,7 @@ export const planner = stylex.create({
     color: colors.muted,
     '@media print': {
       display: 'inline',
-      fontSize: '15px',
+      fontSize: '13.5px',
     },
   },
 
@@ -91,9 +96,9 @@ export const planner = stylex.create({
     '@media print': {
       display: 'flex',
       flexWrap: 'wrap',
-      gap: '18px 24px',
+      gap: '14px 20px',
       marginLeft: 'auto',
-      fontSize: '12.5px',
+      fontSize: '11px',
       fontWeight: 550,
       color: '#6E6E76',
       lineHeight: 1.3,
@@ -102,25 +107,25 @@ export const planner = stylex.create({
 
   printMetaItem: {
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'baseline',
     whiteSpace: 'nowrap',
   },
 
   printMetaBlank: {
     display: 'inline-block',
-    width: '110px',
-    marginLeft: '8px',
-    borderBottom: '1.5px solid #C6C6CC',
-    verticalAlign: '-3px',
-    height: '1.1em',
+    width: '96px',
+    marginLeft: '7px',
+    borderBottom: '1px solid #C6C6CC',
+    verticalAlign: '-2px',
+    height: '1em',
   },
 
   printMetaVal: {
     color: '#1B1B20',
     fontWeight: 600,
-    marginLeft: '7px',
+    marginLeft: '6px',
     fontVariantNumeric: 'tabular-nums',
-    fontSize: '12.5px',
+    fontSize: '11px',
   },
 
   tabs: {
