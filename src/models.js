@@ -1,5 +1,5 @@
 import { PALETTE } from './config.js';
-import { clamp, snapDur, snapMin } from './time.js';
+import { clamp, diffDays, dt, isoDate, snapDur, snapMin } from './time.js';
 
 /** Normalize a loose event-shaped object into app invariants. */
 export function eventFields(input = {}) {
@@ -16,6 +16,33 @@ export function eventFields(input = {}) {
   };
 }
 
+/** Repeat cadence in weeks (0 = one-off period). */
+export function repeatWeeksOf(input) {
+  return clamp(Math.round(+input) || 0, 0, 8);
+}
+
+/**
+ * Whether a board's period covers `iso`. A repeating board is anchored at
+ * `from` and recurs every `repeatEvery` weeks; its active window per cycle is
+ * the original from→to span (capped at one cycle).
+ */
+export function boardCoversDate(board, iso = isoDate()) {
+  const from = dt(board?.from || '');
+  const to = dt(board?.to || '');
+  const repeat = repeatWeeksOf(board?.repeatEvery);
+  if (!repeat) {
+    if (from && to) return from <= iso && iso <= to;
+    if (from) return from <= iso;
+    if (to) return iso <= to;
+    return false;
+  }
+  if (!from) return true;
+  if (iso < from) return false;
+  const cycle = repeat * 7;
+  const len = to && to >= from ? Math.min(diffDays(from, to) + 1, cycle) : cycle;
+  return diffDays(from, iso) % cycle < len;
+}
+
 export function boardFields(input = {}, fallbackName = '시간표') {
   const name =
     typeof input.name === 'string' && input.name.trim()
@@ -25,6 +52,7 @@ export function boardFields(input = {}, fallbackName = '시간표') {
     name,
     from: typeof input.from === 'string' ? input.from : '',
     to: typeof input.to === 'string' ? input.to : '',
+    repeatEvery: repeatWeeksOf(input.repeatEvery),
     events: Array.isArray(input.events) ? input.events.map(e => eventFields(e)) : [],
   };
 }

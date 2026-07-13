@@ -43,6 +43,22 @@ export function defaultBoardRange(now = new Date()) {
   return { from: isoDate(from), to: isoDate(to) };
 }
 
+function parseDate(s) {
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+/** Whole days from ISO date `a` to ISO date `b` (local). */
+export function diffDays(a, b) {
+  return Math.round((parseDate(b) - parseDate(a)) / 86400000);
+}
+
+export function fmtRepeat(weeks) {
+  const w = Math.round(+weeks) || 0;
+  if (w <= 0) return '';
+  return w === 1 ? '매주 반복' : w + '주마다 반복';
+}
+
 export function fmtRange(a, b) {
   const parse = (s) => {
     const [y, m, d] = s.split('-').map(Number);

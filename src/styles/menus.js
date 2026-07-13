@@ -168,11 +168,13 @@ export const menus = stylex.create({
     textWrap: 'pretty',
   },
 
-  // Section headings inside popovers — same size as hints, but weight +
-  // a touch of tracking separates "링크 공유" from body copy beneath it.
+  // Section headings inside popovers — larger and darker than the fine-print
+  // hints so "링크 공유" reads as a title, not a footnote.
   mcapStrong: {
-    fontWeight: 600,
-    letterSpacing: '0.02em',
+    fontSize: '12px',
+    fontWeight: 650,
+    letterSpacing: '0.005em',
+    color: colors.muted,
   },
 
   mcapFirst: {

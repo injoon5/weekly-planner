@@ -5,6 +5,7 @@ import {
   Moon,
   Sun,
   MoreHorizontal,
+  CircleUserRound,
   Eye,
   Share2,
 } from 'lucide-react';
@@ -19,7 +20,7 @@ import { useTheme } from '../hooks/useTheme.js';
 import { useToast } from '../hooks/useToast.js';
 import { useViewControls } from '../hooks/useViewControls.js';
 import { useWorkspace } from '../hooks/useWorkspace.js';
-import { fmtRange } from '../time.js';
+import { fmtRange, fmtRepeat } from '../time.js';
 import { planner } from '../styles/planner.js';
 import { menus } from '../styles/menus.js';
 import { BoardMenu } from './BoardMenu.jsx';
@@ -136,7 +137,10 @@ export function Planner() {
         </h1>
 
         {(board.from || board.to) && (
-          <span {...stylex.props(planner.prange)}>{fmtRange(board.from, board.to)}</span>
+          <span {...stylex.props(planner.prange)}>
+            {fmtRange(board.from, board.to)}
+            {board.repeatEvery > 0 && ' · ' + fmtRepeat(board.repeatEvery)}
+          </span>
         )}
 
         <div {...stylex.props(planner.printMeta)}>
@@ -166,13 +170,13 @@ export function Planner() {
         <div {...stylex.props(planner.hbtns)}>
           <PresenceAvatars peers={presence.peers} />
           <button
-            {...stylex.props(planner.userchip)}
+            {...stylex.props(planner.ibtn)}
             type="button"
             title={user.email || '계정'}
             aria-label="계정 메뉴"
             onClick={(e) => openMenu('user', e, 'right')}
           >
-            <span {...stylex.props(planner.chipText)}>{user.email || '계정'}</span>
+            <CircleUserRound size={15} strokeWidth={1.75} />
           </button>
           <button
             {...stylex.props(planner.ibtn)}
@@ -263,6 +267,7 @@ export function Planner() {
                 refreshToken={auth.user?.refresh_token}
                 myMembershipId={myMembership?.id}
                 onEnableShare={share.enableShare}
+                onUpdateShare={share.updateShare}
                 onDisableShare={share.disableShare}
                 onRotateShare={async () => {
                   const url = await share.rotateShare();

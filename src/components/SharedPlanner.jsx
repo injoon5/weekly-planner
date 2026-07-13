@@ -9,7 +9,7 @@ import { useSharedBoard } from '../hooks/useSharedBoard.js';
 import { useTheme } from '../hooks/useTheme.js';
 import { useToast } from '../hooks/useToast.js';
 import { useViewControls } from '../hooks/useViewControls.js';
-import { fmtRange } from '../time.js';
+import { fmtRange, fmtRepeat } from '../time.js';
 import { planner } from '../styles/planner.js';
 import { menus } from '../styles/menus.js';
 import { ui } from '../styles/ui.js';
@@ -132,7 +132,10 @@ export function SharedPlanner() {
           <span {...stylex.props(planner.pbname)}> · {board.name || '시간표'}</span>
         </h1>
         {(board.from || board.to) && (
-          <span {...stylex.props(planner.prange)}>{fmtRange(board.from, board.to)}</span>
+          <span {...stylex.props(planner.prange)}>
+            {fmtRange(board.from, board.to)}
+            {board.repeatEvery > 0 && ' · ' + fmtRepeat(board.repeatEvery)}
+          </span>
         )}
         <div {...stylex.props(planner.hbtns)}>
           <PresenceAvatars peers={presence.peers} />

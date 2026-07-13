@@ -30,6 +30,9 @@ export function boardTx(userId, board, sortOrder) {
         createdAt: Date.now(),
         sortOrder,
         colorLabels: board.colorLabels || '',
+        // Written only when set so boards stay creatable before the schema
+        // gains the attr (`npm run push:schema`).
+        ...(board.repeatEvery ? { repeatEvery: board.repeatEvery } : {}),
       })
       .link({ owner: userId }),
   ];
@@ -104,7 +107,7 @@ export function deleteEventTx(eid, ruleParams) {
 
 export function patchBoardTx(bid, patch) {
   const clean = {};
-  for (const k of ['name', 'from', 'to', 'sortOrder', 'colorLabels']) {
+  for (const k of ['name', 'from', 'to', 'repeatEvery', 'sortOrder', 'colorLabels']) {
     if (patch[k] !== undefined) clean[k] = patch[k];
   }
   if (clean.colorLabels !== undefined && typeof clean.colorLabels === 'object') {
@@ -191,7 +194,7 @@ export function upsertBoardPrefsTx(prefsId, userId, boardId, patch) {
 
 /** Build open or password share payload. editSecret only when role=editor. */
 export async function buildShareSecrets({ mode, role, password, existingToken }) {
-  const token = existingToken || randomToken(16);
+  const token = existingToken || randomToken();
   let secret;
   if (mode === 'password') {
     if (!password) throw new Error('비밀번호를 입력하세요');
