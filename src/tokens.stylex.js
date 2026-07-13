@@ -37,17 +37,17 @@ export const layout = stylex.defineVars({
   slotH: {
     default: '28px',
     [MOBILE]: '26px',
-    '@media print': '30px',
+    '@media print': '28px',
   },
   headH: {
     default: '46px',
     [MOBILE]: '42px',
-    '@media print': '48px',
+    '@media print': '44px',
   },
   gutW: {
     default: '54px',
     [MOBILE]: '46px',
-    '@media print': '58px',
+    '@media print': '52px',
   },
   colMin: {
     default: '116px',

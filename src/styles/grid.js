@@ -79,9 +79,12 @@ export const grid = stylex.create({
     '@media print': {
       flex: 'none',
       minHeight: 0,
+      // Same horizontal start as planner.top title (both 0 inset).
       margin: 0,
+      width: '100%',
+      boxSizing: 'border-box',
       overflow: 'visible',
-      borderRadius: '8px',
+      borderRadius: 0,
       borderColor: '#D8D8DD',
     },
   },
@@ -165,7 +168,7 @@ export const grid = stylex.create({
     fontWeight: 600,
     lineHeight: 1,
     '@media print': {
-      fontSize: '14px',
+      fontSize: '12.5px',
     },
   },
 
@@ -188,9 +191,9 @@ export const grid = stylex.create({
     justifyContent: 'center',
     fontSize: '12px',
     '@media print': {
-      width: '22px',
-      height: '22px',
-      fontSize: '12px',
+      width: '20px',
+      height: '20px',
+      fontSize: '11px',
     },
   },
 
@@ -200,7 +203,7 @@ export const grid = stylex.create({
     color: colors.faint,
     letterSpacing: '0.012em',
     '@media print': {
-      fontSize: '11px',
+      fontSize: '9.5px',
     },
   },
 
@@ -249,8 +252,8 @@ export const grid = stylex.create({
     letterSpacing: '0.012em',
     whiteSpace: 'nowrap',
     '@media print': {
-      fontSize: '11px',
-      right: '6px',
+      fontSize: '9.5px',
+      right: '5px',
     },
   },
 
@@ -263,7 +266,7 @@ export const grid = stylex.create({
     marginLeft: '2px',
     letterSpacing: 0,
     '@media print': {
-      fontSize: '8.5px',
+      fontSize: '7.5px',
     },
   },
 
@@ -357,16 +360,16 @@ export const grid = stylex.create({
       zIndex: 8,
     },
     '@media print': {
-      padding: '3px 5px 3px 10px',
-      borderRadius: '4px',
+      padding: '2px 4px 2px 8px',
+      borderRadius: '3px',
       boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--ev-accent) 35%, transparent)',
       printColorAdjust: 'exact',
       WebkitPrintColorAdjust: 'exact',
       '::before': {
-        left: '2.5px',
-        top: '2.5px',
-        bottom: '2.5px',
-        width: '2.5px',
+        left: '2px',
+        top: '2px',
+        bottom: '2px',
+        width: '2px',
       },
     },
   },
@@ -417,7 +420,7 @@ export const grid = stylex.create({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     '@media print': {
-      fontSize: '12px',
+      fontSize: '10.5px',
     },
   },
 
@@ -438,7 +441,7 @@ export const grid = stylex.create({
     letterSpacing: '0.012em',
     lineHeight: 1.2,
     '@media print': {
-      fontSize: '10.5px',
+      fontSize: '9px',
       marginTop: '1px',
       opacity: 0.85,
     },
@@ -453,7 +456,7 @@ export const grid = stylex.create({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     '@media print': {
-      fontSize: '10px',
+      fontSize: '8.5px',
       opacity: 0.7,
       whiteSpace: 'normal',
       display: '-webkit-box',
