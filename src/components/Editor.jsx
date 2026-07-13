@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Dialog } from '@base-ui/react/dialog';
 import { Radio } from '@base-ui/react/radio';
 import { RadioGroup } from '@base-ui/react/radio-group';
@@ -16,6 +16,10 @@ import { planner } from '../styles/planner.js';
  * Draft-until-save editor (Base UI Dialog).
  * Done / Enter → save. X / backdrop / Escape / Cancel → discard.
  * Delete → HoldToConfirm only.
+ *
+ * Mounts closed then opens so Base UI applies data-starting-style. Mounting
+ * with open={true} skips the enter transition (useTransitionStatus only
+ * marks "starting" on a closed→open flip).
  */
 export function Editor({
   draft,
@@ -28,7 +32,12 @@ export function Editor({
   colorLabel,
 }) {
   const [local, setLocal] = useState(() => eventFields(draft));
+  const [open, setOpen] = useState(false);
   const titleRef = useRef(null);
+
+  useLayoutEffect(() => {
+    setOpen(!closing);
+  }, [closing]);
 
   const patch = (partial) => {
     setLocal((prev) => eventFields({ ...prev, ...partial }));
@@ -52,9 +61,12 @@ export function Editor({
 
   return (
     <Dialog.Root
-      open={!closing}
-      onOpenChange={(open) => {
-        if (!open) onCancel();
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
+          setOpen(false);
+          onCancel();
+        }
       }}
     >
       <Dialog.Portal>
