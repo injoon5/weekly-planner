@@ -220,11 +220,18 @@ export const editor = stylex.create({
   },
 
   sw: {
-    width: '36px',
-    height: '36px',
+    width: {
+      default: '36px',
+      // 8 swatches × 36px would clip inside the sheet on 320px-class screens.
+      '@media (max-width: 359px)': '32px',
+    },
+    height: {
+      default: '36px',
+      '@media (max-width: 359px)': '32px',
+    },
     padding: 0,
     borderWidth: 0,
-    backgroundColor: 'none',
+    backgroundColor: 'transparent',
     borderRadius: '99px',
     display: 'flex',
     alignItems: 'center',

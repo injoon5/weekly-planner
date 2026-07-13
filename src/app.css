@@ -27,3 +27,9 @@ html body {
 ::selection {
   background: #dce7f8;
 }
+
+@media screen {
+  html[data-theme='dark'] ::selection {
+    background: #2e4266;
+  }
+}

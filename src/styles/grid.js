@@ -4,7 +4,59 @@ import { colors, layout } from '../tokens.stylex.js';
 const MOBILE = '@media (max-width: 720px)';
 const TPLC = `${layout.gutW} repeat(7, minmax(${layout.colMin}, 1fr))`;
 
+const hintIn = stylex.keyframes({
+  from: { opacity: 0, transform: 'translate(-50%, 6px)' },
+});
+
 export const grid = stylex.create({
+  emptyHint: {
+    position: 'fixed',
+    left: '50%',
+    bottom: 'calc(24px + env(safe-area-inset-bottom))',
+    transform: 'translateX(-50%)',
+    zIndex: 40,
+    padding: '7px 13px',
+    borderRadius: '99px',
+    backgroundColor: colors.glass,
+    WebkitBackdropFilter: 'blur(8px)',
+    backdropFilter: 'blur(8px)',
+    boxShadow: `0 0 0 1px ${colors.edge}, 0 4px 12px rgba(20,20,26,.10)`,
+    fontSize: '12px',
+    fontWeight: 550,
+    letterSpacing: '-0.002em',
+    color: colors.muted,
+    whiteSpace: 'nowrap',
+    maxWidth: 'calc(100vw - 32px)',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    pointerEvents: 'none',
+    animationName: hintIn,
+    animationDuration: '.45s',
+    animationDelay: '.5s',
+    animationTimingFunction: 'cubic-bezier(.2,0,0,1)',
+    animationFillMode: 'both',
+    '@media (prefers-reduced-motion: reduce)': {
+      animationName: 'none',
+    },
+    '@media print': {
+      display: 'none',
+    },
+  },
+
+  emptyHintFine: {
+    display: 'inline',
+    '@media (pointer: coarse)': {
+      display: 'none',
+    },
+  },
+
+  emptyHintCoarse: {
+    display: 'none',
+    '@media (pointer: coarse)': {
+      display: 'inline',
+    },
+  },
+
   pane: {
     flex: 1,
     minHeight: 0,

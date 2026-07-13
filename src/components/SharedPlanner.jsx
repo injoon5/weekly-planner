@@ -124,9 +124,6 @@ export function SharedPlanner() {
           {readOnly ? '보기 전용' : '공유 편집'}
         </span>
         <span>{board.name || '시간표'}</span>
-        {(board.from || board.to) && (
-          <span {...stylex.props(planner.prange)}>{fmtRange(board.from, board.to)}</span>
-        )}
       </div>
 
       <header {...stylex.props(planner.top)}>
