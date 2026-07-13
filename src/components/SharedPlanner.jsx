@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { Link, useParams } from '@tanstack/react-router';
 import { Moon, Printer, Sun, Eye } from 'lucide-react';
@@ -7,11 +8,14 @@ import { useEventMutations } from '../hooks/useEventMutations.js';
 import { useSharedBoard } from '../hooks/useSharedBoard.js';
 import { useTheme } from '../hooks/useTheme.js';
 import { useViewControls } from '../hooks/useViewControls.js';
+import { defaultPrintPrefs, readPrintPrefs } from '../print-prefs.js';
 import { fmtRange, fmtRepeat } from '../time.js';
 import { planner } from '../styles/planner.js';
 import { ui } from '../styles/ui.js';
 import { auth as authStyles } from '../styles/auth.js';
 import { PresenceAvatars } from './PresenceAvatars.jsx';
+import { PrintDialog } from './PrintDialog.jsx';
+import { PrintMeta } from './PrintMeta.jsx';
 import { PlannerSurface, usePlannerClock } from './PlannerSurface.jsx';
 import { ViewControls } from './ViewControls.jsx';
 import { IconSwap } from './ui/IconSwap.jsx';
@@ -22,6 +26,8 @@ export function SharedPlanner() {
   const shared = useSharedBoard(token);
   const { theme, toggleTheme } = useTheme(null);
   const { nowMin, nowDay, todayDow } = usePlannerClock();
+  const [printOpen, setPrintOpen] = useState(false);
+  const [printPrefs, setPrintPrefs] = useState(() => readPrintPrefs(null));
 
   const eventsApi = useEventMutations({
     board: shared.board,
@@ -50,6 +56,18 @@ export function SharedPlanner() {
     role: shared.role,
     guestLabel: shared.canEdit ? '공유 편집' : '공유 보기',
   });
+
+  useEffect(() => {
+    const board = shared.board;
+    if (!board) return;
+    const stored = readPrintPrefs(board);
+    setPrintPrefs({
+      ...defaultPrintPrefs(board),
+      ...stored,
+      from: board.from || '',
+      to: board.to || '',
+    });
+  }, [shared.board?.id, shared.board?.from, shared.board?.to]);
 
   if (shared.isLoading) {
     return <div {...stylex.props(planner.boot)}>불러오는 중…</div>;
@@ -134,6 +152,7 @@ export function SharedPlanner() {
             {board.repeatEvery > 0 && ' · ' + fmtRepeat(board.repeatEvery)}
           </span>
         )}
+        <PrintMeta prefs={printPrefs} />
         <div {...stylex.props(planner.hbtns)}>
           <PresenceAvatars peers={presence.peers} />
           <MenuPopover
@@ -159,7 +178,9 @@ export function SharedPlanner() {
           </button>
           <button
             {...stylex.props(planner.btn, planner.btnPlain)}
-            onClick={() => window.print()}
+            type="button"
+            aria-label="인쇄"
+            onClick={() => setPrintOpen(true)}
           >
             <Printer size={14} strokeWidth={1.75} />
             <span {...stylex.props(planner.btnLabelHide)}>인쇄</span>
@@ -178,6 +199,13 @@ export function SharedPlanner() {
         todayDow={todayDow}
         nowMin={nowMin}
         nowDay={nowDay}
+      />
+
+      <PrintDialog
+        open={printOpen}
+        onOpenChange={setPrintOpen}
+        board={board}
+        onPrintPrefs={setPrintPrefs}
       />
     </div>
   );

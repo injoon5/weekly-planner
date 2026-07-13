@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex';
 import { colors, layout } from '../tokens.stylex.js';
 
-const MOBILE = '@media (max-width: 720px)';
+const MOBILE = '@media screen and (max-width: 720px)';
 
 export const planner = stylex.create({
   app: {
@@ -10,6 +10,13 @@ export const planner = stylex.create({
     flexDirection: 'column',
     backgroundColor: colors.bg,
     color: colors.ink,
+    '@media print': {
+      height: 'auto',
+      minHeight: 0,
+      display: 'block',
+      backgroundColor: '#fff',
+      color: '#1B1B20',
+    },
   },
 
   boot: {
@@ -53,7 +60,7 @@ export const planner = stylex.create({
     letterSpacing: '-0.011em',
     lineHeight: 1.2,
     '@media print': {
-      fontSize: '15px',
+      fontSize: '17px',
     },
   },
 
@@ -63,6 +70,7 @@ export const planner = stylex.create({
     color: colors.muted,
     '@media print': {
       display: 'inline',
+      fontSize: '15px',
     },
   },
 
@@ -82,32 +90,37 @@ export const planner = stylex.create({
     display: 'none',
     '@media print': {
       display: 'flex',
-      gap: '22px',
+      flexWrap: 'wrap',
+      gap: '18px 24px',
       marginLeft: 'auto',
-      fontSize: '10px',
+      fontSize: '12.5px',
       fontWeight: 550,
       color: '#6E6E76',
+      lineHeight: 1.3,
     },
   },
 
   printMetaItem: {
     display: 'flex',
     alignItems: 'center',
+    whiteSpace: 'nowrap',
   },
 
   printMetaBlank: {
     display: 'inline-block',
-    width: '96px',
-    marginLeft: '7px',
-    borderBottom: '1px solid #C6C6CC',
-    verticalAlign: '-2px',
+    width: '110px',
+    marginLeft: '8px',
+    borderBottom: '1.5px solid #C6C6CC',
+    verticalAlign: '-3px',
+    height: '1.1em',
   },
 
   printMetaVal: {
     color: '#1B1B20',
     fontWeight: 600,
-    marginLeft: '6px',
+    marginLeft: '7px',
     fontVariantNumeric: 'tabular-nums',
+    fontSize: '12.5px',
   },
 
   tabs: {
@@ -348,7 +361,7 @@ export const planner = stylex.create({
         bottom: '-7px',
       },
     },
-    '@media (max-width: 720px)': {
+    '@media screen and (max-width: 720px)': {
       paddingInline: '9px',
     },
   },
@@ -393,7 +406,7 @@ export const planner = stylex.create({
 
   btnLabelHide: {
     display: 'inline',
-    '@media (max-width: 720px)': {
+    '@media screen and (max-width: 720px)': {
       display: 'none',
     },
   },
@@ -484,5 +497,11 @@ export const planner = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     position: 'relative',
+    '@media print': {
+      flex: 'none',
+      minHeight: 0,
+      display: 'block',
+      position: 'static',
+    },
   },
 });

@@ -1,6 +1,7 @@
 import * as stylex from '@stylexjs/stylex';
 
-const MOBILE = '@media (max-width: 720px)';
+// Screen-only so mobile layout tokens don't shrink the printout.
+const MOBILE = '@media screen and (max-width: 720px)';
 
 export const colors = stylex.defineVars({
   bg: '#F6F6F7',
@@ -33,10 +34,26 @@ export const colors = stylex.defineVars({
 });
 
 export const layout = stylex.defineVars({
-  slotH: { default: '28px', [MOBILE]: '26px' },
-  headH: { default: '46px', [MOBILE]: '42px' },
-  gutW: { default: '54px', [MOBILE]: '46px' },
-  colMin: { default: '116px', [MOBILE]: '106px' },
+  slotH: {
+    default: '28px',
+    [MOBILE]: '26px',
+    '@media print': '30px',
+  },
+  headH: {
+    default: '46px',
+    [MOBILE]: '42px',
+    '@media print': '48px',
+  },
+  gutW: {
+    default: '54px',
+    [MOBILE]: '46px',
+    '@media print': '58px',
+  },
+  colMin: {
+    default: '116px',
+    [MOBILE]: '106px',
+    '@media print': '0px',
+  },
   font:
     '"Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif',
 });

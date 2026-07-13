@@ -20,7 +20,7 @@ export const editor = stylex.create({
     padding: '14px 16px',
     boxShadow: `0 0 0 1px ${colors.edge}, 0 4px 12px rgba(20,20,26,.08), 0 28px 60px -16px rgba(20,20,26,.40)`,
     outline: 'none',
-    '@media (max-width: 560px)': {
+    '@media screen and (max-width: 560px)': {
       maxHeight: 'calc(100dvh - 48px)',
       borderRadius: '18px 18px 0 0',
       paddingBottom: 'calc(14px + env(safe-area-inset-bottom))',

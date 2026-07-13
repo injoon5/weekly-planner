@@ -18,12 +18,15 @@ import { useShareActions } from '../hooks/useShareActions.js';
 import { useTheme } from '../hooks/useTheme.js';
 import { useViewControls } from '../hooks/useViewControls.js';
 import { useWorkspace } from '../hooks/useWorkspace.js';
+import { defaultPrintPrefs, readPrintPrefs } from '../print-prefs.js';
 import { fmtRange, fmtRepeat } from '../time.js';
 import { planner } from '../styles/planner.js';
 import { BoardMenu } from './BoardMenu.jsx';
 import { BoardTabs } from './BoardTabs.jsx';
 import { MoreMenu, UserMenu } from './Menus.jsx';
 import { PresenceAvatars } from './PresenceAvatars.jsx';
+import { PrintDialog } from './PrintDialog.jsx';
+import { PrintMeta } from './PrintMeta.jsx';
 import { PlannerSurface, usePlannerClock } from './PlannerSurface.jsx';
 import { SharePanel } from './SharePanel.jsx';
 import { ViewControls } from './ViewControls.jsx';
@@ -58,6 +61,8 @@ export function Planner() {
   // controlled popover instead of a trigger-based one.
   const [boardMenuAnchor, setBoardMenuAnchor] = useState(null);
   const closeBoardMenu = () => setBoardMenuAnchor(null);
+  const [printOpen, setPrintOpen] = useState(false);
+  const [printPrefs, setPrintPrefs] = useState(() => readPrintPrefs(null));
 
   const eventsApi = useEventMutations({ board, canEdit });
   const lifecycle = useBoardLifecycle({
@@ -111,6 +116,17 @@ export function Planner() {
     return () => clearTimeout(t);
   }, [board?.id, swapBoardId]);
 
+  useEffect(() => {
+    if (!board) return;
+    const stored = readPrintPrefs(board);
+    setPrintPrefs({
+      ...defaultPrintPrefs(board),
+      ...stored,
+      from: board.from || '',
+      to: board.to || '',
+    });
+  }, [board?.id, board?.from, board?.to]);
+
   const readOnly = !canEdit;
 
   const myMembership = useMemo(() => {
@@ -146,20 +162,7 @@ export function Planner() {
           </span>
         )}
 
-        <div {...stylex.props(planner.printMeta)}>
-          <span>
-            이름
-            <i {...stylex.props(planner.printMetaBlank)} />
-          </span>
-          <span>
-            기간
-            {board.from || board.to ? (
-              <b {...stylex.props(planner.printMetaVal)}>{fmtRange(board.from, board.to)}</b>
-            ) : (
-              <i {...stylex.props(planner.printMetaBlank)} />
-            )}
-          </span>
-        </div>
+        <PrintMeta prefs={printPrefs} />
 
         <BoardTabs
           boards={boards}
@@ -282,7 +285,9 @@ export function Planner() {
 
           <button
             {...stylex.props(planner.btn, planner.btnPlain)}
-            onClick={() => window.print()}
+            type="button"
+            aria-label="인쇄"
+            onClick={() => setPrintOpen(true)}
           >
             <Printer size={14} strokeWidth={1.75} />
             <span {...stylex.props(planner.btnLabelHide)}>인쇄</span>
@@ -302,6 +307,13 @@ export function Planner() {
         todayDow={todayDow}
         nowMin={nowMin}
         nowDay={nowDay}
+      />
+
+      <PrintDialog
+        open={printOpen}
+        onOpenChange={setPrintOpen}
+        board={board}
+        onPrintPrefs={setPrintPrefs}
       />
 
       <input
