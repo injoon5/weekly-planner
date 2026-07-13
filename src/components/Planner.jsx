@@ -14,7 +14,7 @@ import { useBoardLifecycle } from '../hooks/useBoardLifecycle.js';
 import { useBoardPresence } from '../hooks/useBoardPresence.js';
 import { useEditorSession } from '../hooks/useEditorSession.js';
 import { useEventMutations } from '../hooks/useEventMutations.js';
-import { useMenu } from '../hooks/useMenu.js';
+import { useMenu, menuPopStyle } from '../hooks/useMenu.js';
 import { useShareActions } from '../hooks/useShareActions.js';
 import { useTheme } from '../hooks/useTheme.js';
 import { useToast } from '../hooks/useToast.js';
@@ -191,7 +191,7 @@ export function Planner() {
           <button
             {...stylex.props(planner.ibtn)}
             aria-label="보기 설정"
-            onClick={(e) => openMenu('view', e, 'right')}
+            onClick={(e) => openMenu('view', e, 'right', 264)}
           >
             <Eye size={15} strokeWidth={1.75} />
           </button>
@@ -199,7 +199,7 @@ export function Planner() {
             <button
               {...stylex.props(planner.ibtn)}
               aria-label="공유"
-              onClick={(e) => openMenu('share', e, 'right')}
+              onClick={(e) => openMenu('share', e, 'right', 264)}
             >
               <Share2 size={15} strokeWidth={1.75} />
             </button>
@@ -255,15 +255,7 @@ export function Planner() {
       {menu && (
         <>
           <div {...stylex.props(menus.mscrim)} onPointerDown={closeMenu} />
-          <div
-            {...stylex.props(menus.pop)}
-            role="menu"
-            style={{
-              left: `${menu.x}px`,
-              top: `${menu.y}px`,
-              width: menu.kind === 'share' || menu.kind === 'view' ? 260 : undefined,
-            }}
-          >
+          <div {...stylex.props(menus.pop)} role="menu" style={menuPopStyle(menu)}>
             {menu.kind === 'board' ? (
               <BoardMenu
                 board={board}

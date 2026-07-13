@@ -1,42 +1,51 @@
+import { useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { menus } from '../styles/menus.js';
 import { ui } from '../styles/ui.js';
+
+function SwitchRow({ label, checked, onChange }) {
+  const [focused, setFocused] = useState(false);
+
+  return (
+    <label {...stylex.props(menus.mi)}>
+      <span {...stylex.props(menus.miLabel, menus.miGrow)}>{label}</span>
+      <span
+        aria-hidden
+        {...stylex.props(
+          menus.switchTrack,
+          checked && menus.switchTrackOn,
+          focused && menus.switchTrackFocus,
+        )}
+      >
+        <span {...stylex.props(menus.switchThumb, checked && menus.switchThumbOn)} />
+      </span>
+      <input
+        type="checkbox"
+        role="switch"
+        {...stylex.props(menus.srOnly)}
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        onFocus={(e) => setFocused(e.target.matches(':focus-visible'))}
+        onBlur={() => setFocused(false)}
+      />
+    </label>
+  );
+}
 
 export function ViewControls({ views }) {
   if (!views) return null;
 
   return (
     <>
-      <div {...stylex.props(menus.mcap)} style={{ paddingTop: 6 }}>
-        보기
-      </div>
+      <div {...stylex.props(menus.mcap, menus.mcapFirst)}>보기</div>
 
-      <label {...stylex.props(menus.mi)} style={{ cursor: 'pointer' }}>
-        <input
-          type="checkbox"
-          checked={views.hideWeekend}
-          onChange={(e) => views.setHideWeekend(e.target.checked)}
-        />
-        <span {...stylex.props(menus.miLabel)}>주말 숨기기</span>
-      </label>
-
-      <label {...stylex.props(menus.mi)} style={{ cursor: 'pointer' }}>
-        <input
-          type="checkbox"
-          checked={views.compact}
-          onChange={(e) => views.setCompact(e.target.checked)}
-        />
-        <span {...stylex.props(menus.miLabel)}>촘촘하게</span>
-      </label>
-
-      <label {...stylex.props(menus.mi)} style={{ cursor: 'pointer' }}>
-        <input
-          type="checkbox"
-          checked={views.showMemos}
-          onChange={(e) => views.setShowMemos(e.target.checked)}
-        />
-        <span {...stylex.props(menus.miLabel)}>메모 표시</span>
-      </label>
+      <SwitchRow
+        label="주말 숨기기"
+        checked={views.hideWeekend}
+        onChange={views.setHideWeekend}
+      />
+      <SwitchRow label="촘촘하게" checked={views.compact} onChange={views.setCompact} />
+      <SwitchRow label="메모 표시" checked={views.showMemos} onChange={views.setShowMemos} />
 
       <div {...stylex.props(menus.mdiv)} />
       <div {...stylex.props(menus.mcap)}>색상 필터 · 이름</div>
@@ -44,34 +53,17 @@ export function ViewControls({ views }) {
       {views.palette.map((c) => {
         const on = !views.hiddenColors.includes(c);
         return (
-          <div key={c} {...stylex.props(menus.drow)} style={{ gap: 6 }}>
+          <div key={c} {...stylex.props(menus.drow)}>
             <button
               type="button"
+              {...stylex.props(menus.swatch)}
+              data-color={c}
               aria-pressed={on}
+              aria-label={`${views.colorLabel(c)} ${on ? '숨기기' : '보이기'}`}
               title={on ? '숨기기' : '보이기'}
               onClick={() => views.toggleColor(c)}
-              style={{
-                width: 18,
-                height: 18,
-                borderRadius: 99,
-                border: on ? 'none' : '1.5px dashed currentColor',
-                opacity: on ? 1 : 0.35,
-                padding: 0,
-                cursor: 'pointer',
-                flexShrink: 0,
-              }}
-              data-color={c}
             >
-              <span
-                data-color={c}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  height: '100%',
-                  borderRadius: 99,
-                  background: 'var(--ev-accent)',
-                }}
-              />
+              <span {...stylex.props(menus.swatchDot, !on && menus.swatchDotOff)} />
             </button>
             {views.canRenameColors ? (
               <input

@@ -83,7 +83,7 @@ export function BoardMenu({ board, solo, canEditMeta = true, onCommit, onDup, on
           </button>
 
           <HoldToConfirm
-            {...stylex.props(menus.mi, menus.miRed)}
+            {...stylex.props(menus.mi, menus.miRed, menus.hold)}
             onConfirm={onClear}
             aria-label="모든 일정 비우기 — 길게 눌러 확인"
           >
@@ -94,7 +94,7 @@ export function BoardMenu({ board, solo, canEditMeta = true, onCommit, onDup, on
           </HoldToConfirm>
 
           <HoldToConfirm
-            {...stylex.props(menus.mi, menus.miRed)}
+            {...stylex.props(menus.mi, menus.miRed, menus.hold)}
             disabled={solo}
             title={solo ? '시간표가 하나뿐이에요' : undefined}
             onConfirm={onDelete}

@@ -20,6 +20,11 @@ export const menus = stylex.create({
     position: 'fixed',
     zIndex: 90,
     width: '232px',
+    maxWidth: 'calc(100vw - 16px)',
+    boxSizing: 'border-box',
+    overflowY: 'auto',
+    overscrollBehavior: 'contain',
+    WebkitOverflowScrolling: 'touch',
     backgroundColor: colors.paper,
     borderRadius: '12px',
     padding: '6px',
@@ -79,7 +84,7 @@ export const menus = stylex.create({
     cursor: 'pointer',
     fontFamily: 'inherit',
     userSelect: 'none',
-    touchAction: 'none',
+    touchAction: 'manipulation',
     transitionProperty: 'background-color, color, transform',
     transitionDuration: '.13s',
     transitionTimingFunction: 'ease',
@@ -109,6 +114,10 @@ export const menus = stylex.create({
         backgroundColor: 'transparent',
       },
     },
+  },
+
+  hold: {
+    touchAction: 'none',
   },
 
   holdFill: {
@@ -153,6 +162,183 @@ export const menus = stylex.create({
     fontSize: '10.5px',
     lineHeight: 1.5,
     color: colors.faint,
+  },
+
+  mcapFirst: {
+    paddingTop: '7px',
+  },
+
+  mcapTight: {
+    paddingTop: 0,
+  },
+
+  shareUrl: {
+    boxSizing: 'border-box',
+    margin: '1px 3px 4px',
+    padding: '7px 9px',
+    borderRadius: '8px',
+    backgroundColor: colors.field,
+    fontSize: '11px',
+    lineHeight: 1.45,
+    fontWeight: 500,
+    color: colors.muted,
+    fontVariantNumeric: 'tabular-nums',
+    wordBreak: 'break-all',
+    userSelect: 'all',
+  },
+
+  memberRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '3px 3px 3px 9px',
+    minHeight: '32px',
+    boxSizing: 'border-box',
+  },
+
+  memberName: {
+    flex: 1,
+    minWidth: 0,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    fontSize: '12.5px',
+    fontWeight: 550,
+    letterSpacing: '-0.002em',
+    color: colors.ink,
+  },
+
+  memberRoleSelect: {
+    flexShrink: 0,
+    width: '76px',
+  },
+
+  memberRoleText: {
+    flexShrink: 0,
+    paddingRight: '6px',
+    fontSize: '11px',
+    fontWeight: 600,
+    color: colors.muted,
+  },
+
+  memberRemove: {
+    flexShrink: 0,
+    width: '28px',
+    height: '28px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0,
+    borderRadius: '7px',
+    padding: 0,
+    backgroundColor: 'transparent',
+    color: colors.now,
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    transitionProperty: 'background-color, transform',
+    transitionDuration: '.13s',
+    transitionTimingFunction: 'ease',
+    ':hover': {
+      backgroundColor: 'rgba(229,72,77,.10)',
+    },
+    ':active': {
+      transform: 'scale(.94)',
+    },
+  },
+
+  miGrow: {
+    flex: 1,
+  },
+
+  srOnly: {
+    position: 'absolute',
+    width: '1px',
+    height: '1px',
+    margin: '-1px',
+    padding: 0,
+    overflow: 'hidden',
+    clip: 'rect(0 0 0 0)',
+    whiteSpace: 'nowrap',
+    borderWidth: 0,
+  },
+
+  switchTrack: {
+    boxSizing: 'border-box',
+    flexShrink: 0,
+    width: '30px',
+    height: '18px',
+    padding: '2px',
+    borderRadius: '99px',
+    display: 'inline-flex',
+    backgroundColor: colors.edgeH,
+    transitionProperty: 'background-color, box-shadow',
+    transitionDuration: '.18s',
+    transitionTimingFunction: 'ease',
+  },
+
+  switchTrackOn: {
+    backgroundColor: colors.ink,
+  },
+
+  switchTrackFocus: {
+    boxShadow: `0 0 0 2px ${colors.paper}, 0 0 0 3.5px ${colors.ink}`,
+  },
+
+  switchThumb: {
+    width: '14px',
+    height: '14px',
+    borderRadius: '99px',
+    backgroundColor: colors.paper,
+    boxShadow: '0 1px 2px rgba(0,0,0,.22), 0 0 0 0.5px rgba(0,0,0,.04)',
+    transform: 'translateX(0)',
+    transitionProperty: 'transform',
+    transitionDuration: '.18s',
+    transitionTimingFunction: 'cubic-bezier(.2,0,0,1)',
+    '@media (prefers-reduced-motion: reduce)': {
+      transitionDuration: '0ms',
+    },
+  },
+
+  switchThumbOn: {
+    transform: 'translateX(12px)',
+  },
+
+  swatch: {
+    flexShrink: 0,
+    width: '18px',
+    height: '18px',
+    padding: 0,
+    borderWidth: 0,
+    borderRadius: '99px',
+    backgroundColor: 'transparent',
+    display: 'flex',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    '@media (pointer: coarse)': {
+      position: 'relative',
+      '::after': {
+        content: '""',
+        position: 'absolute',
+        inset: '-6px',
+      },
+    },
+  },
+
+  swatchDot: {
+    width: '100%',
+    height: '100%',
+    borderRadius: '99px',
+    backgroundColor: 'var(--ev-accent)',
+    transitionProperty: 'transform, box-shadow, background-color, opacity',
+    transitionDuration: '.15s',
+    transitionTimingFunction: 'cubic-bezier(.2,0,0,1)',
+  },
+
+  swatchDotOff: {
+    backgroundColor: 'transparent',
+    boxShadow: 'inset 0 0 0 1.5px var(--ev-accent)',
+    opacity: 0.55,
+    transform: 'scale(.9)',
   },
 
   hintFine: {

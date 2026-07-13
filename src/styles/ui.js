@@ -133,4 +133,13 @@ export const ui = stylex.create({
     borderRadius: '8px',
     fontVariantNumeric: 'tabular-nums',
   },
+  select: {
+    appearance: 'none',
+    WebkitAppearance: 'none',
+    paddingRight: '26px',
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M2 3.5 5 6.5 8 3.5' fill='none' stroke='%238A8A92' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right 8px center',
+    cursor: 'pointer',
+  },
 });
