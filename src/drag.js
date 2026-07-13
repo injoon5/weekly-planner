@@ -215,7 +215,12 @@ export function beginPointerGesture(e, {
     if (session.phase === 'active') ev.preventDefault();
   };
 
-  const cleanup = () => {
+  // Every exit path must report a result — the caller tracks the live gesture
+  // and only releases it via onResult. A silent teardown (e.g. touch turning
+  // into a scroll) would leave the grid ignoring all further pointerdowns.
+  const finish = result => {
+    if (session.phase === 'done') return;
+    session.phase = 'done';
     clearTimeout(session.tmr);
     cancelAnimationFrame(session.raf);
     try {
@@ -230,6 +235,7 @@ export function beginPointerGesture(e, {
     document.removeEventListener('touchmove', blockScroll);
     document.body.classList.remove('dragging');
     onDraft(null);
+    onResult(result);
   };
 
   const move = ev => {
@@ -238,7 +244,7 @@ export function beginPointerGesture(e, {
     if (session.phase === 'pending') {
       const d = Math.hypot(ev.clientX - session.x0, ev.clientY - session.y0);
       if (session.isTouch) {
-        if (d > 10) cleanup();
+        if (d > 10) finish({ type: 'noop' });
       } else if (d > 4) {
         activate();
       }
@@ -250,19 +256,17 @@ export function beginPointerGesture(e, {
   const up = ev => {
     if (ev.pointerId !== session.ptr) return;
     if (session.phase === 'pending') {
-      onResult(resolvePendingTap(session));
-      cleanup();
+      finish(resolvePendingTap(session));
       return;
     }
-    onResult(resolveActiveUp(session));
-    cleanup();
+    finish(resolveActiveUp(session));
   };
 
   const cancel = ev => {
-    if (ev.pointerId === session.ptr) cleanup();
+    if (ev.pointerId === session.ptr) finish({ type: 'noop' });
   };
   const key = ev => {
-    if (ev.key === 'Escape') cleanup();
+    if (ev.key === 'Escape') finish({ type: 'noop' });
   };
 
   window.addEventListener('pointermove', move);
@@ -274,5 +278,5 @@ export function beginPointerGesture(e, {
     session.tmr = setTimeout(activate, 300);
   }
 
-  return { cleanup };
+  return { cleanup: () => finish({ type: 'noop' }) };
 }

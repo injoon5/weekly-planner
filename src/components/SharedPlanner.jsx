@@ -9,7 +9,6 @@ import { useSharedBoard } from '../hooks/useSharedBoard.js';
 import { useTheme } from '../hooks/useTheme.js';
 import { useToast } from '../hooks/useToast.js';
 import { useViewControls } from '../hooks/useViewControls.js';
-import { pickLeastUsedColor } from '../models.js';
 import { fmtRange } from '../time.js';
 import { planner } from '../styles/planner.js';
 import { menus } from '../styles/menus.js';
@@ -161,23 +160,6 @@ export function SharedPlanner() {
             <Printer size={14} strokeWidth={1.75} />
             <span {...stylex.props(planner.btnLabelHide)}>인쇄</span>
           </button>
-          {!readOnly && (
-            <button
-              {...stylex.props(planner.btn, planner.btnPrimary)}
-              onClick={() =>
-                session.openCreate({
-                  day: todayDow,
-                  start: 720,
-                  dur: 60,
-                  title: '',
-                  color: pickLeastUsedColor(shared.events),
-                  memo: '',
-                })
-              }
-            >
-              새 일정
-            </button>
-          )}
         </div>
       </header>
 

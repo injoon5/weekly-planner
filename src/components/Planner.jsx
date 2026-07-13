@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {
-  Plus,
   Printer,
   Moon,
   Sun,
@@ -20,7 +19,6 @@ import { useTheme } from '../hooks/useTheme.js';
 import { useToast } from '../hooks/useToast.js';
 import { useViewControls } from '../hooks/useViewControls.js';
 import { useWorkspace } from '../hooks/useWorkspace.js';
-import { pickLeastUsedColor } from '../models.js';
 import { fmtRange } from '../time.js';
 import { planner } from '../styles/planner.js';
 import { menus } from '../styles/menus.js';
@@ -115,18 +113,6 @@ export function Planner() {
     if (!board || !user) return null;
     return (board.members || []).find((m) => (m.user?.id || m.user) === user.id) || null;
   }, [board, user]);
-
-  const addNew = () => {
-    if (readOnly) return;
-    session.openCreate({
-      day: todayDow,
-      start: 720,
-      dur: 60,
-      title: '',
-      color: pickLeastUsedColor(events),
-      memo: '',
-    });
-  };
 
   if (isLoading || (!ready && !boards.length)) {
     return <div {...stylex.props(planner.boot)}>불러오는 중…</div>;
@@ -229,11 +215,6 @@ export function Planner() {
             <Printer size={14} strokeWidth={1.75} />
             <span {...stylex.props(planner.btnLabelHide)}>인쇄</span>
           </button>
-          {!readOnly && (
-            <button {...stylex.props(planner.btn, planner.btnPrimary)} onClick={addNew}>
-              <Plus size={14} strokeWidth={2} />새 일정
-            </button>
-          )}
         </div>
       </header>
 
