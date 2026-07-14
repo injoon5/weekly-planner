@@ -76,10 +76,29 @@ npm run push:perms
 | `npm run preview`     | Preview production build     |
 | `npm run push:schema` | Push Instant schema          |
 | `npm run push:perms`  | Push Instant permissions     |
+| `npm run sync:auth-origins` | Register Instant auth origins (Vercel previews) |
 
 ## Deploy
 
 `vercel.json` sets `framework: "vite"`. Build output is `dist/`.
+
+### Vercel preview auth
+
+Instant validates the browser `Origin` on auth requests. Preview URLs (`*.vercel.app`) must be registered once per Vercel project:
+
+```bash
+# one-time: print a CLI token (do not commit it)
+npx instant-cli@latest login -p
+
+# register preview + production + localhost origins
+INSTANT_CLI_AUTH_TOKEN=<token> npm run sync:auth-origins
+```
+
+This adds a **Vercel** origin for the `weekly-planner` project (covers every preview deployment) plus website origins for production and `localhost:3000`.
+
+For CI, add `INSTANT_CLI_AUTH_TOKEN` as a GitHub Actions secret — `.github/workflows/sync-instant-auth-origins.yml` runs on `main` and re-syncs when the script changes.
+
+Set `INSTANT_ADMIN_TOKEN` in Vercel **Preview** and **Production** env scopes so `/api/invite` works on preview deployments too.
 
 ## License
 

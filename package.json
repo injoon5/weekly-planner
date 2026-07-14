@@ -17,7 +17,8 @@
     "start": "vite",
     "push:schema": "npx instant-cli@latest push schema --yes",
     "push:perms": "npx instant-cli@latest push perms --yes",
-    "pull": "npx instant-cli@latest pull --yes"
+    "pull": "npx instant-cli@latest pull --yes",
+    "sync:auth-origins": "node scripts/sync-instant-auth-origins.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
