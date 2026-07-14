@@ -132,6 +132,7 @@ export function edgeScrollDelta(
   gutWidth,
   headHeight,
   margin = EDGE_SCROLL_MARGIN,
+  allowHorizontal = true,
 ) {
   const L = paneRect.left + gutWidth + 6;
   const R = paneRect.right - 6;
@@ -139,8 +140,10 @@ export function edgeScrollDelta(
   const B = paneRect.bottom - 6;
   let dx = 0;
   let dy = 0;
-  if (pointer.x < L + margin) dx = -Math.ceil(clamp(1 - (pointer.x - L) / margin, 0, 1) * 15);
-  else if (pointer.x > R - margin) dx = Math.ceil(clamp(1 - (R - pointer.x) / margin, 0, 1) * 15);
+  if (allowHorizontal) {
+    if (pointer.x < L + margin) dx = -Math.ceil(clamp(1 - (pointer.x - L) / margin, 0, 1) * 15);
+    else if (pointer.x > R - margin) dx = Math.ceil(clamp(1 - (R - pointer.x) / margin, 0, 1) * 15);
+  }
   if (pointer.y < T + margin) dy = -Math.ceil(clamp(1 - (pointer.y - T) / margin, 0, 1) * 15);
   else if (pointer.y > B - margin) dy = Math.ceil(clamp(1 - (B - pointer.y) / margin, 0, 1) * 15);
   return { dx, dy };
@@ -198,11 +201,14 @@ export function beginPointerGesture(e, {
   const edgeLoop = () => {
     if (session.phase !== 'active') return;
     const m = metrics();
+    const allowHorizontal = paneEl.scrollWidth > paneEl.clientWidth + 4;
     const { dx, dy } = edgeScrollDelta(
       session.last,
       m.paneRect,
       m.gutWidth,
       m.headHeight,
+      EDGE_SCROLL_MARGIN,
+      allowHorizontal,
     );
     if (dx || dy) {
       paneEl.scrollBy(dx, dy);
