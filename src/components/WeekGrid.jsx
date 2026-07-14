@@ -14,6 +14,7 @@ import {
 } from '../drag.js';
 import {
   chipStyle,
+  clampPaneScroll,
   geoX,
   gridGeometryStyle,
   mergeDragView,
@@ -118,7 +119,8 @@ export function WeekGrid({
   const paneRef = useRef(null);
   const bodyRef = useRef(null);
   const gutRef = useRef(null);
-  const hrowRef = useRef(null);
+  const headClipRef = useRef(null);
+  const headTrackRef = useRef(null);
   const gestureRef = useRef(null);
   const eventsRef = useRef(events);
   eventsRef.current = events;
@@ -136,10 +138,39 @@ export function WeekGrid({
 
   const dayCount = days.length;
   const colTemplate = `${layout.gutW} repeat(${dayCount}, minmax(${layout.colMin}, 1fr))`;
+  const dayColTemplate = `repeat(${dayCount}, minmax(${layout.colMin}, 1fr))`;
   const bodyStyle = {
     ...gridGeometryStyle(),
     gridTemplateColumns: colTemplate,
   };
+
+  useEffect(() => {
+    const pane = paneRef.current;
+    const body = bodyRef.current;
+    const track = headTrackRef.current;
+    const gut = gutRef.current;
+    if (!pane || !body || !track) return;
+
+    const sync = () => {
+      clampPaneScroll(pane);
+      track.style.transform = `translate3d(-${pane.scrollLeft}px, 0, 0)`;
+      if (gut) {
+        track.style.width = `${Math.max(0, body.offsetWidth - gut.offsetWidth)}px`;
+      }
+    };
+
+    const ro = new ResizeObserver(sync);
+    ro.observe(pane);
+    ro.observe(body);
+    if (gut) ro.observe(gut);
+
+    pane.addEventListener('scroll', sync, { passive: true });
+    sync();
+    return () => {
+      ro.disconnect();
+      pane.removeEventListener('scroll', sync);
+    };
+  }, [boardId, dayCount, colTemplate]);
 
   useEffect(() => {
     const visualCol = days.indexOf(nowDay);
@@ -198,7 +229,7 @@ export function WeekGrid({
       payload,
       bodyEl: bodyRef.current,
       gutEl: gutRef.current,
-      hrowEl: hrowRef.current,
+      hrowEl: headClipRef.current,
       paneEl: paneRef.current,
       days,
       onDraft: setDrag,
@@ -213,46 +244,54 @@ export function WeekGrid({
   return (
     <main
       {...stylex.props(grid.pane, planner.gridSwap, swapping && planner.gridSwapOut)}
-      ref={paneRef}
     >
-      <div {...stylex.props(grid.sheet)}>
-        <div
-          {...stylex.props(grid.hrow)}
-          ref={hrowRef}
-          style={{ gridTemplateColumns: colTemplate }}
-        >
-          <div {...stylex.props(grid.corner)}>시간</div>
-          {days.map((d, i) => (
-            <div key={d} {...stylex.props(grid.dcell, i === 0 && grid.dcellFirst)}>
-              <span
-                {...stylex.props(
-                  grid.dko,
-                  d === 0 && grid.dkoSun,
-                  d === 6 && grid.dkoSat,
-                  d === todayDow && grid.dkoToday,
-                )}
-              >
-                {DAYS_KO[d]}
-              </span>
-              <span {...stylex.props(grid.den)}>{DAYS_EN[d]}</span>
-            </div>
-          ))}
+      <div
+        {...stylex.props(grid.headClip)}
+        ref={headClipRef}
+        style={{ gridTemplateColumns: colTemplate }}
+      >
+        <div {...stylex.props(grid.corner)}>시간</div>
+        <div {...stylex.props(grid.headMask)}>
+          <div
+            {...stylex.props(grid.headTrack)}
+            ref={headTrackRef}
+            style={{ gridTemplateColumns: dayColTemplate }}
+          >
+            {days.map((d, i) => (
+              <div key={d} {...stylex.props(grid.dcell, i === 0 && grid.dcellFirst)}>
+                <span
+                  {...stylex.props(
+                    grid.dko,
+                    d === 0 && grid.dkoSun,
+                    d === 6 && grid.dkoSat,
+                    d === todayDow && grid.dkoToday,
+                  )}
+                >
+                  {DAYS_KO[d]}
+                </span>
+                <span {...stylex.props(grid.den)}>{DAYS_EN[d]}</span>
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
 
-        <div
-          {...stylex.props(grid.body, compact && compactLayout)}
-          ref={bodyRef}
-          style={bodyStyle}
-          onPointerDown={onPointerDown}
-          onClick={(e) => {
-            if (!readOnly) return;
-            const blk = e.target.closest('[data-ev]');
-            if (blk) onOpenEdit(blk.dataset.ev);
-          }}
-          onContextMenu={(e) => {
-            if (gestureRef.current) e.preventDefault();
-          }}
-        >
+      <div {...stylex.props(grid.bodyPane)} ref={paneRef}>
+        <div {...stylex.props(grid.sheet)}>
+          <div
+            {...stylex.props(grid.body, compact && compactLayout)}
+            ref={bodyRef}
+            style={bodyStyle}
+            onPointerDown={onPointerDown}
+            onClick={(e) => {
+              if (!readOnly) return;
+              const blk = e.target.closest('[data-ev]');
+              if (blk) onOpenEdit(blk.dataset.ev);
+            }}
+            onContextMenu={(e) => {
+              if (gestureRef.current) e.preventDefault();
+            }}
+          >
           <div {...stylex.props(grid.gutter)} ref={gutRef}>
             {Array.from({ length: 23 }, (_, k) => {
               const h = k + 1;
@@ -356,6 +395,7 @@ export function WeekGrid({
               />
             )}
           </div>
+        </div>
         </div>
       </div>
 
