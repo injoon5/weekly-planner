@@ -1,5 +1,4 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Dialog } from '@base-ui/react/dialog';
 import { Radio } from '@base-ui/react/radio';
 import { RadioGroup } from '@base-ui/react/radio-group';
 import * as stylex from '@stylexjs/stylex';
@@ -9,12 +8,13 @@ import { eventFields } from '../models.js';
 import { fmtDur, fmtOpt } from '../time.js';
 import { HoldToConfirm } from './HoldToConfirm.jsx';
 import { UiSelect } from './ui/UiSelect.jsx';
+import { Sheet } from './ui/Sheet.jsx';
 import { editor } from '../styles/editor.js';
 import { planner } from '../styles/planner.js';
 
 /**
- * Draft-until-save editor (Base UI Dialog).
- * Done / Enter → save. X / backdrop / Escape / Cancel → discard.
+ * Draft-until-save editor (Dialog on desktop, Drawer on mobile).
+ * Done / Enter → save. X / backdrop / Escape / Cancel / swipe → discard.
  * Delete → HoldToConfirm only.
  *
  * Mounts closed then opens so Base UI applies data-starting-style. Mounting
@@ -60,7 +60,7 @@ export function Editor({
   }, [local.start]);
 
   return (
-    <Dialog.Root
+    <Sheet.Root
       open={open}
       onOpenChange={(nextOpen) => {
         if (!nextOpen) {
@@ -69,27 +69,27 @@ export function Editor({
         }
       }}
     >
-      <Dialog.Portal>
-        <Dialog.Backdrop data-ui-dialog-backdrop="" {...stylex.props(editor.scrim)} />
-        <Dialog.Popup
-          data-ui-dialog=""
-          {...stylex.props(editor.dlg)}
-          initialFocus={titleRef}
-          onKeyDown={(e) => {
-            if (readOnly) return;
-            if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
-              e.preventDefault();
-              onSave(local);
-            }
-          }}
-        >
+      <Sheet.Portal>
+        <Sheet.Backdrop {...stylex.props(editor.scrim)} />
+        <Sheet.Viewport>
+          <Sheet.Popup
+            {...stylex.props(editor.dlg)}
+            initialFocus={titleRef}
+            onKeyDown={(e) => {
+              if (readOnly) return;
+              if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                e.preventDefault();
+                onSave(local);
+              }
+            }}
+          >
           <div {...stylex.props(editor.dhead)}>
-            <Dialog.Title {...stylex.props(editor.dttl)}>
+            <Sheet.Title {...stylex.props(editor.dttl)}>
               {readOnly ? '일정' : isNew ? '새 일정' : '일정 편집'}
-            </Dialog.Title>
-            <Dialog.Close {...stylex.props(editor.icobtn)} aria-label="닫기">
+            </Sheet.Title>
+            <Sheet.Close {...stylex.props(editor.icobtn)} aria-label="닫기">
               <X size={16} strokeWidth={2} />
-            </Dialog.Close>
+            </Sheet.Close>
           </div>
 
           <input
@@ -204,12 +204,12 @@ export function Editor({
             {readOnly ? (
               <>
                 <span {...stylex.props(editor.sp)} />
-                <Dialog.Close {...stylex.props(planner.btn, planner.btnPrimary)}>
+                <Sheet.Close {...stylex.props(planner.btn, planner.btnPrimary)}>
                   닫기
-                </Dialog.Close>
+                </Sheet.Close>
               </>
             ) : isNew ? (
-              <Dialog.Close {...stylex.props(planner.btn, planner.btnGhost)}>취소</Dialog.Close>
+              <Sheet.Close {...stylex.props(planner.btn, planner.btnGhost)}>취소</Sheet.Close>
             ) : (
               <HoldToConfirm
                 {...stylex.props(planner.btn, planner.btnDanger)}
@@ -232,8 +232,9 @@ export function Editor({
               </>
             )}
           </div>
-        </Dialog.Popup>
-      </Dialog.Portal>
-    </Dialog.Root>
+          </Sheet.Popup>
+        </Sheet.Viewport>
+      </Sheet.Portal>
+    </Sheet.Root>
   );
 }

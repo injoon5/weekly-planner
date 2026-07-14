@@ -29,3 +29,7 @@ export const DAY_ORIGIN = 360;
 /** Minutes and slots from the grid origin until the next midnight. */
 export const NEXT_DAY_START_MIN = DAY_MIN - DAY_ORIGIN;
 export const NEXT_DAY_START_SLOT = NEXT_DAY_START_MIN / SLOT_MIN;
+
+/** Dialog vs drawer breakpoint — keep in sync with editor.dlg mobile styles. */
+export const MOBILE_SHEET_BP = 560;
+export const MOBILE_SHEET_MQ = `(max-width: ${MOBILE_SHEET_BP}px)`;

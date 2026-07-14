@@ -9,7 +9,7 @@ export const editor = stylex.create({
     backdropFilter: 'blur(4px)',
   },
 
-  // Dialog.Popup chrome; centering/sheet position + motion live in base-ui.css.
+  // Popup chrome; dialog centering + drawer swipe motion live in base-ui.css.
   dlg: {
     boxSizing: 'border-box',
     maxHeight: 'calc(100dvh - 32px)',

@@ -1,27 +1,28 @@
-import { Dialog } from '@base-ui/react/dialog';
 import * as stylex from '@stylexjs/stylex';
 import { Printer, X } from 'lucide-react';
 import { editor } from '../styles/editor.js';
 import { menus } from '../styles/menus.js';
 import { planner } from '../styles/planner.js';
 import { ui } from '../styles/ui.js';
+import { Sheet } from './ui/Sheet.jsx';
 import { SwitchRow } from './ui/SwitchRow.jsx';
 
 /**
  * Print setup sheet: configure name / date / time header fields, then print.
- * Works as a centered dialog on desktop and a bottom sheet on mobile.
+ * Dialog on desktop; swipeable drawer on mobile.
  */
 export function PrintDialog({ open, onOpenChange, draft, onPatch, onPrint }) {
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Backdrop data-ui-dialog-backdrop="" {...stylex.props(editor.scrim)} />
-        <Dialog.Popup data-ui-dialog="" {...stylex.props(editor.dlg)}>
+    <Sheet.Root open={open} onOpenChange={onOpenChange}>
+      <Sheet.Portal>
+        <Sheet.Backdrop {...stylex.props(editor.scrim)} />
+        <Sheet.Viewport>
+          <Sheet.Popup {...stylex.props(editor.dlg)}>
           <div {...stylex.props(editor.dhead)}>
-            <Dialog.Title {...stylex.props(editor.dttl)}>인쇄</Dialog.Title>
-            <Dialog.Close {...stylex.props(editor.icobtn)} aria-label="닫기">
+            <Sheet.Title {...stylex.props(editor.dttl)}>인쇄</Sheet.Title>
+            <Sheet.Close {...stylex.props(editor.icobtn)} aria-label="닫기">
               <X size={16} strokeWidth={2} />
-            </Dialog.Close>
+            </Sheet.Close>
           </div>
 
           <p {...stylex.props(menus.mcap, menus.mcapFirst)}>
@@ -108,10 +109,11 @@ export function PrintDialog({ open, onOpenChange, draft, onPatch, onPrint }) {
               <Printer size={14} strokeWidth={1.75} />
               인쇄하기
             </button>
-            <Dialog.Close {...stylex.props(planner.btn, planner.btnGhost)}>취소</Dialog.Close>
+            <Sheet.Close {...stylex.props(planner.btn, planner.btnGhost)}>취소</Sheet.Close>
           </div>
-        </Dialog.Popup>
-      </Dialog.Portal>
-    </Dialog.Root>
+          </Sheet.Popup>
+        </Sheet.Viewport>
+      </Sheet.Portal>
+    </Sheet.Root>
   );
 }

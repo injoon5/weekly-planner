@@ -41,7 +41,7 @@
   }
 }
 
-/* ---- Editor dialog: centered card on desktop, bottom sheet on mobile ---- */
+/* ---- Editor dialog (desktop) --------------------------------------------- */
 
 [data-ui-dialog-backdrop] {
   position: fixed;
@@ -79,26 +79,58 @@
   transform: translate(-50%, calc(-50% + 10px)) scale(0.97);
 }
 
-@media screen and (max-width: 560px) {
-  [data-ui-dialog] {
-    left: 0;
-    right: 0;
-    top: auto;
-    bottom: 0;
-    width: 100%;
-    transform: none;
-    transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1);
-  }
+/* ---- Editor drawer (mobile) ---------------------------------------------- */
 
-  [data-ui-dialog][data-open] {
-    transition-duration: 0.34s;
-  }
+[data-ui-drawer-backdrop] {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  transition: opacity 0.18s ease;
+}
 
-  [data-ui-dialog][data-starting-style],
-  [data-ui-dialog][data-ending-style] {
-    opacity: 1;
-    transform: translateY(102%);
-  }
+[data-ui-drawer-backdrop][data-starting-style],
+[data-ui-drawer-backdrop][data-ending-style] {
+  opacity: 0;
+}
+
+[data-ui-drawer-viewport] {
+  position: fixed;
+  inset: 0;
+  z-index: 101;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+
+[data-ui-drawer] {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  pointer-events: auto;
+  touch-action: pan-y;
+  transform: translateY(
+    calc(var(--drawer-snap-point-offset, 0px) + var(--drawer-swipe-movement-y, 0px))
+  );
+  transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+[data-ui-drawer][data-open] {
+  transition-duration: 0.34s;
+}
+
+[data-ui-drawer][data-swiping] {
+  transition-duration: 0ms;
+  user-select: none;
+}
+
+[data-ui-drawer][data-starting-style],
+[data-ui-drawer][data-ending-style]:not([data-swipe-dismiss]) {
+  transform: translateY(100%);
+}
+
+[data-ui-drawer][data-ending-style][data-swipe-direction='down'] {
+  transform: translateY(100%);
 }
 
 /* ---- Toast pill ---------------------------------------------------------- */
@@ -153,6 +185,9 @@
   [data-ui-pop],
   [data-ui-dialog],
   [data-ui-dialog-backdrop],
+  [data-ui-drawer],
+  [data-ui-drawer-backdrop],
+  [data-ui-drawer-viewport],
   [data-ui-toast-viewport] {
     display: none !important;
   }
@@ -162,6 +197,8 @@
   [data-ui-pop],
   [data-ui-dialog],
   [data-ui-dialog-backdrop],
+  [data-ui-drawer],
+  [data-ui-drawer-backdrop],
   [data-ui-toast] {
     transition-duration: 0ms !important;
   }
