@@ -79,9 +79,12 @@ export function scrollPaneToNow(pane, body, gut, nowMin, visualCol, dayCount = 7
   const n = dayCount || 7;
   const slotH = body.getBoundingClientRect().height / SLOTS;
   pane.scrollTop = Math.max(0, (nowMin / SLOT_MIN) * slotH - 150);
-  if (pane.scrollWidth > pane.clientWidth + 4) {
+  const canScrollX = pane.scrollWidth > pane.clientWidth + 4;
+  if (canScrollX) {
     const gw = gut?.offsetWidth ?? 0;
     const colW = (body.offsetWidth - gw) / n;
     pane.scrollLeft = Math.max(0, visualCol * colW - 10);
+  } else {
+    pane.scrollLeft = 0;
   }
 }

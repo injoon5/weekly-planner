@@ -114,4 +114,23 @@ describe('grid event views', () => {
     expect(pane.scrollTop).toBe(450);
     expect(pane.scrollLeft).toBe(590);
   });
+
+  it('resets horizontal scroll when the grid fits the pane', () => {
+    const pane = {
+      scrollTop: 0,
+      scrollLeft: 120,
+      scrollWidth: 390,
+      clientWidth: 390,
+    };
+    const body = {
+      offsetWidth: 390,
+      getBoundingClientRect: () => ({ height: 1440 }),
+    };
+    const gut = { offsetWidth: 46 };
+
+    scrollPaneToNow(pane, body, gut, 600, 3, 7);
+
+    expect(pane.scrollTop).toBe(450);
+    expect(pane.scrollLeft).toBe(0);
+  });
 });

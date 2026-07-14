@@ -51,7 +51,8 @@ export const layout = stylex.defineVars({
   },
   colMin: {
     default: '116px',
-    [MOBILE]: '106px',
+    // Fit all 7 days on narrow screens — no horizontal table scroll.
+    [MOBILE]: '0px',
     '@media print': '0px',
   },
   font:

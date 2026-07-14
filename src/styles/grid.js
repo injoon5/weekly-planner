@@ -78,6 +78,11 @@ export const grid = stylex.create({
       borderLeft: 0,
       borderRight: 0,
       borderBottom: 0,
+      overflowX: 'hidden',
+      overflowY: 'auto',
+      overscrollBehaviorX: 'none',
+      touchAction: 'pan-y',
+      WebkitOverflowScrolling: 'touch',
     },
     '@media print': {
       flex: 'none',
@@ -95,6 +100,10 @@ export const grid = stylex.create({
   sheet: {
     minWidth: 'max-content',
     width: '100%',
+    [MOBILE]: {
+      minWidth: 0,
+      width: '100%',
+    },
     '@media print': {
       minWidth: 0,
       width: '100%',
