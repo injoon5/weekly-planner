@@ -22,7 +22,6 @@ export function useSharedBoard(token) {
       ? {
           shares: {
             $: { where: { token } },
-            board: {},
           },
         }
       : null,
@@ -30,23 +29,24 @@ export function useSharedBoard(token) {
   );
 
   const share = meta.data?.shares?.[0] || null;
-  const boardId = share?.board?.id || share?.board || null;
   const needsPassword = share?.mode === 'password';
 
   const openSecret = token && (!share || share.mode === 'open') ? token : '';
   const secret = manualSecret || openSecret;
 
+  // Resolve board via the share token — guests can't load nested `board: {}`
+  // on the share row (no board view perms yet), so don't depend on boardId.
   const boardQ = db.useQuery(
-    token && boardId && secret
+    token && secret
       ? {
           boards: {
-            $: { where: { id: boardId } },
+            $: { where: { 'shares.token': token } },
             events: {},
             shares: {},
           },
         }
       : null,
-    secret ? { ruleParams: { secret } } : undefined,
+    secret ? { ruleParams: { shareToken: token, secret } } : undefined,
   );
 
   const board = boardQ.data?.boards?.[0] || null;
@@ -78,8 +78,17 @@ export function useSharedBoard(token) {
     !board &&
     Boolean(share?.enabled);
 
+  const boardPending = Boolean(secret) && !waitingUnlock;
   const isLoading =
-    Boolean(token) && (meta.isLoading || (Boolean(secret) && Boolean(boardId) && boardQ.isLoading));
+    Boolean(token) &&
+    (meta.isLoading || (boardPending && boardQ.isLoading && !board));
+
+  const boardMissing =
+    boardPending &&
+    !boardQ.isLoading &&
+    !board &&
+    Boolean(share?.enabled) &&
+    !waitingUnlock;
 
   return {
     share,
@@ -98,10 +107,9 @@ export function useSharedBoard(token) {
     isLoading,
     error: meta.error || boardQ.error,
     notFound:
-      !meta.isLoading &&
       Boolean(token) &&
-      (!share || share.enabled === false) &&
-      !board,
+      !waitingUnlock &&
+      ((!meta.isLoading && (!share || share.enabled === false) && !board) || boardMissing),
     disabled: share && share.enabled === false,
   };
 }
