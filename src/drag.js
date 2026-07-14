@@ -198,6 +198,21 @@ export function beginPointerGesture(e, {
     setDraft(draftFromGesture(session, point, m.bodyRect, m.gutWidth));
   };
 
+  const blockScroll = ev => {
+    if (session.phase === 'active') ev.preventDefault();
+  };
+
+  let savedPaneTouchAction = '';
+
+  const lockPaneScroll = () => {
+    savedPaneTouchAction = paneEl.style.touchAction;
+    paneEl.style.touchAction = 'none';
+  };
+
+  const unlockPaneScroll = () => {
+    paneEl.style.touchAction = savedPaneTouchAction;
+  };
+
   const edgeLoop = () => {
     if (session.phase !== 'active') return;
     const m = metrics();
@@ -226,15 +241,17 @@ export function beginPointerGesture(e, {
     } catch {
       /* ignore */
     }
+    lockPaneScroll();
+    if (session.isTouch) {
+      paneEl.addEventListener('touchmove', blockScroll, { passive: false });
+    } else {
+      paneEl.addEventListener('wheel', blockScroll, { passive: false });
+    }
     if (session.isTouch && navigator.vibrate) navigator.vibrate(8);
     const m = metrics();
     session = activateOffsets(session, session.last, m.bodyRect, m.gutWidth);
     apply(session.last);
     edgeLoop();
-  };
-
-  const blockScroll = ev => {
-    if (session.phase === 'active') ev.preventDefault();
   };
 
   // Every exit path must report a result — the caller tracks the live gesture
@@ -255,6 +272,9 @@ export function beginPointerGesture(e, {
     window.removeEventListener('pointercancel', cancel);
     window.removeEventListener('keydown', key);
     document.removeEventListener('touchmove', blockScroll);
+    paneEl.removeEventListener('touchmove', blockScroll);
+    paneEl.removeEventListener('wheel', blockScroll);
+    unlockPaneScroll();
     onDraft(null);
     onResult(result);
   };
