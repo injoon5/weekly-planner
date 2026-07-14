@@ -7,6 +7,25 @@ import { clamp, DAY_MIN, SLOT_MIN, SLOTS } from './time.js';
 
 const DEFAULT_DAYS = [0, 1, 2, 3, 4, 5, 6];
 const EDGE_SCROLL_MARGIN = 36;
+const TOUCH_SCROLL_CANCEL_DIST = 12;
+const TOUCH_HOLD_MOVE_LIMIT = 5;
+const TOUCH_AXIS_SCROLL_DIST = 7;
+const TOUCH_AXIS_RATIO = 1.65;
+const TOUCH_LONG_PRESS_MS = 300;
+
+/** Decide whether a pending touch gesture should yield to native scroll. */
+export function shouldCancelTouchForScroll(dx, dy, dist = Math.hypot(dx, dy)) {
+  if (dist > TOUCH_SCROLL_CANCEL_DIST) return true;
+  if (dist < TOUCH_AXIS_SCROLL_DIST) return false;
+  const ax = Math.abs(dx);
+  const ay = Math.abs(dy);
+  return ax > ay * TOUCH_AXIS_RATIO || ay > ax * TOUCH_AXIS_RATIO;
+}
+
+/** Whether a pending touch still qualifies for long-press activation. */
+export function shouldCancelTouchHold(dist) {
+  return dist > TOUCH_HOLD_MOVE_LIMIT;
+}
 
 export function locatePointer(point, bodyRect, gutWidth, days = DEFAULT_DAYS) {
   const n = days.length || 7;
@@ -234,6 +253,10 @@ export function beginPointerGesture(e, {
 
   const activate = () => {
     if (session.phase !== 'pending') return;
+    if (session.isTouch) {
+      const d = Math.hypot(session.last.x - session.x0, session.last.y - session.y0);
+      if (shouldCancelTouchHold(d)) return;
+    }
     session.phase = 'active';
     clearTimeout(session.tmr);
     try {
@@ -283,9 +306,18 @@ export function beginPointerGesture(e, {
     if (ev.pointerId !== session.ptr) return;
     session.last = { x: ev.clientX, y: ev.clientY };
     if (session.phase === 'pending') {
-      const d = Math.hypot(ev.clientX - session.x0, ev.clientY - session.y0);
+      const dx = ev.clientX - session.x0;
+      const dy = ev.clientY - session.y0;
+      const d = Math.hypot(dx, dy);
       if (session.isTouch) {
-        if (d > 10) finish({ type: 'noop' });
+        if (shouldCancelTouchForScroll(dx, dy, d)) {
+          finish({ type: 'noop' });
+          return;
+        }
+        if (shouldCancelTouchHold(d)) {
+          clearTimeout(session.tmr);
+          session.tmr = 0;
+        }
       } else if (d > 4) {
         activate();
       }
@@ -315,8 +347,7 @@ export function beginPointerGesture(e, {
   window.addEventListener('pointercancel', cancel);
   window.addEventListener('keydown', key);
   if (isTouch) {
-    document.addEventListener('touchmove', blockScroll, { passive: false });
-    session.tmr = setTimeout(activate, 300);
+    session.tmr = setTimeout(activate, TOUCH_LONG_PRESS_MS);
   }
 
   return { cleanup: () => finish({ type: 'noop' }) };

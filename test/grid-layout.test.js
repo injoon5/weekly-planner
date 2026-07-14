@@ -19,6 +19,7 @@ import {
   scrollPaneToNow,
   slotHeight,
   slotTop,
+  syncHeadTrack,
 } from '../src/grid-layout.js';
 import { layout } from '../src/tokens.stylex.js';
 
@@ -149,5 +150,30 @@ describe('grid event views', () => {
 
     expect(pane.scrollTop).toBe(0);
     expect(pane.scrollLeft).toBe(400);
+  });
+
+  it('syncs header track width and transform to day columns', () => {
+    const pane = {
+      scrollLeft: 120,
+      scrollWidth: 900,
+      clientWidth: 360,
+    };
+    const body = { offsetWidth: 700 };
+    const gut = { offsetWidth: 46 };
+    const track = { style: {} };
+    const dayCols = [
+      { offsetLeft: 46, offsetWidth: 80 },
+      { offsetLeft: 126, offsetWidth: 80 },
+      { offsetLeft: 206, offsetWidth: 80 },
+      { offsetLeft: 286, offsetWidth: 80 },
+      { offsetLeft: 366, offsetWidth: 80 },
+      { offsetLeft: 446, offsetWidth: 80 },
+      { offsetLeft: 526, offsetWidth: 80 },
+    ];
+
+    syncHeadTrack(pane, body, gut, track, dayCols);
+
+    expect(track.style.width).toBe('560px');
+    expect(track.style.transform).toBe('translate3d(-120px, 0, 0)');
   });
 });

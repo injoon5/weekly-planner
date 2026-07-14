@@ -14,7 +14,6 @@ import {
 } from '../drag.js';
 import {
   chipStyle,
-  clampPaneScroll,
   geoX,
   gridGeometryStyle,
   mergeDragView,
@@ -23,6 +22,7 @@ import {
   scrollPaneToNow,
   slotHeight,
   slotTop,
+  syncHeadTrack,
 } from '../grid-layout.js';
 import { pickLeastUsedColor } from '../models.js';
 import { clamp, fmt } from '../time.js';
@@ -121,6 +121,7 @@ export function WeekGrid({
   const gutRef = useRef(null);
   const headClipRef = useRef(null);
   const headTrackRef = useRef(null);
+  const dayColRefs = useRef([]);
   const gestureRef = useRef(null);
   const eventsRef = useRef(events);
   eventsRef.current = events;
@@ -137,7 +138,9 @@ export function WeekGrid({
   }, [days]);
 
   const dayCount = days.length;
+  dayColRefs.current.length = dayCount;
   const colTemplate = `${layout.gutW} repeat(${dayCount}, minmax(${layout.colMin}, 1fr))`;
+  const headColTemplate = `${layout.gutW} minmax(0, 1fr)`;
   const dayColTemplate = `repeat(${dayCount}, minmax(${layout.colMin}, 1fr))`;
   const bodyStyle = {
     ...gridGeometryStyle(),
@@ -152,11 +155,7 @@ export function WeekGrid({
     if (!pane || !body || !track) return;
 
     const sync = () => {
-      clampPaneScroll(pane);
-      track.style.transform = `translate3d(-${pane.scrollLeft}px, 0, 0)`;
-      if (gut) {
-        track.style.width = `${Math.max(0, body.offsetWidth - gut.offsetWidth)}px`;
-      }
+      syncHeadTrack(pane, body, gut, track, dayColRefs.current);
     };
 
     const ro = new ResizeObserver(sync);
@@ -248,7 +247,7 @@ export function WeekGrid({
       <div
         {...stylex.props(grid.headClip)}
         ref={headClipRef}
-        style={{ gridTemplateColumns: colTemplate }}
+        style={{ gridTemplateColumns: headColTemplate }}
       >
         <div {...stylex.props(grid.corner)}>시간</div>
         <div {...stylex.props(grid.headMask)}>
@@ -312,6 +311,9 @@ export function WeekGrid({
           {days.map((d, i) => (
             <div
               key={d}
+              ref={(el) => {
+                dayColRefs.current[i] = el;
+              }}
               {...stylex.props(grid.col, i === 0 && grid.colFirst)}
               data-day={d}
             >
