@@ -10,6 +10,7 @@ vi.mock('../src/tokens.stylex.js', () => ({
 
 import {
   chipStyle,
+  clampPaneScroll,
   geoX,
   gridGeometryStyle,
   mergeDragView,
@@ -132,5 +133,21 @@ describe('grid event views', () => {
 
     expect(pane.scrollTop).toBe(450);
     expect(pane.scrollLeft).toBe(0);
+  });
+
+  it('clamps scroll offsets to content bounds', () => {
+    const pane = {
+      scrollTop: -20,
+      scrollLeft: 500,
+      scrollWidth: 800,
+      scrollHeight: 1200,
+      clientWidth: 400,
+      clientHeight: 600,
+    };
+
+    clampPaneScroll(pane);
+
+    expect(pane.scrollTop).toBe(0);
+    expect(pane.scrollLeft).toBe(400);
   });
 });

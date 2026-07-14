@@ -73,6 +73,17 @@ export function nowLineStyle(nowMin, visualCol, dayCount = 7) {
   };
 }
 
+/** Keep scroll inside real content bounds (no rubber-band into empty gutter). */
+export function clampPaneScroll(pane) {
+  if (!pane) return;
+  const maxLeft = Math.max(0, pane.scrollWidth - pane.clientWidth);
+  const maxTop = Math.max(0, pane.scrollHeight - pane.clientHeight);
+  if (pane.scrollLeft < 0) pane.scrollLeft = 0;
+  else if (pane.scrollLeft > maxLeft) pane.scrollLeft = maxLeft;
+  if (pane.scrollTop < 0) pane.scrollTop = 0;
+  else if (pane.scrollTop > maxTop) pane.scrollTop = maxTop;
+}
+
 /** Scroll pane so "now" is roughly in view when the board changes. */
 export function scrollPaneToNow(pane, body, gut, nowMin, visualCol, dayCount = 7) {
   if (!pane || !body) return;

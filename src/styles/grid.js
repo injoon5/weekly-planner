@@ -65,28 +65,23 @@ export const grid = stylex.create({
     minHeight: 0,
     margin: '0 12px 12px',
     position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
     backgroundColor: colors.paper,
     border: `1px solid ${colors.line}`,
     borderRadius: '12px',
-    overflow: 'auto',
-    overscrollBehavior: 'contain',
-    scrollbarWidth: 'thin',
-    scrollbarColor: `${colors.sb} transparent`,
+    overflow: 'hidden',
     [MOBILE]: {
       margin: 0,
       borderRadius: 0,
       borderLeft: 0,
       borderRight: 0,
       borderBottom: 0,
-      overflowX: 'hidden',
-      overflowY: 'auto',
-      overscrollBehaviorX: 'none',
-      touchAction: 'pan-y',
-      WebkitOverflowScrolling: 'touch',
     },
     '@media print': {
       flex: 'none',
       minHeight: 0,
+      display: 'block',
       // Same horizontal start as planner.top title (both 0 inset).
       margin: 0,
       width: '100%',
@@ -97,31 +92,43 @@ export const grid = stylex.create({
     },
   },
 
-  sheet: {
-    minWidth: 'max-content',
-    width: '100%',
+  bodyPane: {
+    flex: 1,
+    minHeight: 0,
+    position: 'relative',
+    overflow: 'auto',
+    overscrollBehavior: 'contain',
+    scrollbarWidth: 'thin',
+    scrollbarColor: `${colors.sb} transparent`,
+    WebkitOverflowScrolling: 'touch',
     [MOBILE]: {
-      minWidth: 0,
-      width: '100%',
+      overscrollBehavior: 'contain',
+      touchAction: 'pan-x pan-y',
     },
+    '@media print': {
+      overflow: 'visible',
+    },
+  },
+
+  sheet: {
+    width: 'max-content',
+    minWidth: '100%',
     '@media print': {
       minWidth: 0,
       width: '100%',
     },
   },
 
-  hrow: {
+  headClip: {
     display: 'grid',
-    gridTemplateColumns: TPLC,
-    position: 'sticky',
-    top: 0,
+    flexShrink: 0,
+    position: 'relative',
     zIndex: 30,
     backgroundColor: colors.glass,
     WebkitBackdropFilter: 'blur(10px) saturate(1.5)',
     backdropFilter: 'blur(10px) saturate(1.5)',
     borderBottom: `1px solid ${colors.line}`,
     '@media print': {
-      position: 'static',
       backgroundColor: '#fff',
       backdropFilter: 'none',
       WebkitBackdropFilter: 'none',
@@ -133,10 +140,17 @@ export const grid = stylex.create({
     },
   },
 
+  headMask: {
+    overflow: 'hidden',
+    minWidth: 0,
+  },
+
+  headTrack: {
+    display: 'grid',
+    willChange: 'transform',
+  },
+
   corner: {
-    position: 'sticky',
-    left: 0,
-    zIndex: 2,
     display: 'flex',
     alignItems: 'flex-end',
     justifyContent: 'flex-end',
@@ -150,7 +164,6 @@ export const grid = stylex.create({
     backdropFilter: 'blur(8px)',
     borderRight: `1px solid ${colors.line}`,
     '@media print': {
-      position: 'static',
       backgroundColor: '#fff',
       backdropFilter: 'none',
       WebkitBackdropFilter: 'none',
