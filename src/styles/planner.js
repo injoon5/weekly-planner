@@ -45,7 +45,7 @@ export const planner = stylex.create({
     // 12px matches grid.pane side margin so title + table share one left edge.
     padding: '10px 12px 8px',
     [MOBILE]: {
-      padding: '8px 10px 6px',
+      padding: '8px 10px 10px',
     },
     '@media print': {
       // Same 0 horizontal inset as grid.pane on print.
@@ -143,8 +143,10 @@ export const planner = stylex.create({
     [MOBILE]: {
       order: 4,
       flexBasis: '100%',
-      padding: '9px 2px',
-      margin: '-9px 0',
+      padding: '4px 2px 6px',
+      // Collapse only into the header row above — a negative bottom margin
+      // pulled the grid pane flush against the active tab pill.
+      marginTop: '-4px',
     },
     '@media print': {
       display: 'none',
@@ -170,15 +172,15 @@ export const planner = stylex.create({
 
   tabPill: {
     position: 'absolute',
-    // Track the strip's vertical padding (2px, 9px on mobile) so the pill
-    // hugs the tab instead of stretching across the enlarged touch row.
+    // Track the strip's vertical padding (2px desktop; 4px/6px on mobile) so
+    // the pill hugs the tab instead of stretching across the touch row.
     top: {
       default: '2px',
-      [MOBILE]: '9px',
+      [MOBILE]: '4px',
     },
     bottom: {
       default: '2px',
-      [MOBILE]: '9px',
+      [MOBILE]: '6px',
     },
     left: 0,
     borderRadius: '8px',
@@ -223,14 +225,17 @@ export const planner = stylex.create({
     ':hover': {
       color: colors.ink,
     },
+    [MOBILE]: {
+      padding: '4px 10px',
+    },
     '@media (pointer: coarse)': {
       '::after': {
         content: '""',
         position: 'absolute',
         left: '-1px',
         right: '-1px',
-        top: '-7px',
-        bottom: '-7px',
+        top: '-5px',
+        bottom: '-5px',
       },
     },
   },
@@ -306,6 +311,10 @@ export const planner = stylex.create({
     ':active': {
       transform: 'scale(.96)',
     },
+    [MOBILE]: {
+      width: '24px',
+      height: '24px',
+    },
     '@media (pointer: coarse)': {
       position: 'relative',
       '::after': {
@@ -313,8 +322,8 @@ export const planner = stylex.create({
         position: 'absolute',
         left: '-1px',
         right: '-1px',
-        top: '-9px',
-        bottom: '-9px',
+        top: '-6px',
+        bottom: '-6px',
       },
     },
   },
