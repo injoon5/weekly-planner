@@ -3,6 +3,8 @@ import {
   beginPointerGesture,
   draftFromGesture,
   edgeScrollDelta,
+  shouldCancelTouchForScroll,
+  shouldCancelTouchHold,
 } from '../src/drag.js';
 
 describe('edgeScrollDelta', () => {
@@ -54,6 +56,27 @@ describe('draftFromGesture create', () => {
     expect(draft.kind).toBe('new');
     expect(draft.start).toBe(240);
     expect(draft.dur).toBe(150);
+  });
+});
+
+describe('touch scroll disambiguation', () => {
+  it('cancels on large movement', () => {
+    expect(shouldCancelTouchForScroll(0, 14)).toBe(true);
+    expect(shouldCancelTouchForScroll(14, 0)).toBe(true);
+  });
+
+  it('cancels on axis-dominant movement before the large threshold', () => {
+    expect(shouldCancelTouchForScroll(10, 1)).toBe(true);
+    expect(shouldCancelTouchForScroll(1, 10)).toBe(true);
+  });
+
+  it('keeps a still finger eligible for long-press', () => {
+    expect(shouldCancelTouchForScroll(2, 1)).toBe(false);
+    expect(shouldCancelTouchHold(3)).toBe(false);
+  });
+
+  it('drops long-press after small jitter', () => {
+    expect(shouldCancelTouchHold(6)).toBe(true);
   });
 });
 

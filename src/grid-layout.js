@@ -73,6 +73,26 @@ export function nowLineStyle(nowMin, visualCol, dayCount = 7) {
   };
 }
 
+/** Sync the sliding day-header track with the scrollable grid body. */
+export function syncHeadTrack(pane, body, gut, track, dayColEls) {
+  if (!pane || !body || !track) return;
+
+  clampPaneScroll(pane);
+
+  const cols = dayColEls?.filter(Boolean) ?? [];
+  let dayWidth = 0;
+  if (cols.length > 0) {
+    const first = cols[0];
+    const last = cols[cols.length - 1];
+    dayWidth = last.offsetLeft + last.offsetWidth - first.offsetLeft;
+  } else if (gut) {
+    dayWidth = Math.max(0, body.offsetWidth - gut.offsetWidth);
+  }
+
+  if (dayWidth > 0) track.style.width = `${dayWidth}px`;
+  track.style.transform = `translate3d(-${pane.scrollLeft}px, 0, 0)`;
+}
+
 /** Keep scroll inside real content bounds (no rubber-band into empty gutter). */
 export function clampPaneScroll(pane) {
   if (!pane) return;
