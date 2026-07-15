@@ -16,7 +16,7 @@ Design system palettes use a numeric scale from 50 (lightest) to 950 (darkest). 
 
 Given a base color with lightness (L), chroma percentage, and hue (H):
 
-**Step 1 — Lightness bounds:**
+**Step 1. Lightness bounds:**
 
 ```
 delta = 0.4
@@ -26,16 +26,16 @@ maxL = min(0.95, baseL + delta)
 
 Lightness is clamped to [0.05, 0.95] to avoid pure black/white which have zero chroma.
 
-**Step 2 — Distribute lightness** evenly from maxL (lightest, label 50) to minL (darkest, label 950).
+**Step 2. Distribute lightness** evenly from maxL (lightest, label 50) to minL (darkest, label 950).
 
-**Step 3 — Clamp chroma per step.** Each lightness level has a different maximum chroma for a given hue and color space:
+**Step 3. Clamp chroma per step.** Each lightness level has a different maximum chroma for a given hue and color space:
 
 ```
 maxChroma = findMaxChroma(step[i].L, hue, colorSpace)
 step[i].C = (chromaPercentage / 100) * maxChroma
 ```
 
-This ensures every step is within gamut. High-chroma base colors will have lower chroma at the lightest and darkest ends — this is correct and expected.
+This ensures every step is within gamut. High-chroma base colors will have lower chroma at the lightest and darkest ends; this is correct and expected.
 
 ## CSS variable output
 
@@ -59,7 +59,7 @@ When generating palettes for multiple hues, use the same **lightness** and **chr
 
 ```css
 :root {
-  /* Same L, same C% (80% of max) — different absolute C per hue */
+  /* Same L, same C% (80% of max): different absolute C per hue */
   --blue-500: oklch(0.623 0.141 250);   /* 80% of max 0.176 */
   --green-500: oklch(0.623 0.157 145);  /* 80% of max 0.196 */
   --red-500: oklch(0.623 0.202 25);     /* 80% of max 0.253 */

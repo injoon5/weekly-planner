@@ -5,7 +5,7 @@ description: OKLCH color space for web projects. Convert hex/rgb/hsl to oklch, g
 
 # OKLCH Colors
 
-OKLCH is a perceptually uniform color space where the numbers actually mean what you think they mean. Most color problems in CSS — broken palettes, failing contrast, hue drift — come from using color spaces that don't match how we see. OKLCH fixes the model so the tools work. To explore interactively, visit [oklch.fyi](https://oklch.fyi).
+OKLCH is a perceptually uniform color space where the numbers actually mean what you think they mean. Most color problems in CSS (broken palettes, failing contrast, hue drift) come from using color spaces that don't match how we see. OKLCH fixes the model so the tools work. To explore interactively, visit [oklch.fyi](https://oklch.fyi).
 
 ## Quick Reference
 
@@ -21,7 +21,7 @@ OKLCH is a perceptually uniform color space where the numbers actually mean what
 - **Perceptual uniformity.** Equal L steps = equal brightness. `oklch(0.5 ...)` is visually mid. HSL's `lightness: 50%` varies wildly by hue.
 - **Stable hue.** HSL blue shifts toward purple as lightness changes. OKLCH hue stays constant across the full lightness range.
 - **Independent chroma.** Chroma is an absolute measure of colorfulness that doesn't depend on lightness. HSL saturation does.
-- **Finite gamut.** Not every oklch value maps to a displayable sRGB color. High-chroma values at certain hues will clip — gamut awareness is required.
+- **Finite gamut.** Not every oklch value maps to a displayable sRGB color. High-chroma values at certain hues will clip; gamut awareness is required.
 
 ## OKLCH Syntax
 
@@ -49,16 +49,17 @@ oklch(0.8 0.05 200 / 0.5)
 | Rule | Value |
 | --- | --- |
 | Light/dark boundary | L > 0.6 = light background → use dark text |
-| Lightness gap (light bg) | Foreground L < 0.45 when background L > 0.85 |
-| Lightness gap (dark bg) | Foreground L > 0.75 when background L < 0.25 |
+| Lightness gap (light bg) | Foreground L < 0.35 when background L > 0.9 |
+| Lightness gap (dark bg) | Foreground L > 0.9 when background L < 0.25 |
 | Hue drift threshold | > 10° spread across palette steps = visible drift |
-| APCA normal text | \|Lc\| >= 60 to pass, >= 75 for pass+ |
+| APCA body text | \|Lc\| >= 75 minimum, >= 90 preferred |
+| APCA non-body text | \|Lc\| >= 60 minimum |
 | WCAG 2 normal text | 4.5:1 AA, 7:1 AAA |
-| Contrast fix | Adjust L only — chroma has negligible effect |
+| Contrast fix | Adjust L only; chroma has negligible effect |
 
 ## Review Output Format
 
-Always present color changes as a markdown table with **Before** and **After** columns. Include **every color that was changed** — not just a subset. Never list findings as separate "Before:" / "After:" lines outside of a table.
+Always present color changes as a markdown table with **Before** and **After** columns. Include **every color that was changed**, not just a subset. Never list findings as separate "Before:" / "After:" lines outside of a table.
 
 | Before | After |
 | --- | --- |
@@ -84,7 +85,7 @@ This keeps feedback scannable and diff-friendly. Each row is a self-contained ch
 
 ## Reference Files
 
-- [color-conversion.md](color-conversion.md) — Supported formats, conversion examples, bulk conversion rules, what to leave alone
-- [palette-generation.md](palette-generation.md) — Scale convention, generation algorithm, multi-hue palettes, dark mode, why not HSL
-- [accessibility-contrast.md](accessibility-contrast.md) — APCA and WCAG 2 thresholds, fixing contrast with L, lightness gap guide, hue drift detection
-- [gamut-and-tailwind.md](gamut-and-tailwind.md) — sRGB vs P3, gamut clamping, CSS fallback patterns, Tailwind v4 @theme and migration
+- [color-conversion.md](color-conversion.md): Supported formats, conversion examples, bulk conversion rules, what to leave alone
+- [palette-generation.md](palette-generation.md): Scale convention, generation algorithm, multi-hue palettes, dark mode, why not HSL
+- [accessibility-contrast.md](accessibility-contrast.md): APCA and WCAG 2 thresholds, fixing contrast with L, lightness gap guide, hue drift detection
+- [gamut-and-tailwind.md](gamut-and-tailwind.md): sRGB vs P3, gamut clamping, CSS fallback patterns, Tailwind v4 @theme and migration
