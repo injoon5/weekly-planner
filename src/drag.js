@@ -8,7 +8,9 @@ import { clamp, DAY_MIN, SLOT_MIN, SLOTS } from './time.js';
 const DEFAULT_DAYS = [0, 1, 2, 3, 4, 5, 6];
 const EDGE_SCROLL_MARGIN = 36;
 const TOUCH_SCROLL_CANCEL_DIST = 12;
-const TOUCH_HOLD_MOVE_LIMIT = 5;
+// Platform long-press slop is ~8-10 CSS px (Android 8dp, iOS ~10pt); tighter
+// values make a resting thumb's jitter kill the hold and misread the lift as a tap.
+const TOUCH_HOLD_MOVE_LIMIT = 8;
 const TOUCH_AXIS_SCROLL_DIST = 7;
 const TOUCH_AXIS_RATIO = 1.65;
 const TOUCH_LONG_PRESS_MS = 300;
@@ -194,6 +196,7 @@ export function beginPointerGesture(e, {
     y0: e.clientY,
     last: { x: e.clientX, y: e.clientY },
     draft: null,
+    dirty: false,
     offSlot: 0,
     offCol: 0,
     tmr: 0,
@@ -223,6 +226,10 @@ export function beginPointerGesture(e, {
 
   let savedPaneTouchAction = '';
 
+  // touch-action changes don't affect a pointer sequence already in flight —
+  // the dragging finger is handled by the non-passive touchmove blocker above.
+  // This lock is for any *second* finger: at its touchstart the pane computes
+  // touch-action:none, so it can't scroll the grid out from under the drag.
   const lockPaneScroll = () => {
     savedPaneTouchAction = paneEl.style.touchAction;
     paneEl.style.touchAction = 'none';
@@ -244,9 +251,10 @@ export function beginPointerGesture(e, {
       EDGE_SCROLL_MARGIN,
       allowHorizontal,
     );
-    if (dx || dy) {
-      paneEl.scrollBy(dx, dy);
-      apply(session.last);
+    if (dx || dy) paneEl.scrollBy(dx, dy);
+    if (dx || dy || session.dirty) {
+      session.dirty = false;
+      apply(session.last); // re-measures: scrollBy moved the grid under the pointer
     }
     session.raf = requestAnimationFrame(edgeLoop);
   };
@@ -293,8 +301,9 @@ export function beginPointerGesture(e, {
     window.removeEventListener('pointermove', move);
     window.removeEventListener('pointerup', up);
     window.removeEventListener('pointercancel', cancel);
+    window.removeEventListener('pointerdown', extraPointer);
     window.removeEventListener('keydown', key);
-    document.removeEventListener('touchmove', blockScroll);
+    window.removeEventListener('blur', bail);
     paneEl.removeEventListener('touchmove', blockScroll);
     paneEl.removeEventListener('wheel', blockScroll);
     unlockPaneScroll();
@@ -323,7 +332,9 @@ export function beginPointerGesture(e, {
       }
       return;
     }
-    apply(session.last);
+    // Active: coalesce into the edge-scroll rAF loop instead of laying out
+    // per pointermove — touch screens report at up to 120Hz.
+    session.dirty = true;
   };
 
   const up = ev => {
@@ -332,20 +343,32 @@ export function beginPointerGesture(e, {
       finish(resolvePendingTap(session));
       return;
     }
+    if (session.dirty) apply(session.last); // flush a move the rAF loop hasn't drawn yet
     finish(resolveActiveUp(session));
   };
 
   const cancel = ev => {
     if (ev.pointerId === session.ptr) finish({ type: 'noop' });
   };
+  // A second finger while the long-press is still pending means scroll/zoom
+  // intent — bail before the timer turns a pinch into a drag. An active drag
+  // is kept: the pane's touch-action lock already stops the extra finger.
+  const extraPointer = ev => {
+    if (session.isTouch && session.phase === 'pending' && ev.pointerId !== session.ptr) {
+      finish({ type: 'noop' });
+    }
+  };
   const key = ev => {
     if (ev.key === 'Escape') finish({ type: 'noop' });
   };
+  const bail = () => finish({ type: 'noop' });
 
   window.addEventListener('pointermove', move);
   window.addEventListener('pointerup', up);
   window.addEventListener('pointercancel', cancel);
+  window.addEventListener('pointerdown', extraPointer);
   window.addEventListener('keydown', key);
+  window.addEventListener('blur', bail);
   if (isTouch) {
     session.tmr = setTimeout(activate, TOUCH_LONG_PRESS_MS);
   }

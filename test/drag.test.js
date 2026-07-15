@@ -75,8 +75,9 @@ describe('touch scroll disambiguation', () => {
     expect(shouldCancelTouchHold(3)).toBe(false);
   });
 
-  it('drops long-press after small jitter', () => {
-    expect(shouldCancelTouchHold(6)).toBe(true);
+  it('tolerates platform-typical jitter but drops long-press past the slop', () => {
+    expect(shouldCancelTouchHold(7)).toBe(false);
+    expect(shouldCancelTouchHold(9)).toBe(true);
   });
 });
 
@@ -146,6 +147,111 @@ describe('beginPointerGesture scroll lock', () => {
 
     expect(paneEl.style.touchAction).toBe('none');
     expect(onDraft).toHaveBeenCalled();
+
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('cancels a pending long-press when a second finger lands', () => {
+    vi.useFakeTimers();
+    const listeners = {};
+    vi.stubGlobal('window', {
+      addEventListener: (type, fn) => {
+        (listeners[type] ||= []).push(fn);
+      },
+      removeEventListener: vi.fn(),
+    });
+    vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+
+    const { paneEl, bodyEl, gutEl, hrowEl } = makeGrid();
+    const onDraft = vi.fn();
+    const onResult = vi.fn();
+
+    beginPointerGesture(
+      {
+        pointerType: 'touch',
+        pointerId: 1,
+        clientX: 120,
+        clientY: 200,
+        button: 0,
+      },
+      {
+        mode: 'create',
+        payload: { day: 1, anchor: 8, color: 'graphite' },
+        bodyEl,
+        gutEl,
+        hrowEl,
+        paneEl,
+        onDraft,
+        onResult,
+      },
+    );
+
+    listeners.pointerdown.forEach((fn) => fn({ pointerId: 2 }));
+
+    expect(onResult).toHaveBeenCalledWith({ type: 'noop' });
+
+    vi.advanceTimersByTime(300);
+    expect(paneEl.style.touchAction).toBe('');
+    expect(onDraft).toHaveBeenCalledWith(null);
+    expect(onDraft).toHaveBeenCalledTimes(1);
+
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('coalesces active-phase moves into the animation frame loop', () => {
+    vi.useFakeTimers();
+    const listeners = {};
+    const frames = [];
+    vi.stubGlobal('window', {
+      addEventListener: (type, fn) => {
+        (listeners[type] ||= []).push(fn);
+      },
+      removeEventListener: vi.fn(),
+    });
+    vi.stubGlobal(
+      'requestAnimationFrame',
+      vi.fn((fn) => frames.push(fn)),
+    );
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+
+    const { paneEl, bodyEl, gutEl, hrowEl } = makeGrid();
+    const onDraft = vi.fn();
+    const onResult = vi.fn();
+
+    beginPointerGesture(
+      {
+        pointerType: 'touch',
+        pointerId: 1,
+        clientX: 120,
+        clientY: 200,
+        button: 0,
+      },
+      {
+        mode: 'create',
+        payload: { day: 1, anchor: 8, color: 'graphite' },
+        bodyEl,
+        gutEl,
+        hrowEl,
+        paneEl,
+        onDraft,
+        onResult,
+      },
+    );
+
+    vi.advanceTimersByTime(300); // long-press activates, draft applied once
+    const draftsAfterActivate = onDraft.mock.calls.length;
+
+    // Two moves before the next frame: no synchronous draft recompute.
+    listeners.pointermove.forEach((fn) => fn({ pointerId: 1, clientX: 120, clientY: 400 }));
+    listeners.pointermove.forEach((fn) => fn({ pointerId: 1, clientX: 120, clientY: 500 }));
+    expect(onDraft.mock.calls.length).toBe(draftsAfterActivate);
+
+    // The frame applies the latest position in one shot.
+    frames.splice(0).forEach((fn) => fn());
+    expect(onDraft.mock.calls.length).toBe(draftsAfterActivate + 1);
 
     vi.useRealTimers();
     vi.unstubAllGlobals();
