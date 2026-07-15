@@ -24,11 +24,11 @@ const socialUrls = () => ({
       tags: [
         { tag: 'link', attrs: { rel: 'canonical', href: `${siteOrigin}/` }, injectTo: 'head' },
         { tag: 'meta', attrs: { property: 'og:url', content: `${siteOrigin}/` }, injectTo: 'head' },
-        { tag: 'meta', attrs: { property: 'og:image', content: `${siteOrigin}/og.png` }, injectTo: 'head' },
+        { tag: 'meta', attrs: { property: 'og:image', content: `${siteOrigin}/api/og` }, injectTo: 'head' },
         { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' }, injectTo: 'head' },
         { tag: 'meta', attrs: { property: 'og:image:height', content: '630' }, injectTo: 'head' },
         { tag: 'meta', attrs: { property: 'og:image:alt', content: '주간 계획표 주간 시간표 미리보기' }, injectTo: 'head' },
-        { tag: 'meta', attrs: { name: 'twitter:image', content: `${siteOrigin}/og.png` }, injectTo: 'head' },
+        { tag: 'meta', attrs: { name: 'twitter:image', content: `${siteOrigin}/api/og` }, injectTo: 'head' },
       ],
     };
   },
@@ -81,8 +81,6 @@ export default defineConfig({
       workbox: {
         // App shell only — Instant owns its own IndexedDB offline cache + sync.
         globPatterns: ['**/*.{js,css,html,svg,png,ico,webp,woff2}'],
-        // Scraper-only asset; keep it out of every client's precache.
-        globIgnores: ['**/og.png'],
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
         runtimeCaching: [
