@@ -1,0 +1,29 @@
+name: Sync Instant auth origins
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/sync-instant-auth-origins.mjs
+      - .github/workflows/sync-instant-auth-origins.yml
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Register Vercel preview + website auth origins
+        env:
+          INSTANT_CLI_AUTH_TOKEN: ${{ secrets.INSTANT_CLI_AUTH_TOKEN }}
+          INSTANT_APP_ID: 957d09d1-44df-4541-8ebe-70ba7f1388c1
+          VERCEL_PROJECT_NAME: weekly-planner
+        run: node scripts/sync-instant-auth-origins.mjs
