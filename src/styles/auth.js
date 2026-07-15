@@ -58,6 +58,7 @@ export const auth = stylex.create({
     color: colors.muted,
     fontSize: '13.5px',
     lineHeight: 1.5,
+    textWrap: 'pretty',
   },
   err: {
     marginBottom: '12px',
@@ -65,9 +66,10 @@ export const auth = stylex.create({
     paddingInline: '10px',
     borderRadius: '8px',
     backgroundColor: 'rgba(229,72,77,.10)',
-    color: colors.now,
+    color: colors.danger,
     fontSize: '12.5px',
     fontWeight: 550,
+    textWrap: 'pretty',
   },
   form: {
     display: 'flex',

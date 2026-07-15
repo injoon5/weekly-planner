@@ -37,7 +37,7 @@ a:hover {
 }
 ```
 
-Unless the only thing animating is a color change, build the underline as a custom element instead of using `text-decoration` — color is the only part of a real underline that animates reliably. Animate the custom element however the effect requires.
+Unless the only thing animating is a color change, build the underline as a custom element instead of using `text-decoration`: color is the only part of a real underline that animates reliably. Animate the custom element however the effect requires.
 
 ## Selection
 

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+# Social scrapers must be able to fetch the OG image endpoint.
+Allow: /api/og

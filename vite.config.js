@@ -3,14 +3,46 @@ import react from '@vitejs/plugin-react';
 import stylex from '@stylexjs/unplugin';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Social cards need absolute URLs; the production origin is only known at
+// build time (Vercel env). Locally nothing is injected — the relative-safe
+// tags in index.html stay valid on their own.
+const siteOrigin = (() => {
+  const raw = process.env.SITE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || '';
+  if (!raw) return '';
+  return (raw.startsWith('http') ? raw : `https://${raw}`).replace(/\/$/, '');
+})();
+
+const socialUrls = () => ({
+  name: 'inject-social-urls',
+  transformIndexHtml(html) {
+    if (!siteOrigin) return html;
+    return {
+      html: html.replace(
+        '<meta name="twitter:card" content="summary">',
+        '<meta name="twitter:card" content="summary_large_image">',
+      ),
+      tags: [
+        { tag: 'link', attrs: { rel: 'canonical', href: `${siteOrigin}/` }, injectTo: 'head' },
+        { tag: 'meta', attrs: { property: 'og:url', content: `${siteOrigin}/` }, injectTo: 'head' },
+        { tag: 'meta', attrs: { property: 'og:image', content: `${siteOrigin}/api/og` }, injectTo: 'head' },
+        { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' }, injectTo: 'head' },
+        { tag: 'meta', attrs: { property: 'og:image:height', content: '630' }, injectTo: 'head' },
+        { tag: 'meta', attrs: { property: 'og:image:alt', content: '주간 계획표 주간 시간표 미리보기' }, injectTo: 'head' },
+        { tag: 'meta', attrs: { name: 'twitter:image', content: `${siteOrigin}/api/og` }, injectTo: 'head' },
+      ],
+    };
+  },
+});
+
 export default defineConfig({
   cacheDir: '.vite',
   plugins: [
     stylex.vite({ useCSSLayers: true }),
     react(),
+    socialUrls(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: '주간 계획표',
         short_name: '주간 계획표',
@@ -27,6 +59,22 @@ export default defineConfig({
             src: 'favicon.svg',
             sizes: 'any',
             type: 'image/svg+xml',
+          },
+          {
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+          {
+            src: 'pwa-maskable-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
           },
         ],
       },

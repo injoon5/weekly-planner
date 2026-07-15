@@ -29,6 +29,22 @@ There are many existing scales to pick from, or define a custom one. The Tailwin
 
 For solo projects the default names work fine as long as there are clear rules for where each size is used. On a team, give sizes semantic names: `text-sm` tells you the size but not the use; `text-body-sm` keeps sizes consistent with clear usage rules.
 
+## Heading hierarchy
+
+Assign each heading level to a descending step of the scale, so hierarchy comes from the scale instead of one-off sizes:
+
+```css
+h1 { font-size: var(--text-2xl); }
+h2 { font-size: var(--text-xl); }
+h3 { font-size: var(--text-lg); }
+```
+
+In Tailwind the same mapping is utility classes per level (`text-2xl`, `text-xl`, `text-lg`), typically centralized in a component or `@layer base` rather than repeated inline.
+
+When reviewing a page, compare the computed size of each heading level across the whole page: a level that renders larger than the one above it (an `h3` bigger than an `h2`) breaks the hierarchy and reads as a mistake. Deep levels (`h4`, `h5`) may share a size when the scale runs out of comfortable steps, as long as weight or letter-spacing keeps them distinct. A heading should not be smaller than body text unless it is deliberately a label-style overline.
+
+Heading levels are also a navigation structure: screen readers jump through a page by level. Keep the outline sequential (one `h1`, no skipped levels) and pick the tag from the document structure, never because a lower level "looks right" at its default size. The size belongs in CSS.
+
 ## Kerning and letter-spacing
 
 - **Kerning** adjusts specific pairs like `AV` or `Ye`. It is built into the font and browsers apply it automatically. Only switch it off deliberately with `font-kerning: none`.
