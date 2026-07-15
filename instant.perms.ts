@@ -53,7 +53,7 @@ const rules = {
   },
   shares: {
     allow: {
-      view: 'isBoardOwner || isTokenLookup',
+      view: 'isTokenLookup || isBoardOwner',
       create: 'isBoardOwner',
       update: 'isBoardOwner',
       delete: 'isBoardOwner',
