@@ -5,12 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>주간 계획표 · Weekly Planner</title>
 <meta name="description" content="주간 시간표 · Weekly Planner">
+<meta property="og:title" content="주간 계획표 · Weekly Planner">
+<meta property="og:description" content="실시간으로 함께 쓰는 주간 시간표">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
 <meta name="theme-color" content="#F6F6F7">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="주간 계획표">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <script>
 /* apply the saved theme before first paint to avoid a flash */
 try{
@@ -21,6 +27,11 @@ try{
   }
   if (_t !== 'dark' && _t !== 'light') _t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   document.documentElement.dataset.theme = _t;
+  /* sync browser chrome before first paint too — React re-syncs it on toggle */
+  if (_t === 'dark'){
+    var _m = document.querySelector('meta[name="theme-color"]');
+    if (_m) _m.content = '#131316';
+  }
 }catch(e){}
 /* iOS Safari auto-zooms the page when focusing inputs; maximum-scale=1 stops that
    (pinch zoom still works — Safari ignores the cap for user gestures). iOS only,

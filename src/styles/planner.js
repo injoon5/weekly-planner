@@ -268,7 +268,8 @@ export const planner = stylex.create({
   },
 
   gridSwap: {
-    transitionProperty: 'opacity, filter',
+    // Opacity only: animating blur repaints the whole grid pane every frame.
+    transitionProperty: 'opacity',
     transitionDuration: '0ms',
     transitionTimingFunction: 'cubic-bezier(0.2, 0, 0, 1)',
     '@media (prefers-reduced-motion: no-preference)': {
@@ -277,8 +278,7 @@ export const planner = stylex.create({
   },
 
   gridSwapOut: {
-    opacity: 0.72,
-    filter: 'blur(2px)',
+    opacity: 0.6,
   },
 
   tabName: {
@@ -410,7 +410,7 @@ export const planner = stylex.create({
     position: 'relative',
     overflow: 'hidden',
     backgroundColor: 'transparent',
-    color: colors.now,
+    color: colors.danger,
     touchAction: 'none',
     userSelect: 'none',
     ':hover': {

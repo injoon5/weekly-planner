@@ -9,7 +9,7 @@ export const colors = stylex.defineVars({
   ink: '#1B1B20',
   onInk: '#FFFFFF',
   muted: '#6E6E76',
-  faint: '#9A9AA2',
+  faint: '#7C7C84',
   line: '#E9E9EC',
   gridHour: 'rgba(24,24,28,.075)',
   gridHalf: 'rgba(24,24,28,.035)',
@@ -27,8 +27,10 @@ export const colors = stylex.defineVars({
   chipFg: '#FFFFFF',
   now: '#E5484D',
   nowHalo: 'rgba(255,255,255,.85)',
-  sun: '#D5504A',
-  sat: '#4577C9',
+  // Red for danger *text* (delete, errors): `now` at 3.9:1 fails AA on paper.
+  danger: '#CF323C',
+  sun: '#C7433E',
+  sat: '#3F71C2',
   sb: 'rgba(27,27,32,.18)',
   sbH: 'rgba(27,27,32,.30)',
 });

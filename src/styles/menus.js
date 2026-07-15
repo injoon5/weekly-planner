@@ -96,7 +96,7 @@ export const menus = stylex.create({
   },
 
   miRed: {
-    color: colors.now,
+    color: colors.danger,
     ':hover': {
       backgroundColor: 'rgba(229,72,77,.10)',
     },
@@ -258,7 +258,7 @@ export const menus = stylex.create({
     borderRadius: '6px',
     padding: 0,
     backgroundColor: 'transparent',
-    color: colors.now,
+    color: colors.danger,
     cursor: 'pointer',
     fontFamily: 'inherit',
     transitionProperty: 'background-color, transform',
