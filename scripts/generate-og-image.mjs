@@ -66,15 +66,17 @@ const EV = {
 
 // Mini week grid: 5 day columns, hour rows 9:00–14:00, ~1.6× app metrics.
 const GUT = 78; // time gutter width
-const COL = 118; // day column width
+const COL = 128; // day column width
 const ROW = 86; // hour row height
 const HEAD = 64; // day header height
 const day = (d) => GUT + d * COL;
-const y = (h, m = 0) => HEAD + (h - 9 + m / 60) * ROW;
+const PAD = 26; // clears the header border so the first hour label sits below it
+const y = (h, m = 0) => HEAD + PAD + (h - 9 + m / 60) * ROW;
 
 const block = (d, h1, m1, h2, m2, color, title) => {
   const [bg, fg, accent] = EV[color];
-  return `<div class="blk" style="left:${day(d) + 5}px;top:${y(h1, m1) + 2}px;width:${COL - 10}px;height:${(h2 - h1 + (m2 - m1) / 60) * ROW - 4}px;background:${bg};color:${fg};box-shadow:inset 0 0 0 1.5px color-mix(in srgb, ${accent} 22%, transparent)">
+  const dur = h2 - h1 + (m2 - m1) / 60;
+  return `<div class="blk${dur >= 1.25 ? ' tall' : ''}" style="left:${day(d) + 5}px;top:${y(h1, m1) + 2}px;width:${COL - 10}px;height:${dur * ROW - 4}px;background:${bg};color:${fg};box-shadow:inset 0 0 0 1.5px color-mix(in srgb, ${accent} 22%, transparent)">
     <i style="background:${accent}"></i>
     <b>${title}</b>
     <span>${h1}:${String(m1).padStart(2, '0')} – ${h2}:${String(m2).padStart(2, '0')}</span>
@@ -151,7 +153,7 @@ const html = (fontDir) => `<!doctype html>
     width: 38px; height: 38px; border-radius: 99px; background: ${T.ink}; color: #fff;
     display: flex; align-items: center; justify-content: center; font-weight: 600;
   }
-  .hline { position: absolute; left: 0; right: 0; height: 1px; background: ${T.gridHour}; }
+  .hline { position: absolute; left: ${GUT}px; right: 0; height: 1px; background: ${T.gridHour}; }
   .gtime {
     position: absolute; right: ${5 * COL + 12}px; transform: translateY(-50%);
     font-size: 15px; font-weight: 500; color: ${T.faint};
@@ -160,11 +162,19 @@ const html = (fontDir) => `<!doctype html>
   .vline { position: absolute; top: ${HEAD}px; bottom: 0; width: 1px; background: ${T.gridHour}; }
 
   .blk {
-    position: absolute; border-radius: 10px; padding: 8px 12px 8px 20px;
+    position: absolute; border-radius: 10px; padding: 8px 11px 8px 18px;
     display: flex; flex-direction: column; overflow: hidden;
   }
   .blk i { position: absolute; left: 5px; top: 5px; bottom: 5px; width: 5px; border-radius: 99px; }
-  .blk b { font-size: 19px; font-weight: 600; letter-spacing: -0.004em; line-height: 1.25; white-space: nowrap; }
+  .blk b {
+    font-size: 18px; font-weight: 600; letter-spacing: -0.004em; line-height: 1.25;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  /* mirrors the app's btTall: tall blocks wrap to two lines instead of clipping */
+  .blk.tall b {
+    white-space: normal; display: -webkit-box; -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical; text-overflow: clip;
+  }
   .blk span { margin-top: 2px; font-size: 15px; font-weight: 500; opacity: .72; font-variant-numeric: tabular-nums; letter-spacing: 0.012em; }
 
   .now { position: absolute; height: 2.5px; background: ${T.now}; box-shadow: 0 0 0 1.5px rgba(255,255,255,.85); }
