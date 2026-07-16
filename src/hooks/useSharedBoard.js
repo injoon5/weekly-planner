@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { db } from '../db.js';
-import { fromInstantEvents } from '../models.js';
+import { fromInstantEvents, fromInstantTodos } from '../models.js';
 import {
   hashSharePassword,
   readShareUnlock,
@@ -42,6 +42,7 @@ export function useSharedBoard(token) {
           boards: {
             $: { where: { 'shares.token': token } },
             events: {},
+            todos: {},
             shares: {},
           },
         }
@@ -51,6 +52,7 @@ export function useSharedBoard(token) {
 
   const board = boardQ.data?.boards?.[0] || null;
   const events = useMemo(() => fromInstantEvents(board?.events), [board?.events]);
+  const todos = useMemo(() => fromInstantTodos(board?.todos), [board?.todos]);
   const role = share?.role === 'editor' ? 'editor' : 'viewer';
   const canEdit = Boolean(board) && role === 'editor';
   const ruleParams = secret ? { secret } : null;
@@ -94,6 +96,7 @@ export function useSharedBoard(token) {
     share,
     board,
     events,
+    todos,
     role,
     canEdit,
     readOnly: !canEdit,

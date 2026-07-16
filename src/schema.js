@@ -23,6 +23,15 @@ const schema = i.schema({
       dur: i.number(),
       color: i.string(),
       memo: i.string().optional(),
+      /** Checked off in the day checklist panel. */
+      done: i.boolean().optional(),
+      createdAt: i.number().indexed(),
+    }),
+    todos: i.entity({
+      day: i.number().indexed(),
+      text: i.string(),
+      done: i.boolean().optional(),
+      sortOrder: i.number().indexed(),
       createdAt: i.number().indexed(),
     }),
     settings: i.entity({
@@ -69,6 +78,16 @@ const schema = i.schema({
         onDelete: 'cascade',
       },
       reverse: { on: 'boards', has: 'many', label: 'events' },
+    },
+    todoBoard: {
+      forward: {
+        on: 'todos',
+        has: 'one',
+        label: 'board',
+        required: true,
+        onDelete: 'cascade',
+      },
+      reverse: { on: 'boards', has: 'many', label: 'todos' },
     },
     settingsOwner: {
       forward: {

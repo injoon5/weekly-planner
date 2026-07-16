@@ -53,7 +53,7 @@ function Block({
 
   return (
     <div
-      {...stylex.props(grid.blk, isSel && grid.blkSel, isDrag && grid.blkLift, isXs && grid.blkXs)}
+      {...stylex.props(grid.blk, isSel && grid.blkSel, isDrag && grid.blkLift, isXs && grid.blkXs, ev.done && grid.blkDone)}
       style={{
         top: slotTop(ev.start),
         height: slotHeight(ev.dur),
@@ -66,6 +66,7 @@ function Block({
       tabIndex={0}
       aria-label={
         (ev.title || '일정') +
+        (ev.done ? ', 완료' : '') +
         (label ? ', ' + label : '') +
         ', ' +
         DAYS_KO[ev.day] +
@@ -84,7 +85,9 @@ function Block({
       {!isXs && (
         <div data-hh="t" {...stylex.props(grid.hh, grid.hhTop, showHandles && grid.hhVisible)} />
       )}
-      <div {...stylex.props(grid.bt, isTall && grid.btTall)}>{ev.title || '일정'}</div>
+      <div {...stylex.props(grid.bt, isTall && grid.btTall, ev.done && grid.btDone)}>
+        {ev.title || '일정'}
+      </div>
       {ev.dur >= SLOT_MIN * 2 && (
         <div {...stylex.props(grid.bm)}>
           {fmt(ev.start)} – {fmt(ev.start + ev.dur)}

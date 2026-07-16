@@ -3,6 +3,7 @@ import { useEditorSession } from './useEditorSession.js';
 import { useEventMutations } from './useEventMutations.js';
 import { usePlannerClock } from './usePlannerClock.js';
 import { usePrintSetup } from './usePrintSetup.js';
+import { useTodoMutations } from './useTodoMutations.js';
 import { useViewControls } from './useViewControls.js';
 
 export function usePlannerRuntime({
@@ -20,6 +21,7 @@ export function usePlannerRuntime({
 }) {
   const clock = usePlannerClock();
   const eventsApi = useEventMutations({ board, canEdit, ruleParams, onError });
+  const todosApi = useTodoMutations({ board, canEdit, ruleParams, onError });
   const session = useEditorSession({ events, eventsApi });
   const views = useViewControls({
     board,
@@ -40,6 +42,7 @@ export function usePlannerRuntime({
   return {
     clock,
     eventsApi,
+    todosApi,
     session,
     views,
     presence,

@@ -9,6 +9,7 @@ import { useWorkspace } from '../hooks/useWorkspace.js';
 import { planner } from '../styles/planner.js';
 import { BoardMenu } from './BoardMenu.jsx';
 import { BoardTabs } from './BoardTabs.jsx';
+import { ChecklistToggle, DayChecklist } from './DayChecklist.jsx';
 import { MoreMenu, UserMenu } from './Menus.jsx';
 import { PrintDialog } from './PrintDialog.jsx';
 import { PlannerHeader } from './PlannerHeader.jsx';
@@ -23,6 +24,7 @@ export function Planner() {
     boards,
     board,
     events,
+    todos,
     settings,
     boardPrefs,
     myRole,
@@ -38,6 +40,7 @@ export function Planner() {
 
   const auth = db.useAuth();
   const { theme, toggleTheme } = useTheme(settings, toast);
+  const [checklistOpen, setChecklistOpen] = useState(false);
 
   // Board menu is anchored to the active tab inside BoardTabs, so it runs as a
   // controlled popover instead of a trigger-based one.
@@ -160,24 +163,30 @@ export function Planner() {
           </MenuPopover>
         }
         afterViewActions={
-          (isOwner || myMembership) && (
-            <MenuPopover
-              width={264}
-              trigger={
-                <button {...stylex.props(planner.ibtn)} type="button" aria-label="공유">
-                  <Share2 size={15} strokeWidth={1.75} />
-                </button>
-              }
-            >
-              <SharePanel
-                board={board}
-                isOwner={isOwner}
-                user={user}
-                refreshToken={auth.user?.refresh_token}
-                myMembershipId={myMembership?.id}
-              />
-            </MenuPopover>
-          )
+          <>
+            <ChecklistToggle
+              open={checklistOpen}
+              onClick={() => setChecklistOpen((v) => !v)}
+            />
+            {(isOwner || myMembership) && (
+              <MenuPopover
+                width={264}
+                trigger={
+                  <button {...stylex.props(planner.ibtn)} type="button" aria-label="공유">
+                    <Share2 size={15} strokeWidth={1.75} />
+                  </button>
+                }
+              >
+                <SharePanel
+                  board={board}
+                  isOwner={isOwner}
+                  user={user}
+                  refreshToken={auth.user?.refresh_token}
+                  myMembershipId={myMembership?.id}
+                />
+              </MenuPopover>
+            )}
+          </>
         }
         afterThemeActions={
           <MenuPopover
@@ -195,20 +204,32 @@ export function Planner() {
         }
       />
 
-      <PlannerSurface
-        boardId={board.id}
-        events={events}
-        session={runtime.session}
-        views={runtime.views}
-        presence={runtime.presence}
-        readOnly={runtime.readOnly}
-        swapping={swapping}
-        updateEvent={runtime.eventsApi.updateEvent}
-        todayDow={runtime.clock.todayDow}
-        nowMin={runtime.clock.nowMin}
-        nowDay={runtime.clock.nowDay}
-        printShowMemos={runtime.print.prefs.showMemos}
-      />
+      <div {...stylex.props(planner.body)}>
+        <PlannerSurface
+          boardId={board.id}
+          events={events}
+          session={runtime.session}
+          views={runtime.views}
+          presence={runtime.presence}
+          readOnly={runtime.readOnly}
+          swapping={swapping}
+          updateEvent={runtime.eventsApi.updateEvent}
+          todayDow={runtime.clock.todayDow}
+          nowMin={runtime.clock.nowMin}
+          nowDay={runtime.clock.nowDay}
+          printShowMemos={runtime.print.prefs.showMemos}
+        />
+
+        <DayChecklist
+          open={checklistOpen}
+          onOpenChange={setChecklistOpen}
+          events={events}
+          todos={todos}
+          todayDow={runtime.clock.todayDow}
+          canEdit={canEdit}
+          todosApi={runtime.todosApi}
+        />
+      </div>
 
       <PrintDialog {...runtime.print.dialog} />
 

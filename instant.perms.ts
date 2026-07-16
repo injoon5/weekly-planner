@@ -43,6 +43,23 @@ const rules = {
         "true in data.ref('board.shares.enabled') && ruleParams.secret in data.ref('board.shares.editSecret')",
     },
   },
+  todos: {
+    allow: {
+      view: 'isBoardOwner || isBoardMember || hasBoardShareSecret',
+      create: 'isBoardOwner || isBoardEditor || hasBoardEditSecret',
+      update: 'isBoardOwner || isBoardEditor || hasBoardEditSecret',
+      delete: 'isBoardOwner || isBoardEditor || hasBoardEditSecret',
+    },
+    bind: {
+      isBoardOwner: "auth.id in data.ref('board.owner.id')",
+      isBoardMember: "auth.id in data.ref('board.members.user.id')",
+      isBoardEditor: "auth.id in data.ref('board.editors.id')",
+      hasBoardShareSecret:
+        "true in data.ref('board.shares.enabled') && ruleParams.secret in data.ref('board.shares.secret')",
+      hasBoardEditSecret:
+        "true in data.ref('board.shares.enabled') && ruleParams.secret in data.ref('board.shares.editSecret')",
+    },
+  },
   settings: {
     allow: {
       view: "auth.id in data.ref('owner.id')",

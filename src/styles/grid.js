@@ -468,6 +468,16 @@ export const grid = stylex.create({
     },
   },
 
+  btDone: {
+    textDecorationLine: 'line-through',
+    textDecorationThickness: '1px',
+    opacity: 0.62,
+  },
+
+  blkDone: {
+    opacity: 0.72,
+  },
+
   btTall: {
     whiteSpace: 'normal',
     display: '-webkit-box',
