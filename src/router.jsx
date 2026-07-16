@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { db } from './db.js';
+import { Landing } from './components/Landing.jsx';
 import { Login } from './components/Login.jsx';
 import { Planner } from './components/Planner.jsx';
 import { SharedPlanner } from './components/SharedPlanner.jsx';
@@ -55,13 +56,11 @@ const loginRoute = createRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  beforeLoad: ({ context }) => {
-    if (!context.auth.isLoading && !context.auth.user) {
-      throw redirect({ to: '/login' });
-    }
-  },
-  component: function PlannerPage() {
-    return <Planner />;
+  component: function IndexPage() {
+    const { auth } = rootRoute.useRouteContext();
+    // Signed-out visitors get the marketing landing page (with guest sign-in);
+    // signed-in users — including guests — go straight to their planner.
+    return auth.user ? <Planner /> : <Landing />;
   },
 });
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import { MoreHorizontal, CircleUserRound, ListChecks, Share2 } from 'lucide-react';
+import { MoreHorizontal, CircleUserRound, Share2, UserPlus, ListChecks } from 'lucide-react';
 import { db } from '../db.js';
 import { useBoardLifecycle } from '../hooks/useBoardLifecycle.js';
 import { usePlannerRuntime } from '../hooks/usePlannerRuntime.js';
@@ -17,6 +17,7 @@ import { PrintDialog } from './PrintDialog.jsx';
 import { PlannerHeader } from './PlannerHeader.jsx';
 import { PlannerSurface } from './PlannerSurface.jsx';
 import { SharePanel } from './SharePanel.jsx';
+import { UpgradeDialog } from './UpgradeDialog.jsx';
 import { MenuPopover } from './ui/MenuPopover.jsx';
 import { toast } from './ui/Toaster.jsx';
 
@@ -70,6 +71,9 @@ export function Planner() {
 
   const [swapping, setSwapping] = useState(false);
   const [swapBoardId, setSwapBoardId] = useState(board?.id);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+
+  const isGuest = Boolean(auth.user?.isGuest);
 
   const [todosOpen, setTodosOpen] = useState(false);
   const todosApi = useTodayTodos(user, events, toast);
@@ -151,20 +155,37 @@ export function Planner() {
           </>
         }
         leadingActions={
-          <MenuPopover
-            trigger={
+          <>
+            {isGuest && (
               <button
-                {...stylex.props(planner.ibtn)}
+                {...stylex.props(planner.btn, planner.btnPlain)}
                 type="button"
-                title={user.email || '계정'}
-                aria-label="계정 메뉴"
+                onClick={() => setUpgradeOpen(true)}
               >
-                <CircleUserRound size={15} strokeWidth={1.75} />
+                <UserPlus size={14} strokeWidth={1.75} />
+                <span {...stylex.props(planner.btnLabelHide)}>계정 만들기</span>
               </button>
-            }
-          >
-            <UserMenu email={user.email} onSignOut={() => db.auth.signOut()} />
-          </MenuPopover>
+            )}
+            <MenuPopover
+              trigger={
+                <button
+                  {...stylex.props(planner.ibtn)}
+                  type="button"
+                  title={user.email || (isGuest ? '게스트' : '계정')}
+                  aria-label="계정 메뉴"
+                >
+                  <CircleUserRound size={15} strokeWidth={1.75} />
+                </button>
+              }
+            >
+              <UserMenu
+                email={user.email}
+                isGuest={isGuest}
+                onUpgrade={() => setUpgradeOpen(true)}
+                onSignOut={() => db.auth.signOut()}
+              />
+            </MenuPopover>
+          </>
         }
         todosAction={
           <button
@@ -236,6 +257,8 @@ export function Planner() {
       <TodoPanel open={todosOpen} onOpenChange={setTodosOpen} api={todosApi} />
 
       <PrintDialog {...runtime.print.dialog} />
+
+      <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
 
       <input
         type="file"

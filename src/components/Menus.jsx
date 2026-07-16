@@ -1,7 +1,7 @@
 import { Popover } from '@base-ui/react/popover';
 import { Separator } from '@base-ui/react/separator';
 import * as stylex from '@stylexjs/stylex';
-import { Download, Upload, LogOut } from 'lucide-react';
+import { Download, Upload, LogOut, UserPlus } from 'lucide-react';
 import { menus } from '../styles/menus.js';
 
 export function MoreMenu({ onExport, onImport }) {
@@ -34,11 +34,24 @@ export function MoreMenu({ onExport, onImport }) {
   );
 }
 
-export function UserMenu({ email, onSignOut }) {
+export function UserMenu({ email, isGuest, onUpgrade, onSignOut }) {
   return (
     <>
-      {email && (
-        <div {...stylex.props(menus.mcap, menus.mcapFirst)}>{email}</div>
+      {isGuest ? (
+        <>
+          <div {...stylex.props(menus.mcap, menus.mcapFirst)}>
+            게스트 모드 · 아직 저장되지 않았어요
+          </div>
+          <Popover.Close render={<button {...stylex.props(menus.mi)} onClick={onUpgrade} />}>
+            <span {...stylex.props(menus.miIconWrap)}>
+              <UserPlus size={14} strokeWidth={1.75} />
+            </span>
+            <span {...stylex.props(menus.miLabel)}>계정 만들기</span>
+          </Popover.Close>
+          <Separator {...stylex.props(menus.mdiv)} />
+        </>
+      ) : (
+        email && <div {...stylex.props(menus.mcap, menus.mcapFirst)}>{email}</div>
       )}
       <Popover.Close render={<button {...stylex.props(menus.mi, menus.miRed)} onClick={onSignOut} />}>
         <span {...stylex.props(menus.miIconWrap)}>
