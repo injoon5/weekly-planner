@@ -1,5 +1,11 @@
 import { init, id } from '@instantdb/admin';
-import { isEditorRole, normalizeMemberRole } from '../src/member-role.js';
+import { linkedId } from '../src/links.js';
+import {
+  createMemberTxs,
+  findMemberForUser,
+  memberRoleTxs,
+} from '../src/member-policy.js';
+import { normalizeMemberRole } from '../src/roles.js';
 import schema from '../src/schema.js';
 
 const APP_ID = process.env.INSTANT_APP_ID || process.env.VITE_INSTANT_APP_ID;
@@ -81,7 +87,7 @@ export default async function handler(req, res) {
     if (!board) {
       return json(res, 404, { error: '시간표를 찾을 수 없어요' });
     }
-    const ownerId = board.owner?.id || board.owner;
+    const ownerId = linkedId(board.owner);
     if (ownerId !== caller.id) {
       return json(res, 403, { error: '소유자만 초대할 수 있어요' });
     }
@@ -99,28 +105,27 @@ export default async function handler(req, res) {
       return json(res, 400, { error: '자기 자신은 초대할 수 없어요' });
     }
 
-    const existing = (board.members || []).find((m) => {
-      const uid = m.user?.id || m.user;
-      return uid === target.id;
-    });
+    const existing = findMemberForUser(board.members, target.id);
     if (existing) {
-      const uid = target.id;
-      const txs = [db.tx.members[existing.id].update({ role })];
-      if (isEditorRole(role)) txs.push(db.tx.boards[boardId].link({ editors: uid }));
-      else txs.push(db.tx.boards[boardId].unlink({ editors: uid }));
-      await db.transact(txs);
+      await db.transact(
+        memberRoleTxs(db.tx, {
+          boardId,
+          memberId: existing.id,
+          userId: target.id,
+          role,
+        }),
+      );
       return json(res, 200, { ok: true, memberId: existing.id, updated: true });
     }
 
     const mid = id();
-    const txs = [
-      db.tx.members[mid]
-        .update({ role, email, createdAt: Date.now() })
-        .link({ board: boardId, user: target.id }),
-    ];
-    if (isEditorRole(role)) {
-      txs.push(db.tx.boards[boardId].link({ editors: target.id }));
-    }
+    const { txs } = createMemberTxs(db.tx, {
+      boardId,
+      userId: target.id,
+      role,
+      email,
+      memberId: mid,
+    });
     await db.transact(txs);
     return json(res, 200, { ok: true, memberId: mid, updated: false });
   } catch (err) {

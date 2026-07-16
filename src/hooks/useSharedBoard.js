@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
-import { db } from '../db.js';
+import { db } from '../instant.js';
 import { fromInstantEvents } from '../models.js';
+import { deriveShareAccessState } from '../share-access.js';
 import {
   hashSharePassword,
   readShareUnlock,
@@ -29,10 +30,17 @@ export function useSharedBoard(token) {
   );
 
   const share = meta.data?.shares?.[0] || null;
-  const needsPassword = share?.mode === 'password';
-
-  const openSecret = token && (!share || share.mode === 'open') ? token : '';
-  const secret = manualSecret || openSecret;
+  const accessPreview = deriveShareAccessState({
+    token,
+    share,
+    board: null,
+    metaLoading: meta.isLoading,
+    boardLoading: false,
+    manualSecret,
+    unlockError,
+    queryError: meta.error,
+  });
+  const secret = accessPreview.secret;
 
   // Resolve board via the share token — guests can't load nested `board: {}`
   // on the share row (no board view perms yet), so don't depend on boardId.
@@ -51,8 +59,16 @@ export function useSharedBoard(token) {
 
   const board = boardQ.data?.boards?.[0] || null;
   const events = useMemo(() => fromInstantEvents(board?.events), [board]);
-  const role = share?.role === 'editor' ? 'editor' : 'viewer';
-  const canEdit = Boolean(board) && role === 'editor';
+  const access = deriveShareAccessState({
+    token,
+    share,
+    board,
+    metaLoading: meta.isLoading,
+    boardLoading: boardQ.isLoading,
+    manualSecret,
+    unlockError,
+    queryError: meta.error || boardQ.error,
+  });
   const ruleParams = secret ? { secret } : null;
 
   const tryPassword = async () => {
@@ -70,46 +86,24 @@ export function useSharedBoard(token) {
     }
   };
 
-  const waitingUnlock = Boolean(needsPassword) && !manualSecret;
-  const passwordFailed =
-    Boolean(needsPassword) &&
-    Boolean(manualSecret) &&
-    !boardQ.isLoading &&
-    !board &&
-    Boolean(share?.enabled);
-
-  const boardPending = Boolean(secret) && !waitingUnlock;
-  const isLoading =
-    Boolean(token) &&
-    (meta.isLoading || (boardPending && boardQ.isLoading && !board));
-
-  const boardMissing =
-    boardPending &&
-    !boardQ.isLoading &&
-    !board &&
-    Boolean(share?.enabled) &&
-    !waitingUnlock;
-
   return {
     share,
     board,
     events,
-    role,
-    canEdit,
-    readOnly: !canEdit,
+    role: access.role,
+    canEdit: access.canEdit,
+    readOnly: !access.canEdit,
     ruleParams,
-    needsPassword: waitingUnlock,
+    state: access.state,
+    needsPassword: access.needsPassword,
     password,
     setPassword,
     tryPassword,
     busy,
-    unlockError: unlockError || (passwordFailed ? '비밀번호가 맞지 않아요' : ''),
-    isLoading,
-    error: meta.error || boardQ.error,
-    notFound:
-      Boolean(token) &&
-      !waitingUnlock &&
-      ((!meta.isLoading && (!share || share.enabled === false) && !board) || boardMissing),
-    disabled: share && share.enabled === false,
+    unlockError: access.unlockError,
+    isLoading: access.isLoading,
+    error: access.error,
+    notFound: access.notFound,
+    disabled: access.disabled,
   };
 }

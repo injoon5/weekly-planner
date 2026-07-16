@@ -1,17 +1,30 @@
+import { fail, ok } from '../command-result.js';
+import { db } from '../instant.js';
 import {
-  db,
-  buildShareSecrets,
+  removeMemberWithEditorTxs,
+  setMemberRoleTxs,
+} from '../tx/members.js';
+import {
   createShareTx,
-  deleteMemberTx,
   deleteShareTx,
   patchShareTx,
-  setMemberEditorTx,
-  setMemberRoleTxs,
-} from '../db.js';
-import { hashSharePassword, shareUrl } from '../share.js';
+  replaceShareTxs,
+} from '../tx/shares.js';
+import {
+  activeShareOf,
+  buildShareSecrets,
+  buildShareUpdate,
+} from '../share-policy.js';
+import { SHARE_MODE, normalizeShareRole } from '../roles.js';
+import { shareUrl } from '../share.js';
 
-function activeShareOf(board) {
-  return (board?.shares || []).find((s) => s.enabled) || board?.shares?.[0] || null;
+async function copyUrl(url) {
+  try {
+    await navigator.clipboard.writeText(url);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /** Share links + member invite/role — owner-only except leave. */
@@ -19,7 +32,7 @@ export function useShareActions({ board, isOwner = true, toast }) {
   const activeShare = () => activeShareOf(board);
 
   const enableShare = async ({ mode = 'open', role = 'viewer', password = '' } = {}) => {
-    if (!isOwner || !board) return null;
+    if (!isOwner || !board) return fail('소유자만 공유할 수 있어요');
     const existing = activeShare();
     try {
       const built = await buildShareSecrets({
@@ -28,22 +41,15 @@ export function useShareActions({ board, isOwner = true, toast }) {
         password,
         existingToken: existing?.token,
       });
-      // Always replace the share row so editSecret cannot linger on viewer demotion.
-      const txs = [];
-      if (existing) txs.push(deleteShareTx(existing.id));
-      txs.push(createShareTx(board.id, { ...built, enabled: true }).tx);
-      await db.transact(txs);
+      await db.transact(replaceShareTxs(board.id, existing?.id, { ...built, enabled: true }));
       const url = shareUrl(built.token);
-      try {
-        await navigator.clipboard.writeText(url);
-      } catch {
-        /* ignore */
-      }
+      await copyUrl(url);
       toast('공유 링크를 켰어요');
-      return url;
+      return ok(url);
     } catch (err) {
-      toast(err instanceof Error ? err.message : '공유를 켜지 못했어요');
-      return null;
+      const message = err instanceof Error ? err.message : '공유를 켜지 못했어요';
+      toast(message);
+      return fail(message, err);
     }
   };
 
@@ -53,60 +59,43 @@ export function useShareActions({ board, isOwner = true, toast }) {
    * so a stale editSecret can't survive a viewer demotion.
    */
   const updateShare = async ({ mode, role, password = '' } = {}) => {
-    if (!isOwner || !board) return false;
+    if (!isOwner || !board) return fail();
     const share = activeShare();
-    if (!share?.token) return false;
-    const nextMode = mode ?? share.mode;
-    const nextRole = (role ?? share.role) === 'editor' ? 'editor' : 'viewer';
+    if (!share?.token) return fail();
     try {
-      let secret;
-      if (nextMode === 'password') {
-        if (password) secret = await hashSharePassword(share.token, password);
-        else if (share.mode === 'password') secret = share.secret;
-        if (!secret) throw new Error('비밀번호를 입력하세요');
-      } else {
-        secret = share.token;
-      }
-      await db.transact([
-        deleteShareTx(share.id),
-        createShareTx(board.id, {
-          token: share.token,
-          secret,
-          mode: nextMode,
-          role: nextRole,
-          enabled: true,
-          ...(nextRole === 'editor' ? { editSecret: secret } : {}),
-        }).tx,
-      ]);
+      const fields = await buildShareUpdate({ share, mode, role, password });
+      await db.transact(replaceShareTxs(board.id, share.id, fields));
       toast('공유 설정을 바꿨어요');
-      return true;
+      return ok();
     } catch (err) {
-      toast(err instanceof Error ? err.message : '공유 설정을 바꾸지 못했어요');
-      return false;
+      const message = err instanceof Error ? err.message : '공유 설정을 바꾸지 못했어요';
+      toast(message);
+      return fail(message, err);
     }
   };
 
   const disableShare = async () => {
-    if (!isOwner || !board) return;
+    if (!isOwner || !board) return fail();
     const share = activeShare();
-    if (!share) return;
+    if (!share) return fail();
     const tx = patchShareTx(share.id, { enabled: false });
     if (tx) await db.transact(tx);
     toast('공유 링크를 껐어요');
+    return ok();
   };
 
   const rotateShare = async () => {
-    if (!isOwner || !board) return null;
+    if (!isOwner || !board) return fail();
     const share = activeShare();
-    if (!share) return null;
-    if (share.mode === 'password') {
+    if (!share) return fail();
+    if (share.mode === SHARE_MODE.PASSWORD) {
       toast('비밀번호 공유는 새 비밀번호로 다시 설정하세요');
-      return null;
+      return fail('비밀번호 공유는 새 비밀번호로 다시 설정하세요');
     }
     try {
       const built = await buildShareSecrets({
-        mode: 'open',
-        role: share.role === 'editor' ? 'editor' : 'viewer',
+        mode: SHARE_MODE.OPEN,
+        role: normalizeShareRole(share.role),
         password: '',
       });
       await db.transact([
@@ -114,16 +103,13 @@ export function useShareActions({ board, isOwner = true, toast }) {
         createShareTx(board.id, { ...built, enabled: true }).tx,
       ]);
       const url = shareUrl(built.token);
-      try {
-        await navigator.clipboard.writeText(url);
-      } catch {
-        /* ignore */
-      }
+      await copyUrl(url);
       toast('새 링크를 만들었어요');
-      return url;
+      return ok(url);
     } catch (err) {
-      toast(err instanceof Error ? err.message : '링크를 바꾸지 못했어요');
-      return null;
+      const message = err instanceof Error ? err.message : '링크를 바꾸지 못했어요';
+      toast(message);
+      return fail(message, err);
     }
   };
 
@@ -131,55 +117,57 @@ export function useShareActions({ board, isOwner = true, toast }) {
     const share = activeShare();
     if (!share?.token) {
       toast('먼저 공유를 켜주세요');
-      return;
+      return fail('먼저 공유를 켜주세요');
     }
     const url = shareUrl(share.token);
-    try {
-      await navigator.clipboard.writeText(url);
+    if (await copyUrl(url)) {
       toast('링크를 복사했어요');
-    } catch {
-      toast(url);
+      return ok(url);
     }
+    toast(url);
+    return ok(url);
   };
 
   const updateMemberRole = async (memberId, userId, role) => {
-    if (!isOwner || !board || !userId) return;
+    if (!isOwner || !board || !userId) return fail();
     try {
       await db.transact(setMemberRoleTxs(board.id, memberId, userId, role));
+      return ok();
     } catch (error) {
       console.error(error);
       toast('멤버 역할을 바꾸지 못했어요');
+      return fail('멤버 역할을 바꾸지 못했어요', error);
     }
   };
 
   const removeMember = async (memberId, userId) => {
-    if (!isOwner || !board) return;
-    const txs = [deleteMemberTx(memberId)];
-    if (userId) txs.push(setMemberEditorTx(board.id, userId, false));
+    if (!isOwner || !board) return fail();
     try {
-      await db.transact(txs);
+      await db.transact(removeMemberWithEditorTxs(board.id, memberId, userId));
       toast('멤버를 제거했어요');
+      return ok();
     } catch (error) {
       console.error(error);
       toast('멤버를 제거하지 못했어요');
+      return fail('멤버를 제거하지 못했어요', error);
     }
   };
 
   const leaveBoard = async (memberId, userId) => {
-    if (!memberId || !board) return;
-    const txs = [deleteMemberTx(memberId)];
-    if (userId) txs.push(setMemberEditorTx(board.id, userId, false));
+    if (!memberId || !board) return fail();
     try {
-      await db.transact(txs);
+      await db.transact(removeMemberWithEditorTxs(board.id, memberId, userId));
       toast('시간표에서 나갔어요');
+      return ok();
     } catch (error) {
       console.error(error);
       toast('시간표에서 나가지 못했어요');
+      return fail('시간표에서 나가지 못했어요', error);
     }
   };
 
   const inviteMember = async ({ email, role, refreshToken }) => {
-    if (!isOwner || !board) return false;
+    if (!isOwner || !board) return fail();
     try {
       const res = await fetch('/api/invite', {
         method: 'POST',
@@ -195,14 +183,15 @@ export function useShareActions({ board, isOwner = true, toast }) {
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
-        toast(body.error || '초대에 실패했어요');
-        return false;
+        const message = body.error || '초대에 실패했어요';
+        toast(message);
+        return fail(message);
       }
       toast(body.updated ? '역할을 업데이트했어요' : '초대했어요');
-      return true;
-    } catch {
+      return ok({ updated: Boolean(body.updated), memberId: body.memberId });
+    } catch (error) {
       toast('초대에 실패했어요');
-      return false;
+      return fail('초대에 실패했어요', error);
     }
   };
 

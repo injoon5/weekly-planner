@@ -12,7 +12,7 @@ import {
   Users,
   WifiOff,
 } from 'lucide-react';
-import { db } from '../db.js';
+import { db } from '../instant.js';
 import { applyDocumentTheme, readBootTheme } from '../theme-dom.js';
 import { landing } from '../styles/landing.js';
 import { IconSwap } from './ui/IconSwap.jsx';

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { MoreHorizontal, CircleUserRound, Share2, UserPlus, ListChecks } from 'lucide-react';
-import { db } from '../db.js';
+import { db } from '../instant.js';
+import { findMemberForUser } from '../member-policy.js';
 import { useBoardLifecycle } from '../hooks/useBoardLifecycle.js';
 import { usePlannerRuntime } from '../hooks/usePlannerRuntime.js';
 import { useTheme } from '../hooks/useTheme.js';
@@ -96,10 +97,10 @@ export function Planner() {
     return () => clearTimeout(t);
   }, [board?.id, swapBoardId]);
 
-  const myMembership = useMemo(() => {
-    if (!board || !user) return null;
-    return (board.members || []).find((m) => (m.user?.id || m.user) === user.id) || null;
-  }, [board, user]);
+  const myMembership = useMemo(
+    () => findMemberForUser(board?.members, user?.id),
+    [board, user],
+  );
 
   if (isLoading || (!ready && !boards.length)) {
     return <div {...stylex.props(planner.boot)}>불러오는 중…</div>;

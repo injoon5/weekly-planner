@@ -1,35 +1,9 @@
 import { describe, expect, it } from 'vitest';
-
-/** Mirrors useSharedBoard open-link secret + not-found gating. */
-function openShareSecret(token, share) {
-  if (!token) return '';
-  if (!share || share.mode === 'open') return token;
-  return '';
-}
-
-function sharedNotFound({
-  token,
-  metaLoading,
-  share,
-  board,
-  secret,
-  waitingUnlock,
-  boardLoading,
-}) {
-  const boardPending = Boolean(secret) && !waitingUnlock;
-  const boardMissing =
-    boardPending &&
-    !boardLoading &&
-    !board &&
-    Boolean(share?.enabled) &&
-    !waitingUnlock;
-
-  return (
-    Boolean(token) &&
-    !waitingUnlock &&
-    ((!metaLoading && (!share || share.enabled === false) && !board) || boardMissing)
-  );
-}
+import {
+  deriveShareAccessState,
+  openShareSecret,
+  sharedNotFound,
+} from '../src/share-access.js';
 
 describe('shared board guest access', () => {
   it('issues an open-link secret before share metadata arrives', () => {
@@ -80,5 +54,29 @@ describe('shared board guest access', () => {
         boardLoading: false,
       }),
     ).toBe(false);
+  });
+
+  it('names password-required and unlock-failed states explicitly', () => {
+    expect(
+      deriveShareAccessState({
+        token: 'abc12345',
+        share: { mode: 'password', enabled: true, role: 'viewer' },
+        board: null,
+        metaLoading: false,
+        boardLoading: false,
+        manualSecret: '',
+      }).state,
+    ).toBe('passwordRequired');
+
+    expect(
+      deriveShareAccessState({
+        token: 'abc12345',
+        share: { mode: 'password', enabled: true, role: 'viewer' },
+        board: null,
+        metaLoading: false,
+        boardLoading: false,
+        manualSecret: 'bad-hash',
+      }).state,
+    ).toBe('unlockFailed');
   });
 });

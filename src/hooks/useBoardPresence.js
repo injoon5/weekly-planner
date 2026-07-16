@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { db } from '../db.js';
+import { db } from '../instant.js';
 
 const PEER_COLORS = [
   '#E96D4F',

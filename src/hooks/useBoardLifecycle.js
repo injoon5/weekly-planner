@@ -1,15 +1,24 @@
 import { useRef } from 'react';
+import { isOk } from '../command-result.js';
+import { db } from '../instant.js';
 import {
-  db,
-  boardTx,
-  patchBoardTx,
-} from '../db.js';
-import { normBoards } from '../legacy.js';
-import { nextBoardSortOrder, nextBoardName } from '../models.js';
-import { defaultBoardRange, pad } from '../time.js';
+  buildExportPayload,
+  buildImportTransactions,
+  downloadJson,
+  exportFilename,
+  parseImportText,
+} from '../board-import-export.js';
+import { nextBoardName, nextBoardSortOrder } from '../models.js';
+import { defaultBoardRange } from '../time.js';
 import { commitTransaction } from '../transaction.js';
+import {
+  boardTx,
+  deleteBoardTx,
+  deleteEventRowsTx,
+  patchBoardTx,
+} from '../tx/boards.js';
 
-/** Owner board CRUD + import/export. */
+/** Owner board CRUD. Import/export live in board-import-export.js. */
 export function useBoardLifecycle({
   user,
   boards,
@@ -36,7 +45,7 @@ export function useBoardLifecycle({
       { name: nextBoardName(boards), from: range.from, to: range.to, events: [] },
       sortOrder,
     );
-    if (await commit(txs, '시간표를 만들지 못했어요')) setActiveId(bid);
+    if (isOk(await commit(txs, '시간표를 만들지 못했어요'))) setActiveId(bid);
   };
 
   const commitBoard = async (patch) => {
@@ -61,7 +70,7 @@ export function useBoardLifecycle({
       },
       sortOrder,
     );
-    if (await commit(txs, '시간표를 복제하지 못했어요')) {
+    if (isOk(await commit(txs, '시간표를 복제하지 못했어요'))) {
       setActiveId(bid);
       closeMenu();
     }
@@ -69,15 +78,15 @@ export function useBoardLifecycle({
 
   const clearBoard = async () => {
     if (!isOwner || !board) return;
-    const txs = events.map((e) => db.tx.events[e.id].delete());
-    if (!txs.length || (await commit(txs, '일정을 비우지 못했어요'))) closeMenu();
+    const txs = deleteEventRowsTx(events.map((e) => e.id));
+    if (!txs.length || isOk(await commit(txs, '일정을 비우지 못했어요'))) closeMenu();
   };
 
   const deleteBoard = async () => {
     if (!isOwner || !board || boards.length <= 1) return;
     const i = boards.findIndex((b) => b.id === board.id);
     const next = boards.filter((b) => b.id !== board.id);
-    if (await commit(db.tx.boards[board.id].delete(), '시간표를 삭제하지 못했어요')) {
+    if (isOk(await commit(deleteBoardTx(board.id), '시간표를 삭제하지 못했어요'))) {
       setActiveId(next[Math.max(0, i - 1)]?.id || null);
       closeMenu();
     }
@@ -97,32 +106,7 @@ export function useBoardLifecycle({
       toast('내보낼 시간표를 불러오지 못했어요');
       return;
     }
-    const payload = {
-      app: 'weekly-planner',
-      version: 2,
-      exportedAt: new Date().toISOString(),
-      boards: exportBoards.map((b) => ({
-        name: b.name,
-        from: b.from || '',
-        to: b.to || '',
-        repeatEvery: b.repeatEvery || 0,
-        events: (b.events || []).map(({ day, title, start, dur, color, memo }) => ({
-          day,
-          title,
-          start,
-          dur,
-          color,
-          memo: memo || '',
-        })),
-      })),
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    const d = new Date();
-    a.href = URL.createObjectURL(blob);
-    a.download = `주간계획표-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.json`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    downloadJson(buildExportPayload(exportBoards), exportFilename());
     closeMenu();
     toast('JSON 파일로 내보냈어요');
   };
@@ -140,41 +124,25 @@ export function useBoardLifecycle({
     if (!f) return;
     try {
       const text = await f.text();
-      let json;
-      try {
-        json = JSON.parse(text);
-      } catch {
-        toast('JSON 파일을 읽을 수 없어요');
+      const parsed = await parseImportText(text);
+      if (parsed.error) {
+        toast(parsed.error);
         return;
       }
-      const importedBoards = normBoards(json);
-      if (!importedBoards?.length) {
-        toast('가져올 시간표가 없어요');
-        return;
-      }
-      const base = nextBoardSortOrder(boards);
-      const range = defaultBoardRange();
-      const txs = [];
-      let firstId = null;
-      importedBoards.forEach((importedBoard, index) => {
-        const { bid, txs: boardTransactions } = boardTx(
-          user.id,
-          {
-            ...importedBoard,
-            from: importedBoard.from || range.from,
-            to: importedBoard.to || range.to,
-          },
-          base + index,
-        );
-        if (!firstId) firstId = bid;
-        txs.push(...boardTransactions);
+      const built = buildImportTransactions(parsed.json, {
+        userId: user.id,
+        existingBoards: boards,
       });
-      if (!(await commit(txs, '파일을 가져오지 못했어요'))) return;
-      setActiveId(firstId);
+      if (built.error) {
+        toast(built.error);
+        return;
+      }
+      if (!isOk(await commit(built.txs, '파일을 가져오지 못했어요'))) return;
+      setActiveId(built.firstId);
       toast(
-        importedBoards.length === 1
-          ? `'${importedBoards[0].name}' 시간표를 가져왔어요`
-          : `시간표 ${importedBoards.length}개를 가져왔어요`,
+        built.boards.length === 1
+          ? `'${built.boards[0].name}' 시간표를 가져왔어요`
+          : `시간표 ${built.boards.length}개를 가져왔어요`,
       );
     } catch {
       toast('파일을 가져오지 못했어요');

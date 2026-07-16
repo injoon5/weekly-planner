@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { X } from 'lucide-react';
-import { db } from '../db.js';
+import { useMagicCodeAuth } from '../hooks/useMagicCodeAuth.js';
 import { auth } from '../styles/auth.js';
 import { editor } from '../styles/editor.js';
 import { ui } from '../styles/ui.js';
@@ -14,61 +14,30 @@ import { Sheet } from './ui/Sheet.jsx';
  * carries over — no migration on our side.
  */
 export function UpgradeDialog({ open, onOpenChange }) {
-  const [sentEmail, setSentEmail] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState('');
-  const [shake, setShake] = useState(0);
-  const [code, setCode] = useState('');
-  const emailRef = useRef();
-  const submitting = useRef(false);
+  const {
+    sentEmail,
+    busy,
+    err,
+    shake,
+    code,
+    setCode,
+    emailRef,
+    isCodeComplete,
+    sendCode,
+    verify,
+    backToEmail,
+    reset,
+  } = useMagicCodeAuth({
+    onVerified: () => onOpenChange(false),
+  });
 
   // Reset to the first step whenever the sheet reopens.
   useEffect(() => {
     if (!open) return;
-    setSentEmail('');
-    setErr('');
-    setCode('');
-    setShake(0);
+    reset();
+    // reset is stable enough for open transitions; avoid re-running on identity churn.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
-
-  const sendCode = async (e) => {
-    e.preventDefault();
-    const email = (emailRef.current?.value || '').trim();
-    if (!email) return;
-    setBusy(true);
-    setErr('');
-    try {
-      await db.auth.sendMagicCode({ email });
-      setSentEmail(email);
-      setCode('');
-    } catch (ex) {
-      setErr(ex?.body?.message || ex?.message || '코드를 보내지 못했어요');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const verify = async (codeVal) => {
-    const c = (codeVal || code || '').trim();
-    if (c.length !== 6 || submitting.current) return;
-    submitting.current = true;
-    setBusy(true);
-    setErr('');
-    try {
-      await db.auth.signInWithMagicCode({ email: sentEmail, code: c });
-      // Guest is now a permanent user; close and let the app re-render.
-      onOpenChange(false);
-    } catch (ex) {
-      setErr(ex?.body?.message || ex?.message || '코드가 올바르지 않아요');
-      setShake((s) => s + 1);
-      setCode('');
-    } finally {
-      setBusy(false);
-      submitting.current = false;
-    }
-  };
-
-  const isCodeComplete = /^\d{6}$/.test(code);
 
   return (
     <Sheet.Root open={open} onOpenChange={onOpenChange}>
@@ -155,12 +124,7 @@ export function UpgradeDialog({ open, onOpenChange }) {
                   {...stylex.props(ui.btn, ui.btnGhost, auth.back)}
                   type="button"
                   disabled={busy}
-                  onClick={() => {
-                    setSentEmail('');
-                    setErr('');
-                    setCode('');
-                    setShake(0);
-                  }}
+                  onClick={backToEmail}
                 >
                   다른 이메일
                 </button>

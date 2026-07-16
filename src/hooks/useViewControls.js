@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { isOk } from '../command-result.js';
 import { COLOR_LABELS_KO, PALETTE } from '../config.js';
-import { db, patchBoardTx, upsertBoardPrefsTx } from '../db.js';
+import { db } from '../instant.js';
 import {
   defaultViewPrefs,
   parseColorLabels,
@@ -9,6 +10,8 @@ import {
   serializeHiddenColors,
 } from '../prefs.js';
 import { commitTransaction } from '../transaction.js';
+import { patchBoardTx } from '../tx/boards.js';
+import { upsertBoardPrefsTx } from '../tx/prefs.js';
 
 const guestKey = (boardKey) => `weekly-planner.view.${boardKey || 'guest'}`;
 
@@ -72,10 +75,12 @@ export function useViewControls({
       if (!user || !boardId) return false;
       const tx = upsertBoardPrefsTx(boardPrefs?.id, user.id, boardId, patch);
       if (!tx) return true;
-      return await commitTransaction((transaction) => db.transact(transaction), tx, {
-        message: '보기 설정을 저장하지 못했어요',
-        onError,
-      });
+      return isOk(
+        await commitTransaction((transaction) => db.transact(transaction), tx, {
+          message: '보기 설정을 저장하지 못했어요',
+          onError,
+        }),
+      );
     },
     [user, boardId, boardPrefs?.id, onError],
   );
@@ -120,10 +125,12 @@ export function useViewControls({
     if (!label.trim()) delete next[color];
     const tx = patchBoardTx(boardId, { colorLabels: serializeColorLabels(next) });
     if (!tx) return true;
-    return await commitTransaction((transaction) => db.transact(transaction), tx, {
-      message: '색상 이름을 저장하지 못했어요',
-      onError,
-    });
+    return isOk(
+      await commitTransaction((transaction) => db.transact(transaction), tx, {
+        message: '색상 이름을 저장하지 못했어요',
+        onError,
+      }),
+    );
   };
 
   const visibleEvents = useCallback(
@@ -143,13 +150,12 @@ export function useViewControls({
     compact,
     showMemos,
     days,
-    colorLabel,
-    setColorLabel,
     toggleColor,
     setHideWeekend: (v) => applyPrefs({ hideWeekend: v }),
     setCompact: (v) => applyPrefs({ compact: v }),
     setShowMemos: (v) => applyPrefs({ showMemos: v }),
+    colorLabel,
+    setColorLabel,
     visibleEvents,
-    canRenameColors: Boolean(canRenameColors),
   };
 }

@@ -171,7 +171,23 @@ export function edgeScrollDelta(
 }
 
 /**
- * Imperative gesture controller. Owns pointer listeners; reports drafts via callbacks.
+ * Pure pending-phase transition for pointer moves.
+ * @returns {{ type: 'continue' } | { type: 'activate' } | { type: 'cancel-timer' } | { type: 'finish', result: { type: 'noop' } }}
+ */
+export function reducePendingPointerMove(session, { dx, dy, dist }) {
+  if (session.isTouch) {
+    if (shouldCancelTouchForScroll(dx, dy, dist)) {
+      return { type: 'finish', result: { type: 'noop' } };
+    }
+    if (shouldCancelTouchHold(dist)) return { type: 'cancel-timer' };
+    return { type: 'continue' };
+  }
+  if (dist > 4) return { type: 'activate' };
+  return { type: 'continue' };
+}
+
+/**
+ * DOM adapter for pointer gestures. Pure math lives above; this owns listeners.
  */
 export function beginPointerGesture(e, {
   mode,
@@ -317,18 +333,26 @@ export function beginPointerGesture(e, {
     if (session.phase === 'pending') {
       const dx = ev.clientX - session.x0;
       const dy = ev.clientY - session.y0;
-      const d = Math.hypot(dx, dy);
-      if (session.isTouch) {
-        if (shouldCancelTouchForScroll(dx, dy, d)) {
-          finish({ type: 'noop' });
-          return;
-        }
-        if (shouldCancelTouchHold(d)) {
+      const dist = Math.hypot(dx, dy);
+      const transition = reducePendingPointerMove(session, { dx, dy, dist });
+      switch (transition.type) {
+        case 'finish':
+          finish(transition.result);
+          break;
+        case 'activate':
+          activate();
+          break;
+        case 'cancel-timer':
           clearTimeout(session.tmr);
           session.tmr = 0;
+          break;
+        case 'continue':
+          break;
+        default: {
+          const _exhaustive = transition;
+          void _exhaustive;
+          break;
         }
-      } else if (d > 4) {
-        activate();
       }
       return;
     }

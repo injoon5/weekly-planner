@@ -8,7 +8,7 @@ import {
   redirect,
 } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { db } from './db.js';
+import { db } from './instant.js';
 import { Landing } from './components/Landing.jsx';
 import { Login } from './components/Login.jsx';
 import { Planner } from './components/Planner.jsx';

@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
+import { isOk } from '../command-result.js';
 import { THEME_KEY } from '../config.js';
-import { db, persistThemeTx } from '../db.js';
+import { db } from '../instant.js';
 import { applyDocumentTheme, readBootTheme } from '../theme-dom.js';
 import { commitTransaction } from '../transaction.js';
+import { persistThemeTx } from '../tx/theme.js';
 
 /**
  * Single theme owner after boot: Instant settings → local cache → DOM.
@@ -41,12 +43,12 @@ export function useTheme(settings, onError) {
     setTheme(next);
     const tx = persistThemeTx(settings, next);
     if (!tx) return true;
-    const didSave = await commitTransaction((transaction) => db.transact(transaction), tx, {
+    const result = await commitTransaction((transaction) => db.transact(transaction), tx, {
       message: '테마를 저장하지 못했어요',
       onError,
     });
-    if (!didSave) setTheme(previous);
-    return didSave;
+    if (!isOk(result)) setTheme(previous);
+    return isOk(result);
   };
 
   const toggleTheme = () => void persistTheme(theme === 'dark' ? 'light' : 'dark');

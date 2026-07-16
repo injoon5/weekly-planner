@@ -1,7 +1,11 @@
-export function normalizeMemberRole(role) {
-  return role === 'editor' ? 'editor' : 'viewer';
-}
-
-export function isEditorRole(role) {
-  return normalizeMemberRole(role) === 'editor';
-}
+/** @deprecated Import from `./roles.js` — kept for existing imports/tests. */
+export {
+  normalizeMemberRole,
+  isEditorRole,
+  MEMBER_ROLE,
+  BOARD_ROLE,
+  SHARE_MODE,
+  SHARE_ROLE,
+  normalizeShareMode,
+  normalizeShareRole,
+} from './roles.js';

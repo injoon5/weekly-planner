@@ -1,23 +1,25 @@
 import { useEffect, useMemo, useState } from 'react';
-import { db, ensureWorkspace } from '../db.js';
+import { db } from '../instant.js';
+import { linkedId, linkedIds } from '../links.js';
 import { boardCoversDate, fromInstantEvents } from '../models.js';
+import { BOARD_ROLE } from '../roles.js';
 import { isoDate } from '../time.js';
+import { ensureWorkspace } from '../workspace-ensure.js';
 
 function ownerIdOf(board) {
-  if (!board?.owner) return null;
-  return typeof board.owner === 'object' ? board.owner.id : board.owner;
+  return linkedId(board?.owner);
 }
 
 function editorIdsOf(board) {
-  return (board?.editors || []).map((e) => (typeof e === 'object' ? e.id : e)).filter(Boolean);
+  return linkedIds(board?.editors);
 }
 
 /** Write truth = boards.editors link (members.role is display cache). */
 function roleForBoard(board, userId) {
-  if (!board || !userId) return 'viewer';
-  if (ownerIdOf(board) === userId) return 'owner';
-  if (editorIdsOf(board).includes(userId)) return 'editor';
-  return 'viewer';
+  if (!board || !userId) return BOARD_ROLE.VIEWER;
+  if (ownerIdOf(board) === userId) return BOARD_ROLE.OWNER;
+  if (editorIdsOf(board).includes(userId)) return BOARD_ROLE.EDITOR;
+  return BOARD_ROLE.VIEWER;
 }
 
 /**
@@ -86,8 +88,8 @@ export function useWorkspace() {
   // for the grid and today's to-do list.
   const events = useMemo(() => fromInstantEvents(board?.events), [board]);
   const myRole = useMemo(() => roleForBoard(board, user?.id), [board, user?.id]);
-  const canEdit = myRole === 'owner' || myRole === 'editor';
-  const isOwner = myRole === 'owner';
+  const canEdit = myRole === BOARD_ROLE.OWNER || myRole === BOARD_ROLE.EDITOR;
+  const isOwner = myRole === BOARD_ROLE.OWNER;
 
   const boardPrefs = prefsQuery.data?.boardPrefs?.[0] || null;
 

@@ -1,5 +1,5 @@
 import { NEXT_DAY_START_SLOT, SLOTS, SLOT_MIN } from './config.js';
-import { pack } from './models.js';
+import { packOverlappingEvents } from './event-packing.js';
 import { layout } from './tokens.stylex.js';
 
 const GRID_BODY_HEIGHT_PROPERTY = '--grid-body-height';
@@ -30,7 +30,7 @@ export function packView(view, drag) {
     const list = view.filter(
       (e) => e.day === d && !(drag && drag.kind === 'ev' && drag.id === e.id),
     );
-    for (const [k, v] of pack(list)) m.set(k, v);
+    for (const [k, v] of packOverlappingEvents(list)) m.set(k, v);
   }
   return m;
 }

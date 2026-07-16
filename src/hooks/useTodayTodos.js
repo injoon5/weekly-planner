@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { checkTodoTx, db, uncheckTodoTx } from '../db.js';
+import { db } from '../instant.js';
 import { buildTodayTodos, weekdayFromPlannerDate } from '../models.js';
 import { commitTransaction } from '../transaction.js';
+import { checkTodoTx, uncheckTodoTx } from '../tx/todos.js';
 import { plannerDate } from '../time.js';
 
 /**
