@@ -90,6 +90,17 @@ const rules = {
       isSelf: "auth.id in data.ref('user.id')",
     },
   },
+  todos: {
+    allow: {
+      view: 'isOwner',
+      create: "auth.id != null && auth.id in data.ref('owner.id')",
+      update: 'isOwner',
+      delete: 'isOwner',
+    },
+    bind: {
+      isOwner: "auth.id in data.ref('owner.id')",
+    },
+  },
 } satisfies InstantRules;
 
 export default rules;
