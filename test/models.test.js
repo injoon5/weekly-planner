@@ -4,11 +4,14 @@ import {
   boardCoversDate,
   boardFields,
   eventFields,
+  fromInstantEvents,
+  fromInstantTodos,
   nextBoardName,
   nextBoardSortOrder,
   pack,
   pickLeastUsedColor,
   repeatWeeksOf,
+  todoFields,
 } from '../src/models.js';
 
 describe('model normalization', () => {
@@ -65,6 +68,68 @@ describe('model normalization', () => {
     expect(repeatWeeksOf(-1)).toBe(0);
     expect(repeatWeeksOf(2.6)).toBe(3);
     expect(repeatWeeksOf(20)).toBe(8);
+  });
+
+  it('maps Instant events with done state', () => {
+    expect(
+      fromInstantEvents([
+        {
+          id: 'e1',
+          day: 1,
+          start: 60,
+          dur: 60,
+          title: 'Class',
+          color: 'sky',
+          done: true,
+        },
+      ]),
+    ).toEqual([
+      {
+        id: 'e1',
+        day: 1,
+        start: 60,
+        dur: 60,
+        title: 'Class',
+        memo: '',
+        color: 'sky',
+        done: true,
+      },
+    ]);
+  });
+
+  it('normalizes and sorts freeform todos', () => {
+    expect(
+      todoFields({ day: 9, text: '  buy milk  ', done: 1, sortOrder: 3 }),
+    ).toEqual({
+      day: 6,
+      text: 'buy milk',
+      done: true,
+      sortOrder: 3,
+    });
+
+    expect(
+      fromInstantTodos([
+        { id: 't2', day: 2, text: 'Later', done: false, sortOrder: 2, createdAt: 20 },
+        { id: 't1', day: 2, text: 'First', done: true, sortOrder: 1, createdAt: 10 },
+      ]),
+    ).toEqual([
+      {
+        id: 't1',
+        day: 2,
+        text: 'First',
+        done: true,
+        sortOrder: 1,
+        createdAt: 10,
+      },
+      {
+        id: 't2',
+        day: 2,
+        text: 'Later',
+        done: false,
+        sortOrder: 2,
+        createdAt: 20,
+      },
+    ]);
   });
 });
 

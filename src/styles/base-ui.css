@@ -203,3 +203,15 @@
     transition-duration: 0ms !important;
   }
 }
+
+/* Day checklist: reveal delete on row hover / focus-within */
+[data-checklist-row]:hover [data-checklist-delete],
+[data-checklist-row]:focus-within [data-checklist-delete] {
+  opacity: 1;
+}
+
+@media (pointer: coarse) {
+  [data-checklist-delete] {
+    opacity: 0.7;
+  }
+}

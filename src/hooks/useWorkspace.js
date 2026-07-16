@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { db, ensureWorkspace } from '../db.js';
-import { boardCoversDate, fromInstantEvents } from '../models.js';
+import { boardCoversDate, fromInstantEvents, fromInstantTodos } from '../models.js';
 import { isoDate } from '../time.js';
 
 function ownerIdOf(board) {
@@ -57,6 +57,7 @@ export function useWorkspace() {
             $: { where: { id: activeBoardId } },
             owner: {},
             events: {},
+            todos: {},
             members: { user: {} },
             editors: {},
             shares: {},
@@ -82,6 +83,7 @@ export function useWorkspace() {
   );
   const board = detail.data?.boards?.[0] || null;
   const events = useMemo(() => fromInstantEvents(board?.events), [board?.events]);
+  const todos = useMemo(() => fromInstantTodos(board?.todos), [board?.todos]);
   const myRole = useMemo(() => roleForBoard(board, user?.id), [board, user?.id]);
   const canEdit = myRole === 'owner' || myRole === 'editor';
   const isOwner = myRole === 'owner';
@@ -129,6 +131,7 @@ export function useWorkspace() {
     boards,
     board,
     events,
+    todos,
     settings,
     boardPrefs,
     myRole,

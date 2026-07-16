@@ -19,6 +19,18 @@ export const planner = stylex.create({
     },
   },
 
+  body: {
+    flex: 1,
+    minHeight: 0,
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    '@media print': {
+      display: 'block',
+      minHeight: 0,
+    },
+  },
+
   boot: {
     minHeight: '100dvh',
     display: 'flex',
@@ -466,6 +478,12 @@ export const planner = stylex.create({
     '@media print': {
       display: 'none',
     },
+  },
+
+  ibtnOn: {
+    color: colors.ink,
+    backgroundColor: colors.field,
+    boxShadow: `inset 0 0 0 1px ${colors.edgeH}, 0 1px 2px rgba(27,27,32,.05)`,
   },
 
   presence: {

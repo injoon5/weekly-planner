@@ -62,7 +62,35 @@ export function fromInstantEvents(rows) {
   return (rows || []).map(e => ({
     id: e.id,
     ...eventFields(e),
+    done: Boolean(e.done),
   }));
+}
+
+/** Normalize a freeform day todo. */
+export function todoFields(input = {}) {
+  const day = clamp(Math.round(+input.day) || 0, 0, 6);
+  const text = typeof input.text === 'string' ? input.text.trim().slice(0, 120) : '';
+  return {
+    day,
+    text,
+    done: Boolean(input.done),
+    sortOrder: Number.isFinite(+input.sortOrder) ? +input.sortOrder : 0,
+  };
+}
+
+/** Map Instant todo rows → UI todos. */
+export function fromInstantTodos(rows) {
+  return (rows || [])
+    .map(t => ({
+      id: t.id,
+      ...todoFields(t),
+      createdAt: t.createdAt ?? 0,
+    }))
+    .sort(
+      (a, b) =>
+        (a.sortOrder ?? 0) - (b.sortOrder ?? 0) ||
+        (a.createdAt ?? 0) - (b.createdAt ?? 0),
+    );
 }
 
 /** Column packing for overlapping events in one day. */

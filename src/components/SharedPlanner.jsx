@@ -1,11 +1,13 @@
 import * as stylex from '@stylexjs/stylex';
 import { Link, useParams } from '@tanstack/react-router';
+import { useState } from 'react';
 import { usePlannerRuntime } from '../hooks/usePlannerRuntime.js';
 import { useSharedBoard } from '../hooks/useSharedBoard.js';
 import { useTheme } from '../hooks/useTheme.js';
 import { planner } from '../styles/planner.js';
 import { ui } from '../styles/ui.js';
 import { auth as authStyles } from '../styles/auth.js';
+import { ChecklistToggle, DayChecklist } from './DayChecklist.jsx';
 import { PrintDialog } from './PrintDialog.jsx';
 import { PlannerHeader } from './PlannerHeader.jsx';
 import { PlannerSurface } from './PlannerSurface.jsx';
@@ -15,6 +17,7 @@ export function SharedPlanner() {
   const { token } = useParams({ from: '/s/$token' });
   const shared = useSharedBoard(token);
   const { theme, toggleTheme } = useTheme(null, toast);
+  const [checklistOpen, setChecklistOpen] = useState(false);
   const runtime = usePlannerRuntime({
     board: shared.board,
     events: shared.events,
@@ -109,21 +112,39 @@ export function SharedPlanner() {
         theme={theme}
         onToggleTheme={toggleTheme}
         onPrint={runtime.print.open}
+        afterViewActions={
+          <ChecklistToggle
+            open={checklistOpen}
+            onClick={() => setChecklistOpen((v) => !v)}
+          />
+        }
       />
 
-      <PlannerSurface
-        boardId={board.id}
-        events={shared.events}
-        session={runtime.session}
-        views={runtime.views}
-        presence={runtime.presence}
-        readOnly={readOnly}
-        updateEvent={runtime.eventsApi.updateEvent}
-        todayDow={runtime.clock.todayDow}
-        nowMin={runtime.clock.nowMin}
-        nowDay={runtime.clock.nowDay}
-        printShowMemos={runtime.print.prefs.showMemos}
-      />
+      <div {...stylex.props(planner.body)}>
+        <PlannerSurface
+          boardId={board.id}
+          events={shared.events}
+          session={runtime.session}
+          views={runtime.views}
+          presence={runtime.presence}
+          readOnly={readOnly}
+          updateEvent={runtime.eventsApi.updateEvent}
+          todayDow={runtime.clock.todayDow}
+          nowMin={runtime.clock.nowMin}
+          nowDay={runtime.clock.nowDay}
+          printShowMemos={runtime.print.prefs.showMemos}
+        />
+
+        <DayChecklist
+          open={checklistOpen}
+          onOpenChange={setChecklistOpen}
+          events={shared.events}
+          todos={shared.todos}
+          todayDow={runtime.clock.todayDow}
+          canEdit={shared.canEdit}
+          todosApi={runtime.todosApi}
+        />
+      </div>
 
       <PrintDialog {...runtime.print.dialog} />
     </div>

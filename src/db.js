@@ -81,11 +81,48 @@ export function createEventTx(boardId, fields, ruleParams) {
 
 export function patchEventTx(eid, patch, ruleParams) {
   const clean = {};
-  for (const k of ['day', 'title', 'start', 'dur', 'color', 'memo']) {
+  for (const k of ['day', 'title', 'start', 'dur', 'color', 'memo', 'done']) {
     if (patch[k] !== undefined) clean[k] = patch[k];
   }
   if (!Object.keys(clean).length) return null;
   return withRuleParams(db.tx.events[eid].update(clean), ruleParams);
+}
+
+export function createTodoTx(boardId, fields, ruleParams) {
+  const tid = id();
+  const day = Math.max(0, Math.min(6, Math.round(+fields.day) || 0));
+  const text = typeof fields.text === 'string' ? fields.text.trim().slice(0, 120) : '';
+  return {
+    tid,
+    tx: withRuleParams(
+      db.tx.todos[tid]
+        .update({
+          day,
+          text,
+          done: false,
+          sortOrder: Number.isFinite(+fields.sortOrder) ? +fields.sortOrder : Date.now(),
+          createdAt: Date.now(),
+        })
+        .link({ board: boardId }),
+      ruleParams,
+    ),
+  };
+}
+
+export function patchTodoTx(tid, patch, ruleParams) {
+  const clean = {};
+  for (const k of ['day', 'text', 'done', 'sortOrder']) {
+    if (patch[k] !== undefined) clean[k] = patch[k];
+  }
+  if (clean.text !== undefined) {
+    clean.text = typeof clean.text === 'string' ? clean.text.trim().slice(0, 120) : '';
+  }
+  if (!Object.keys(clean).length) return null;
+  return withRuleParams(db.tx.todos[tid].update(clean), ruleParams);
+}
+
+export function deleteTodoTx(tid, ruleParams) {
+  return withRuleParams(db.tx.todos[tid].delete(), ruleParams);
 }
 
 export function saveEventTx(eid, fields, ruleParams) {
