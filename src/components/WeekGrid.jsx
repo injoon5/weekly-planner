@@ -301,8 +301,10 @@ export function WeekGrid({
                   {...stylex.props(grid.glab)}
                   style={{ top: slotTop(m) }}
                 >
-                  {fmt(m)}
-                  {m >= NEXT_DAY_START_MIN && <i {...stylex.props(grid.glabSup)}>+1</i>}
+                  <span {...stylex.props(grid.glabInner)}>
+                    {fmt(m)}
+                    {m >= NEXT_DAY_START_MIN && <i {...stylex.props(grid.glabSup)}>+1</i>}
+                  </span>
                 </div>
               );
             })}
