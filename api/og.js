@@ -1,4 +1,5 @@
 import { ImageResponse } from '@vercel/og';
+import { sanitizeOgImageTitle } from '../src/og-meta.js';
 
 /**
  * Open Graph share card (1200×630), rendered on demand with @vercel/og
@@ -8,7 +9,14 @@ import { ImageResponse } from '@vercel/og';
  *
  * GET /api/og            → default card
  * GET /api/og?title=이름  → board-specific card (title capped at 24 chars)
+ *
+ * Node runtime: @vercel/og is supported on Node for non-Next Vite APIs, and
+ * returning ImageResponse (Web Response) matches Vercel's web-handler shape.
  */
+export const config = {
+  runtime: 'nodejs',
+};
+
 
 // Satori supports woff but not woff2; fetched once per instance, then cached.
 const FONT_CDN = 'https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/woff';
@@ -280,17 +288,23 @@ const page = (title) =>
 export default async function handler(request) {
   let title = '주간 계획표';
   try {
-    const q = new URL(request.url).searchParams.get('title');
-    // eslint-disable-next-line no-control-regex
-    const clean = (q || '').replace(/[\u0000-\u001F\u007F]/g, '').trim();
-    if (clean) title = clean.slice(0, 24);
+    const q = new URL(request.url, 'http://localhost').searchParams.get('title');
+    title = sanitizeOgImageTitle(q, '주간 계획표');
   } catch {
     /* keep default */
   }
 
-  return new ImageResponse(page(title), {
-    width: 1200,
-    height: 630,
-    fonts: await loadFonts(),
-  });
+  try {
+    return new ImageResponse(page(title), {
+      width: 1200,
+      height: 630,
+      fonts: await loadFonts(),
+      headers: {
+        'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
+      },
+    });
+  } catch (err) {
+    console.error('og image failed', err);
+    return new Response('OG image generation failed', { status: 500 });
+  }
 }
