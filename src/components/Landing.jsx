@@ -88,15 +88,15 @@ const DAYS = [
 ];
 const TODAY_COL = 2; // 수요일
 const NOW_START = 260; // 13:20, minutes from 09:00
-const PXPM = 200 / 540; // px per minute over the 9-hour window
+const PXPM = 270 / 540; // px per minute over the 9-hour window
 const PREVIEW_BLOCKS = [
   { day: 0, start: 60, dur: 90, color: 'coral', title: '디자인 리뷰', time: '10:00' },
-  { day: 0, start: 390, dur: 60, color: 'green', title: '운동', time: '15:30' },
+  { day: 0, start: 360, dur: 90, color: 'green', title: '운동', time: '15:00' },
   { day: 1, start: 120, dur: 75, color: 'sky', title: '1:1 미팅', time: '11:00' },
   { day: 2, start: 30, dur: 150, color: 'violet', title: '집중 작업', time: '09:30' },
   { day: 3, start: 210, dur: 90, color: 'amber', title: '점심 약속', time: '12:30' },
   { day: 4, start: 0, dur: 45, color: 'pink', title: '스탠드업', time: '09:00' },
-  { day: 4, start: 420, dur: 60, color: 'teal', title: '주간 회고', time: '16:00' },
+  { day: 4, start: 405, dur: 90, color: 'teal', title: '주간 회고', time: '15:45' },
 ];
 
 function PlannerPreview() {
