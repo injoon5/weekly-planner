@@ -11,6 +11,7 @@ import {
   fmtRepeat,
   isoDate,
   nowOnGrid,
+  plannerDate,
   snapDur,
   snapMin,
 } from '../src/time.js';
@@ -68,5 +69,14 @@ describe('date and grid normalization', () => {
       nowDay: 0,
       todayDow: 1,
     });
+  });
+
+  it('keeps the planner day on the same 06:00→06:00 window', () => {
+    // 05:30 still belongs to the previous calendar day…
+    expect(plannerDate(new Date(2026, 6, 13, 5, 30))).toBe('2026-07-12');
+    // …06:00 flips to the new day…
+    expect(plannerDate(new Date(2026, 6, 13, 6, 0))).toBe('2026-07-13');
+    // …and it holds through the late evening.
+    expect(plannerDate(new Date(2026, 6, 13, 23, 45))).toBe('2026-07-13');
   });
 });

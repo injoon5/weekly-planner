@@ -3,6 +3,7 @@ import { Printer, X } from 'lucide-react';
 import { editor } from '../styles/editor.js';
 import { menus } from '../styles/menus.js';
 import { planner } from '../styles/planner.js';
+import { print } from '../styles/print.js';
 import { ui } from '../styles/ui.js';
 import { Sheet } from './ui/Sheet.jsx';
 import { SwitchRow } from './ui/SwitchRow.jsx';
@@ -25,7 +26,7 @@ export function PrintDialog({ open, onOpenChange, draft, onPatch, onPrint }) {
             </Sheet.Close>
           </div>
 
-          <p {...stylex.props(menus.mcap, menus.mcapFirst)}>
+          <p {...stylex.props(menus.mcap, print.cap)}>
             인쇄물에 들어갈 이름·날짜·시간을 정하세요. 비우면 빈 칸으로 나갑니다.
           </p>
 
@@ -33,9 +34,10 @@ export function PrintDialog({ open, onOpenChange, draft, onPatch, onPrint }) {
             label="이름 표시"
             checked={draft.showName}
             onChange={(v) => onPatch({ showName: v })}
+            xstyle={print.switchRow}
           />
           {draft.showName && (
-            <div {...stylex.props(menus.drow)}>
+            <div {...stylex.props(menus.drow, print.fieldRow)}>
               <span {...stylex.props(menus.drowLabel)}>이름</span>
               <input
                 {...stylex.props(ui.input, ui.inputSm, menus.drowInput)}
@@ -53,10 +55,11 @@ export function PrintDialog({ open, onOpenChange, draft, onPatch, onPrint }) {
             label="날짜 표시"
             checked={draft.showDate}
             onChange={(v) => onPatch({ showDate: v })}
+            xstyle={print.switchRow}
           />
           {draft.showDate && (
             <>
-              <div {...stylex.props(menus.drow)}>
+              <div {...stylex.props(menus.drow, print.fieldRow)}>
                 <span {...stylex.props(menus.drowLabel)}>시작</span>
                 <input
                   type="date"
@@ -67,7 +70,7 @@ export function PrintDialog({ open, onOpenChange, draft, onPatch, onPrint }) {
                   onChange={(e) => onPatch({ from: e.target.value })}
                 />
               </div>
-              <div {...stylex.props(menus.drow)}>
+              <div {...stylex.props(menus.drow, print.fieldRow)}>
                 <span {...stylex.props(menus.drowLabel)}>종료</span>
                 <input
                   type="date"
@@ -91,9 +94,10 @@ export function PrintDialog({ open, onOpenChange, draft, onPatch, onPrint }) {
             label="시간 표시"
             checked={draft.showTime}
             onChange={(v) => onPatch({ showTime: v })}
+            xstyle={print.switchRow}
           />
           {draft.showTime && (
-            <div {...stylex.props(menus.drow)}>
+            <div {...stylex.props(menus.drow, print.fieldRow)}>
               <span {...stylex.props(menus.drowLabel)}>시간</span>
               <input
                 {...stylex.props(ui.input, ui.inputSm, menus.drowInput)}

@@ -98,7 +98,9 @@ This adds a **Vercel** origin for the `weekly-planner` project (covers every pre
 
 For CI, add `INSTANT_CLI_AUTH_TOKEN` as a GitHub Actions secret — `.github/workflows/sync-instant-auth-origins.yml` runs on `main` and re-syncs when the script changes.
 
-Set `INSTANT_ADMIN_TOKEN` in Vercel **Preview** and **Production** env scopes so `/api/invite` works on preview deployments too.
+Set `INSTANT_ADMIN_TOKEN` in Vercel **Preview** and **Production** env scopes so `/api/invite` and `/api/share-meta` (dynamic OG cards for `/s/:token`) work on preview deployments too.
+
+Optional: set `SITE_URL` to your custom domain so production builds inject absolute `og:image` / canonical tags (Vercel’s production URL is used automatically otherwise).
 
 ## License
 

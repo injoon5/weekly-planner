@@ -7,7 +7,11 @@ import { VitePWA } from 'vite-plugin-pwa';
 // build time (Vercel env). Locally nothing is injected — the relative-safe
 // tags in index.html stay valid on their own.
 const siteOrigin = (() => {
-  const raw = process.env.SITE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || '';
+  const raw =
+    process.env.SITE_URL ||
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+    process.env.VERCEL_URL ||
+    '';
   if (!raw) return '';
   return (raw.startsWith('http') ? raw : `https://${raw}`).replace(/\/$/, '');
 })();
@@ -27,6 +31,7 @@ const socialUrls = () => ({
         { tag: 'meta', attrs: { property: 'og:image', content: `${siteOrigin}/api/og` }, injectTo: 'head' },
         { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' }, injectTo: 'head' },
         { tag: 'meta', attrs: { property: 'og:image:height', content: '630' }, injectTo: 'head' },
+        { tag: 'meta', attrs: { property: 'og:image:type', content: 'image/png' }, injectTo: 'head' },
         { tag: 'meta', attrs: { property: 'og:image:alt', content: '주간 계획표 주간 시간표 미리보기' }, injectTo: 'head' },
         { tag: 'meta', attrs: { name: 'twitter:image', content: `${siteOrigin}/api/og` }, injectTo: 'head' },
       ],

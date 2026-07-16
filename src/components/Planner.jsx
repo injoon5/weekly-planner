@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import { MoreHorizontal, CircleUserRound, Share2, UserPlus } from 'lucide-react';
+import { MoreHorizontal, CircleUserRound, Share2, UserPlus, ListChecks } from 'lucide-react';
 import { db } from '../db.js';
 import { useBoardLifecycle } from '../hooks/useBoardLifecycle.js';
 import { usePlannerRuntime } from '../hooks/usePlannerRuntime.js';
 import { useTheme } from '../hooks/useTheme.js';
+import { useTodayTodos } from '../hooks/useTodayTodos.js';
 import { useWorkspace } from '../hooks/useWorkspace.js';
 import { planner } from '../styles/planner.js';
+import { todos as todoStyles } from '../styles/todos.js';
+import { TodoPanel } from './TodoPanel.jsx';
 import { BoardMenu } from './BoardMenu.jsx';
 import { BoardTabs } from './BoardTabs.jsx';
 import { MoreMenu, UserMenu } from './Menus.jsx';
@@ -71,6 +74,10 @@ export function Planner() {
   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const isGuest = Boolean(auth.user?.isGuest);
+
+  const [todosOpen, setTodosOpen] = useState(false);
+  const todosApi = useTodayTodos(user, toast);
+  const remainingTodos = todosApi.todos.reduce((n, t) => n + (t.done ? 0 : 1), 0);
 
   useEffect(() => {
     if (!bootNote) return;
@@ -180,6 +187,22 @@ export function Planner() {
             </MenuPopover>
           </>
         }
+        todosAction={
+          <button
+            {...stylex.props(planner.ibtn, todoStyles.trigger)}
+            type="button"
+            aria-label="오늘 할 일"
+            aria-expanded={todosOpen}
+            onClick={() => setTodosOpen(true)}
+          >
+            <ListChecks size={15} strokeWidth={1.75} />
+            {remainingTodos > 0 && (
+              <span {...stylex.props(todoStyles.badge)} aria-hidden="true">
+                {remainingTodos > 9 ? '9+' : remainingTodos}
+              </span>
+            )}
+          </button>
+        }
         afterViewActions={
           (isOwner || myMembership) && (
             <MenuPopover
@@ -230,6 +253,8 @@ export function Planner() {
         nowDay={runtime.clock.nowDay}
         printShowMemos={runtime.print.prefs.showMemos}
       />
+
+      <TodoPanel open={todosOpen} onOpenChange={setTodosOpen} api={todosApi} />
 
       <PrintDialog {...runtime.print.dialog} />
 

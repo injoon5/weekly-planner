@@ -277,6 +277,30 @@ export async function ensureWorkspace(user, { accessibleBoardCount, hasSettings 
   }
 }
 
+export function createTodoTx(userId, { day, text, sortOrder }) {
+  const tid = id();
+  return {
+    tid,
+    tx: db.tx.todos[tid]
+      .update({
+        day,
+        text: text.slice(0, 140),
+        done: false,
+        sortOrder,
+        createdAt: Date.now(),
+      })
+      .link({ owner: userId }),
+  };
+}
+
+export function setTodoDoneTx(tid, done) {
+  return db.tx.todos[tid].update({ done });
+}
+
+export function deleteTodoTx(tid) {
+  return db.tx.todos[tid].delete();
+}
+
 export function persistThemeTx(settings, theme) {
   if (!settings?.id) return null;
   return db.tx.settings[settings.id].update({ theme });

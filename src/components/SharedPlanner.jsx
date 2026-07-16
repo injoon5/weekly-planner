@@ -1,5 +1,6 @@
 import * as stylex from '@stylexjs/stylex';
 import { Link, useParams } from '@tanstack/react-router';
+import { useEffect } from 'react';
 import { usePlannerRuntime } from '../hooks/usePlannerRuntime.js';
 import { useSharedBoard } from '../hooks/useSharedBoard.js';
 import { useTheme } from '../hooks/useTheme.js';
@@ -28,6 +29,16 @@ export function SharedPlanner() {
     guestLabel: shared.canEdit ? '공유 편집' : '공유 보기',
     onError: toast,
   });
+
+  useEffect(() => {
+    const name = shared.board?.name?.trim();
+    if (!name) return undefined;
+    const prev = document.title;
+    document.title = `${name} · 주간 계획표`;
+    return () => {
+      document.title = prev;
+    };
+  }, [shared.board?.name]);
 
   if (shared.isLoading) {
     return <div {...stylex.props(planner.boot)}>불러오는 중…</div>;

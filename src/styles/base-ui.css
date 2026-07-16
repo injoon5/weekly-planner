@@ -179,6 +179,76 @@
   transform: scale(0.96);
 }
 
+/* ---- Today's to-dos panel (desktop side rail) ---------------------------- */
+
+[data-ui-todos-backdrop] {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  transition: opacity 0.2s ease;
+}
+
+[data-ui-todos-backdrop][data-starting-style],
+[data-ui-todos-backdrop][data-ending-style] {
+  opacity: 0;
+}
+
+[data-ui-todos] {
+  position: fixed;
+  z-index: 101;
+  top: 12px;
+  right: 12px;
+  height: calc(100dvh - 24px);
+  width: min(390px, calc(100vw - 24px));
+  /* iOS-style drawer curve; enters/exits along the same right-hand path. */
+  transition:
+    transform 0.36s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.28s ease;
+}
+
+[data-ui-todos][data-starting-style],
+[data-ui-todos][data-ending-style] {
+  opacity: 0;
+  transform: translateX(calc(100% + 16px));
+}
+
+/* ---- Base UI ScrollArea (to-do list) ------------------------------------- */
+
+[data-ui-scrollbar] {
+  display: flex;
+  justify-content: center;
+  width: 8px;
+  padding: 3px 2px;
+  opacity: 0;
+  transition: opacity 0.24s ease;
+}
+
+[data-ui-scrollbar][data-hovering],
+[data-ui-scrollbar][data-scrolling] {
+  opacity: 1;
+}
+
+[data-ui-scroll-thumb] {
+  width: 4px;
+  border-radius: 99px;
+  background-color: rgba(27, 27, 32, 0.22);
+}
+
+@media (hover: hover) {
+  [data-ui-scroll-thumb]:hover {
+    background-color: rgba(27, 27, 32, 0.34);
+  }
+}
+
+@media screen {
+  html[data-theme='dark'] [data-ui-scroll-thumb] {
+    background-color: rgba(235, 235, 245, 0.22);
+  }
+  html[data-theme='dark'] [data-ui-scroll-thumb]:hover {
+    background-color: rgba(235, 235, 245, 0.34);
+  }
+}
+
 /* ---- Global -------------------------------------------------------------- */
 
 @media print {
@@ -188,6 +258,8 @@
   [data-ui-drawer],
   [data-ui-drawer-backdrop],
   [data-ui-drawer-viewport],
+  [data-ui-todos],
+  [data-ui-todos-backdrop],
   [data-ui-toast-viewport] {
     display: none !important;
   }
@@ -199,6 +271,8 @@
   [data-ui-dialog-backdrop],
   [data-ui-drawer],
   [data-ui-drawer-backdrop],
+  [data-ui-todos],
+  [data-ui-todos-backdrop],
   [data-ui-toast] {
     transition-duration: 0ms !important;
   }
