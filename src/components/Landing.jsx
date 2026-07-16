@@ -64,6 +64,7 @@ function useReveal() {
       setInView(true);
       return undefined;
     }
+    const root = el.closest('[data-landing-scroll]');
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {
@@ -71,7 +72,7 @@ function useReveal() {
           io.disconnect();
         }
       },
-      { rootMargin: '-80px 0px', threshold: 0.12 },
+      { root: root || null, rootMargin: '0px 0px -10% 0px', threshold: 0.08 },
     );
     io.observe(el);
     return () => io.disconnect();
@@ -135,7 +136,7 @@ export function Landing() {
   };
 
   return (
-    <div {...stylex.props(landing.root)}>
+    <div {...stylex.props(landing.root)} data-landing-scroll>
       <div {...stylex.props(landing.atmosphere)} aria-hidden="true" />
       <div {...stylex.props(landing.grain)} aria-hidden="true" />
 

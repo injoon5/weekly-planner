@@ -9,11 +9,14 @@ const easeOut = 'cubic-bezier(0.23, 1, 0.32, 1)';
 
 export const landing = stylex.create({
   root: {
-    minHeight: '100dvh',
+    height: '100%',
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    overscrollBehavior: 'contain',
     backgroundColor: colors.bg,
     color: colors.ink,
     fontFamily: layout.font,
-    overflowX: 'hidden',
+    WebkitOverflowScrolling: 'touch',
   },
 
   // Soft atmosphere — not flat, not purple, not cream/terracotta.
@@ -613,7 +616,7 @@ export const landing = stylex.create({
     gap: '6px',
     paddingBlock: '5px',
     paddingInline: '10px',
-    borderRadius: '999px',
+    borderRadius: '8px',
     fontSize: '12px',
     fontWeight: 600,
     letterSpacing: '-0.01em',
