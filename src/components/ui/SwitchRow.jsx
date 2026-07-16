@@ -2,9 +2,9 @@ import { Switch } from '@base-ui/react/switch';
 import * as stylex from '@stylexjs/stylex';
 import { menus } from '../../styles/menus.js';
 
-export function SwitchRow({ label, checked, onChange }) {
+export function SwitchRow({ label, checked, onChange, xstyle }) {
   return (
-    <label {...stylex.props(menus.mi)}>
+    <label {...stylex.props(menus.mi, xstyle)}>
       <span {...stylex.props(menus.miLabel, menus.miGrow)}>{label}</span>
       <Switch.Root
         checked={checked}
