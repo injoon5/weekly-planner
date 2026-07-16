@@ -3,7 +3,7 @@
   "framework": "vite",
   "trailingSlash": false,
   "rewrites": [
-    { "handle": "filesystem" },
+    { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "headers": [
