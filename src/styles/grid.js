@@ -499,6 +499,21 @@ export const grid = stylex.create({
     overflow: 'hidden',
   },
 
+  bnScreenHidden: {
+    display: 'none',
+    '@media print': {
+      display: '-webkit-box',
+      WebkitLineClamp: 2,
+      WebkitBoxOrient: 'vertical',
+    },
+  },
+
+  bnPrintHidden: {
+    '@media print': {
+      display: 'none',
+    },
+  },
+
   hh: {
     position: 'absolute',
     left: 0,

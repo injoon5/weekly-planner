@@ -36,6 +36,7 @@ function Block({
   isSel,
   p,
   showMemos,
+  printShowMemos,
   colorLabel,
   onKeyDown,
   readOnly,
@@ -89,9 +90,20 @@ function Block({
           {fmt(ev.start)} – {fmt(ev.start + ev.dur)}
         </div>
       )}
-      {showMemos && ev.dur >= SLOT_MIN * 2 && ev.memo && (
-        <div {...stylex.props(grid.bn, isXl && grid.bnXl)}>{ev.memo}</div>
-      )}
+      {ev.dur >= SLOT_MIN * 2 &&
+        ev.memo &&
+        (showMemos || printShowMemos) && (
+          <div
+            {...stylex.props(
+              grid.bn,
+              isXl && grid.bnXl,
+              !showMemos && grid.bnScreenHidden,
+              !printShowMemos && grid.bnPrintHidden,
+            )}
+          >
+            {ev.memo}
+          </div>
+        )}
       {!isXs && (
         <div data-hh="b" {...stylex.props(grid.hh, grid.hhBot, showHandles && grid.hhVisible)} />
       )}
@@ -113,6 +125,7 @@ export function WeekGrid({
   days = [0, 1, 2, 3, 4, 5, 6],
   compact = false,
   showMemos = true,
+  printShowMemos = true,
   colorLabel,
   swapping = false,
 }) {
@@ -343,6 +356,7 @@ export function WeekGrid({
                   isSel={isSel}
                   p={p}
                   showMemos={showMemos}
+                  printShowMemos={printShowMemos}
                   colorLabel={colorLabel}
                   readOnly={readOnly}
                   dayCount={dayCount}
