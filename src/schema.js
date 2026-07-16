@@ -48,6 +48,14 @@ const schema = i.schema({
       compact: i.boolean().optional(),
       showMemos: i.boolean().optional(),
     }),
+    /** Ephemeral per-day checklist, scoped to `day` (planner date, 06:00→06:00). */
+    todos: i.entity({
+      day: i.string().indexed(),
+      text: i.string(),
+      done: i.boolean(),
+      sortOrder: i.number().indexed(),
+      createdAt: i.number().indexed(),
+    }),
   },
   links: {
     boardOwner: {
@@ -137,6 +145,16 @@ const schema = i.schema({
         label: 'editors',
       },
       reverse: { on: '$users', has: 'many', label: 'editableBoards' },
+    },
+    todoOwner: {
+      forward: {
+        on: 'todos',
+        has: 'one',
+        label: 'owner',
+        required: true,
+        onDelete: 'cascade',
+      },
+      reverse: { on: '$users', has: 'many', label: 'todos' },
     },
   },
   rooms: {

@@ -18,6 +18,7 @@ export function PlannerHeader({
   onPrint,
   navigation,
   leadingActions,
+  todosAction,
   afterViewActions,
   afterThemeActions,
 }) {
@@ -41,6 +42,7 @@ export function PlannerHeader({
       <div {...stylex.props(planner.hbtns)}>
         <PresenceAvatars peers={presence.peers} />
         {leadingActions}
+        {todosAction}
 
         <MenuPopover
           width={264}

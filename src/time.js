@@ -41,6 +41,19 @@ export function isoDate(date = new Date()) {
   );
 }
 
+/**
+ * The planner's "day" for `now`, as an ISO date. The grid runs 06:00→06:00
+ * (DAY_ORIGIN), so anything before 06:00 still belongs to the previous day —
+ * matching where events land in the same column. Today's to-dos key off this.
+ */
+export function plannerDate(now = new Date()) {
+  const anchor = new Date(now);
+  if (now.getHours() * 60 + now.getMinutes() < DAY_ORIGIN) {
+    anchor.setDate(anchor.getDate() - 1);
+  }
+  return isoDate(anchor);
+}
+
 /** Default board period: today → today+7 days (local). */
 export function defaultBoardRange(now = new Date()) {
   const from = new Date(now.getFullYear(), now.getMonth(), now.getDate());
