@@ -115,7 +115,7 @@ function PlannerPreview() {
       </div>
       <div {...stylex.props(landing.pBody)}>
         <div {...stylex.props(landing.pGut)}>
-          {[9, 11, 13, 15, 17].map((h) => (
+          {[10, 12, 14, 16].map((h) => (
             <span
               key={h}
               {...stylex.props(landing.pTime)}
@@ -261,7 +261,6 @@ export function Landing() {
           <section {...stylex.props(landing.hero)}>
             <div {...stylex.props(landing.heroCopy)}>
               <span {...riseIn()} {...stylex.props(landing.eyebrow)}>
-                <i {...stylex.props(landing.eyebrowDot)} />
                 실시간으로 함께 쓰는 주간 시간표
               </span>
               <h1 {...riseIn()} {...stylex.props(landing.h1)}>

@@ -140,26 +140,12 @@ export const landing = stylex.create({
     [NARROW]: { maxWidth: 'none' },
   },
   eyebrow: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '7px',
-    height: '27px',
-    paddingInline: '11px',
-    borderRadius: '99px',
-    backgroundColor: colors.paper,
-    boxShadow: `inset 0 0 0 1px ${colors.edge}`,
+    display: 'inline-block',
     color: colors.muted,
-    fontSize: '12px',
+    fontSize: '13px',
     fontWeight: 560,
-    letterSpacing: '-0.002em',
-    marginBottom: '20px',
-  },
-  eyebrowDot: {
-    width: '6px',
-    height: '6px',
-    borderRadius: '99px',
-    backgroundColor: '#3BB273',
-    boxShadow: '0 0 0 3px color-mix(in srgb, #3BB273 24%, transparent)',
+    letterSpacing: '0.002em',
+    marginBottom: '18px',
   },
   h1: {
     margin: 0,
@@ -464,9 +450,9 @@ export const landing = stylex.create({
   // Floating presence avatars over the preview — hints at real-time collab.
   presence: {
     position: 'absolute',
-    top: '-20px',
-    right: '16px',
-    zIndex: 2,
+    top: '10px',
+    right: '12px',
+    zIndex: 10,
     display: 'inline-flex',
     paddingBlock: '5px',
     paddingInline: '9px 11px',
@@ -497,7 +483,7 @@ export const landing = stylex.create({
     paddingBlock: 'clamp(56px, 9vw, 104px)',
   },
   sectionHead: {
-    maxWidth: '30ch',
+    maxWidth: '640px',
     marginBottom: 'clamp(32px, 5vw, 52px)',
   },
   kicker: {
