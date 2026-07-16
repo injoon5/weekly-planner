@@ -9,6 +9,7 @@ import { useWorkspace } from '../hooks/useWorkspace.js';
 import { planner } from '../styles/planner.js';
 import { BoardMenu } from './BoardMenu.jsx';
 import { BoardTabs } from './BoardTabs.jsx';
+import { GuestUpgradeDialog } from './GuestUpgrade.jsx';
 import { MoreMenu, UserMenu } from './Menus.jsx';
 import { PrintDialog } from './PrintDialog.jsx';
 import { PlannerHeader } from './PlannerHeader.jsx';
@@ -42,6 +43,7 @@ export function Planner() {
   // Board menu is anchored to the active tab inside BoardTabs, so it runs as a
   // controlled popover instead of a trigger-based one.
   const [boardMenuAnchor, setBoardMenuAnchor] = useState(null);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const closeBoardMenu = () => setBoardMenuAnchor(null);
 
   const lifecycle = useBoardLifecycle({
@@ -149,14 +151,19 @@ export function Planner() {
               <button
                 {...stylex.props(planner.ibtn)}
                 type="button"
-                title={user.email || '계정'}
+                title={user.isGuest ? '게스트' : user.email || '계정'}
                 aria-label="계정 메뉴"
               >
                 <CircleUserRound size={15} strokeWidth={1.75} />
               </button>
             }
           >
-            <UserMenu email={user.email} onSignOut={() => db.auth.signOut()} />
+            <UserMenu
+              email={user.email}
+              isGuest={Boolean(user.isGuest)}
+              onUpgrade={() => setUpgradeOpen(true)}
+              onSignOut={() => db.auth.signOut()}
+            />
           </MenuPopover>
         }
         afterViewActions={
@@ -211,6 +218,7 @@ export function Planner() {
       />
 
       <PrintDialog {...runtime.print.dialog} />
+      <GuestUpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
 
       <input
         type="file"

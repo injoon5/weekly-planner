@@ -1,9 +1,11 @@
 # Weekly Planner · 주간 계획표
 
-A realtime weekly timetable with magic-code auth. **React + Vite + TanStack Router + StyleX** on [InstantDB](https://www.instantdb.com).
+A realtime weekly timetable with magic-code auth and Instant guest auth. **React + Vite + TanStack Router + StyleX** on [InstantDB](https://www.instantdb.com).
 
 ## Features
 
+- **Landing page** — product intro with guest-auth CTA
+- **Guest auth** — try the planner before signing up; upgrade keeps your data ([Instant guest auth](https://www.instantdb.com/docs/auth/guest-auth))
 - **Magic code login** — email a 6-digit code, Instant creates the account
 - **Realtime sync** — boards and events update live across devices
 - **Multi-board tabs** — duplicate, clear, rename, date ranges
@@ -21,17 +23,18 @@ npm ci
 npm run dev
 ```
 
-Open `http://localhost:3000`, sign in with your email, enter the code Instant sends you.
+Open `http://localhost:3000`. Start as a guest from the landing page, or sign in with email on `/login`.
 
 ## Routes
 
 | Path     | Access        | Screen  |
 |----------|---------------|---------|
+| `/`      | signed out    | Landing |
 | `/login` | signed out    | Login   |
-| `/`      | authenticated | Planner |
+| `/app`   | authenticated (incl. guest) | Planner |
 | `/s/:token` | public link | Shared planner |
 
-Auth uses Instant's React hooks (`db.useAuth` / `db.useUser` / `db.useQuery`) from `@instantdb/react`, injected into TanStack Router context; `beforeLoad` redirects, and `router.invalidate()` re-runs guards when auth changes.
+Auth uses Instant's React hooks (`db.useAuth` / `db.useUser` / `db.useQuery`) from `@instantdb/react`, injected into TanStack Router context; `beforeLoad` redirects, and `router.invalidate()` re-runs guards when auth changes. Guests call `db.auth.signInAsGuest()`; upgrading uses magic code while signed in as a guest.
 
 ## Project layout
 
@@ -56,12 +59,15 @@ vercel.json
 
 1. App id in **`src/config.js`** (`APP_ID`). Same value in `.env` as `INSTANT_APP_ID`.
 2. Admin token in `.env` from the [Instant dashboard](https://www.instantdb.com/dash).
-3. Optional lock:
+3. Enable **Guest Auth** in the Instant dashboard (Auth → Guest) so `db.auth.signInAsGuest()` works.
+4. Optional lock:
 
 ```bash
 npm run push:schema
 npm run push:perms
 ```
+
+`push:perms` includes `linkedGuestUsers` access so an upgraded account can still reach data created under a conflicting guest session.
 
 ## Scripts
 

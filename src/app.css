@@ -9,6 +9,10 @@ body {
   overflow-x: hidden;
 }
 
+#app {
+  height: 100%;
+}
+
 @media screen and (max-width: 720px) {
   html,
   body {

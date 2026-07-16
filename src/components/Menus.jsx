@@ -1,7 +1,7 @@
 import { Popover } from '@base-ui/react/popover';
 import { Separator } from '@base-ui/react/separator';
 import * as stylex from '@stylexjs/stylex';
-import { Download, Upload, LogOut } from 'lucide-react';
+import { Download, Upload, LogOut, Mail } from 'lucide-react';
 import { menus } from '../styles/menus.js';
 
 export function MoreMenu({ onExport, onImport }) {
@@ -34,11 +34,19 @@ export function MoreMenu({ onExport, onImport }) {
   );
 }
 
-export function UserMenu({ email, onSignOut }) {
+export function UserMenu({ email, isGuest, onUpgrade, onSignOut }) {
   return (
     <>
-      {email && (
-        <div {...stylex.props(menus.mcap, menus.mcapFirst)}>{email}</div>
+      <div {...stylex.props(menus.mcap, menus.mcapFirst)}>
+        {isGuest ? '게스트' : email || '계정'}
+      </div>
+      {isGuest && onUpgrade && (
+        <Popover.Close render={<button {...stylex.props(menus.mi)} onClick={onUpgrade} />}>
+          <span {...stylex.props(menus.miIconWrap)}>
+            <Mail size={14} strokeWidth={1.75} />
+          </span>
+          <span {...stylex.props(menus.miLabel)}>이메일로 계정 남기기</span>
+        </Popover.Close>
       )}
       <Popover.Close render={<button {...stylex.props(menus.mi, menus.miRed)} onClick={onSignOut} />}>
         <span {...stylex.props(menus.miIconWrap)}>
