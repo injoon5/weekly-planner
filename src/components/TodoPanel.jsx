@@ -134,7 +134,7 @@ export function TodoPanel({ open, onOpenChange, api }) {
           <Drawer.Backdrop data-ui-todos-backdrop="" {...stylex.props(s.scrim)} />
           <Drawer.Viewport data-ui-drawer-viewport="">
             <Drawer.Popup data-ui-drawer="" {...stylex.props(s.panel, s.panelMobile)}>
-              <Drawer.Content>
+              <Drawer.Content {...stylex.props(s.content)}>
                 <PanelBody api={api} TitleTag={Drawer.Title} CloseTag={Drawer.Close} />
               </Drawer.Content>
             </Drawer.Popup>

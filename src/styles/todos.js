@@ -38,6 +38,17 @@ export const todos = stylex.create({
     borderRadius: '20px 20px 0 0',
   },
 
+  // Drawer.Content wraps the body on mobile; without this it's a plain block
+  // that swallows the popup's flex column, leaving the list unbounded and
+  // unscrollable. Fill the popup and re-establish the column so the scroll
+  // area gets a bounded height (and the drawer only swipe-dismisses at the top).
+  content: {
+    flex: 1,
+    minHeight: 0,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+
   grip: {
     display: 'none',
     [MOBILE]: {
