@@ -1,5 +1,6 @@
 import { useLayoutEffect, useState } from 'react';
 import { Checkbox } from '@base-ui/react/checkbox';
+import { Dialog } from '@base-ui/react/dialog';
 import { Drawer } from '@base-ui/react/drawer';
 import { ScrollArea } from '@base-ui/react/scroll-area';
 import * as stylex from '@stylexjs/stylex';
@@ -48,8 +49,8 @@ function TodoRow({ todo, index, onToggle }) {
   );
 }
 
-/** Shared panel body — identical on desktop panel and mobile drawer. */
-function PanelBody({ api, TitleTag, onClose }) {
+/** Shared panel body — identical on desktop dialog and mobile drawer. */
+function PanelBody({ api, TitleTag, CloseTag }) {
   const { todos: items, date, toggle } = api;
 
   const total = items.length;
@@ -68,9 +69,9 @@ function PanelBody({ api, TitleTag, onClose }) {
             {total > 0 && ` · ${done}/${total} 완료`}
           </span>
         </div>
-        <button type="button" onClick={onClose} {...stylex.props(s.close)} aria-label="닫기">
+        <CloseTag {...stylex.props(s.close)} aria-label="닫기">
           <X size={17} strokeWidth={1.9} />
-        </button>
+        </CloseTag>
       </header>
 
       <div {...stylex.props(s.rail)}>
@@ -107,25 +108,26 @@ function PanelBody({ api, TitleTag, onClose }) {
 
 /**
  * Today's to-do list — live read-through of the active schedule's events for
- * today. Desktop: floating side panel without a scrim so the grid stays
- * editable and the list updates in place. Mobile: swipeable bottom drawer.
+ * today. Slide-in side panel on desktop, swipeable bottom drawer on mobile —
+ * mirroring the app's Sheet split, but anchored to the right so it reads as a
+ * companion rail rather than a centered modal.
+ *
+ * Mounts closed, then opens on layout so Base UI applies its enter transition.
  */
 export function TodoPanel({ open, onOpenChange, api }) {
   const mobile = useMobileSheet();
   const [shown, setShown] = useState(false);
 
   useLayoutEffect(() => {
-    if (mobile) setShown(open);
-  }, [open, mobile]);
+    setShown(open);
+  }, [open]);
 
-  const close = () => onOpenChange(false);
+  const handleOpenChange = (next) => {
+    setShown(next);
+    if (!next) onOpenChange(false);
+  };
 
   if (mobile) {
-    const handleOpenChange = (next) => {
-      setShown(next);
-      if (!next) onOpenChange(false);
-    };
-
     return (
       <Drawer.Root open={shown} onOpenChange={handleOpenChange} swipeDirection="down">
         <Drawer.Portal>
@@ -133,7 +135,7 @@ export function TodoPanel({ open, onOpenChange, api }) {
           <Drawer.Viewport data-ui-drawer-viewport="">
             <Drawer.Popup data-ui-drawer="" {...stylex.props(s.panel, s.panelMobile)}>
               <Drawer.Content {...stylex.props(s.content)}>
-                <PanelBody api={api} TitleTag={Drawer.Title} onClose={close} />
+                <PanelBody api={api} TitleTag={Drawer.Title} CloseTag={Drawer.Close} />
               </Drawer.Content>
             </Drawer.Popup>
           </Drawer.Viewport>
@@ -142,16 +144,14 @@ export function TodoPanel({ open, onOpenChange, api }) {
     );
   }
 
-  // Desktop: same floating chrome as before, but no Dialog/scrim — always
-  // mounted so schedule edits re-render into the open list.
   return (
-    <aside
-      data-ui-todos=""
-      {...stylex.props(s.panel)}
-      aria-hidden={!open}
-      aria-label="오늘 할 일"
-    >
-      <PanelBody api={api} TitleTag="h2" onClose={close} />
-    </aside>
+    <Dialog.Root open={shown} onOpenChange={handleOpenChange}>
+      <Dialog.Portal>
+        <Dialog.Backdrop data-ui-todos-backdrop="" {...stylex.props(s.scrim)} />
+        <Dialog.Popup data-ui-todos="" {...stylex.props(s.panel)}>
+          <PanelBody api={api} TitleTag={Dialog.Title} CloseTag={Dialog.Close} />
+        </Dialog.Popup>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

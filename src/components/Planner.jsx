@@ -189,14 +189,13 @@ export function Planner() {
         }
         todosAction={
           <button
-            {...stylex.props(planner.ibtn, todoStyles.trigger, todosOpen && todoStyles.triggerOn)}
+            {...stylex.props(planner.ibtn, todoStyles.trigger)}
             type="button"
             aria-label="오늘 할 일"
             aria-expanded={todosOpen}
-            aria-pressed={todosOpen}
-            onClick={() => setTodosOpen((open) => !open)}
+            onClick={() => setTodosOpen(true)}
           >
-            <ListChecks size={15} strokeWidth={todosOpen ? 2 : 1.75} />
+            <ListChecks size={15} strokeWidth={1.75} />
             {remainingTodos > 0 && (
               <span {...stylex.props(todoStyles.badge)} aria-hidden="true">
                 {remainingTodos > 9 ? '9+' : remainingTodos}

@@ -179,9 +179,7 @@
   transform: scale(0.96);
 }
 
-/* ---- Today's to-dos panel (desktop floating panel) ----------------------- */
-/* No scrim on desktop — panel is non-modal so the grid stays editable and
-   today's list live-updates. Mobile drawer still uses the backdrop below. */
+/* ---- Today's to-dos panel (desktop side rail) ---------------------------- */
 
 [data-ui-todos-backdrop] {
   position: fixed;
@@ -206,13 +204,12 @@
   transition:
     transform 0.36s cubic-bezier(0.32, 0.72, 0, 1),
     opacity 0.28s ease;
-  pointer-events: auto;
 }
 
-[data-ui-todos][aria-hidden='true'] {
+[data-ui-todos][data-starting-style],
+[data-ui-todos][data-ending-style] {
   opacity: 0;
   transform: translateX(calc(100% + 16px));
-  pointer-events: none;
 }
 
 /* ---- Base UI ScrollArea (to-do list) ------------------------------------- */

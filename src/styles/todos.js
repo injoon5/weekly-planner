@@ -367,11 +367,6 @@ export const todos = stylex.create({
     position: 'relative',
   },
 
-  triggerOn: {
-    color: colors.ink,
-    boxShadow: `inset 0 0 0 1px ${colors.edgeH}, 0 1px 2px rgba(27,27,32,.06)`,
-  },
-
   badge: {
     position: 'absolute',
     top: '-4px',
