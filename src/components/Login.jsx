@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { db } from '../db.js';
 import { auth } from '../styles/auth.js';
@@ -8,11 +9,23 @@ import { CodeInputs } from './CodeInputs.jsx';
 export function Login() {
   const [sentEmail, setSentEmail] = useState('');
   const [busy, setBusy] = useState(false);
+  const [guestBusy, setGuestBusy] = useState(false);
   const [err, setErr] = useState('');
   const [shake, setShake] = useState(0);
   const [code, setCode] = useState('');
   const emailRef = useRef();
   const submitting = useRef(false);
+
+  const tryGuest = async () => {
+    setGuestBusy(true);
+    setErr('');
+    try {
+      await db.auth.signInAsGuest();
+    } catch (ex) {
+      setErr(ex?.body?.message || ex?.message || '게스트 로그인에 실패했어요');
+      setGuestBusy(false);
+    }
+  };
 
   const sendCode = async e => {
     e.preventDefault();
@@ -80,16 +93,27 @@ export function Login() {
                 placeholder="email@example.com"
                 required
                 autoFocus
-                disabled={busy}
+                disabled={busy || guestBusy}
               />
               <button
                 {...stylex.props(ui.btn, ui.btnPrimary, auth.formPrimary)}
                 type="submit"
-                disabled={busy}
+                disabled={busy || guestBusy}
               >
                 {busy ? '보내는 중…' : '코드 받기'}
               </button>
             </form>
+            <button
+              {...stylex.props(ui.btn, ui.btnPlain, auth.back)}
+              type="button"
+              disabled={busy || guestBusy}
+              onClick={tryGuest}
+            >
+              {guestBusy ? '시작하는 중…' : '게스트로 시작'}
+            </button>
+            <Link {...stylex.props(ui.btn, ui.btnGhost, auth.back)} to="/">
+              소개로 돌아가기
+            </Link>
           </div>
         ) : (
           <div {...stylex.props(auth.step, auth.stepEnter)} key="code">

@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { db } from './db.js';
+import { Landing } from './components/Landing.jsx';
 import { Login } from './components/Login.jsx';
 import { Planner } from './components/Planner.jsx';
 import { SharedPlanner } from './components/SharedPlanner.jsx';
@@ -39,12 +40,25 @@ const rootRoute = createRootRouteWithContext()({
   component: RootLayout,
 });
 
+const indexRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/',
+  beforeLoad: ({ context }) => {
+    if (!context.auth.isLoading && context.auth.user) {
+      throw redirect({ to: '/app' });
+    }
+  },
+  component: function LandingPage() {
+    return <Landing />;
+  },
+});
+
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/login',
   beforeLoad: ({ context }) => {
     if (!context.auth.isLoading && context.auth.user) {
-      throw redirect({ to: '/' });
+      throw redirect({ to: '/app' });
     }
   },
   component: function LoginPage() {
@@ -52,12 +66,12 @@ const loginRoute = createRoute({
   },
 });
 
-const indexRoute = createRoute({
+const appRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/',
+  path: '/app',
   beforeLoad: ({ context }) => {
     if (!context.auth.isLoading && !context.auth.user) {
-      throw redirect({ to: '/login' });
+      throw redirect({ to: '/' });
     }
   },
   component: function PlannerPage() {
@@ -73,7 +87,7 @@ const shareRoute = createRoute({
   },
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, loginRoute, shareRoute]);
+const routeTree = rootRoute.addChildren([indexRoute, loginRoute, appRoute, shareRoute]);
 
 const router = createRouter({
   routeTree,
