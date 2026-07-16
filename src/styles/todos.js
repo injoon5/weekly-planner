@@ -2,7 +2,6 @@ import * as stylex from '@stylexjs/stylex';
 import { colors } from '../tokens.stylex.js';
 
 const MOBILE = '@media screen and (max-width: 560px)';
-const REDUCE = '@media (prefers-reduced-motion: reduce)';
 // Strong ease-out (Emil): starts fast, settles soft. Used for row entrances.
 const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
 
@@ -12,51 +11,15 @@ const rowIn = stylex.keyframes({
 });
 
 export const todos = stylex.create({
-  // Drawer.Backdrop paint on mobile; fixed positioning + fade live in base-ui.css.
+  // Dialog.Backdrop paint; fixed positioning + fade live in base-ui.css.
   scrim: {
     backgroundColor: colors.scrim,
     WebkitBackdropFilter: 'blur(3px)',
     backdropFilter: 'blur(3px)',
   },
 
-  // Desktop companion rail — sits in planner.body, no scrim, so the grid stays
-  // editable and today's list live-updates as events change.
-  rail: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 50,
-    width: 'min(360px, calc(100vw - 24px))',
-    display: 'flex',
-    flexDirection: 'column',
-    boxSizing: 'border-box',
-    backgroundColor: colors.paper,
-    boxShadow: `0 0 0 1px ${colors.edge}, -12px 0 40px -20px rgba(20,20,26,.28)`,
-    transform: 'translateX(0)',
-    opacity: 1,
-    transitionProperty: 'transform, opacity',
-    transitionDuration: '.28s',
-    transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)',
-    overflow: 'hidden',
-    [MOBILE]: {
-      display: 'none',
-    },
-    '@media print': {
-      display: 'none',
-    },
-    [REDUCE]: {
-      transitionDuration: '0ms',
-    },
-  },
-
-  railClosed: {
-    transform: 'translateX(104%)',
-    opacity: 0,
-    pointerEvents: 'none',
-  },
-
-  // Mobile drawer chrome. Slide/swipe motion lives in base-ui.css.
+  // Panel chrome. Side-panel slide (desktop) / bottom-sheet swipe (mobile)
+  // motion lives in base-ui.css keyed off Base UI lifecycle attributes.
   panel: {
     boxSizing: 'border-box',
     display: 'flex',
@@ -157,8 +120,8 @@ export const todos = stylex.create({
     ':active': { transform: 'scale(.94)' },
   },
 
-  // Progress hairline — fills left→right with completion.
-  progress: {
+  // Progress rail — a hairline that fills left→right with completion.
+  rail: {
     flexShrink: 0,
     height: '2px',
     margin: '0 18px',
@@ -167,7 +130,7 @@ export const todos = stylex.create({
     overflow: 'hidden',
   },
 
-  progressFill: {
+  railFill: {
     height: '100%',
     borderRadius: '99px',
     backgroundColor: colors.ink,
@@ -175,7 +138,7 @@ export const todos = stylex.create({
     transitionProperty: 'transform',
     transitionDuration: '.42s',
     transitionTimingFunction: EASE_OUT,
-    [REDUCE]: {
+    '@media (prefers-reduced-motion: reduce)': {
       transitionDuration: '0ms',
     },
   },
@@ -209,7 +172,7 @@ export const todos = stylex.create({
     animationDuration: '.32s',
     animationTimingFunction: EASE_OUT,
     animationFillMode: 'both',
-    [REDUCE]: {
+    '@media (prefers-reduced-motion: reduce)': {
       animationName: 'none',
     },
   },
@@ -277,7 +240,7 @@ export const todos = stylex.create({
     transitionProperty: 'stroke-dashoffset',
     transitionDuration: '.24s',
     transitionTimingFunction: EASE_OUT,
-    [REDUCE]: {
+    '@media (prefers-reduced-motion: reduce)': {
       transitionDuration: '0ms',
     },
   },
@@ -353,7 +316,7 @@ export const todos = stylex.create({
     transitionDuration: '.28s',
     transitionTimingFunction: EASE_OUT,
     pointerEvents: 'none',
-    [REDUCE]: {
+    '@media (prefers-reduced-motion: reduce)': {
       transitionDuration: '0ms',
     },
   },

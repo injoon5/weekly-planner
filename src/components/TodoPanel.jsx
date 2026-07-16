@@ -48,7 +48,7 @@ function TodoRow({ todo, index, onToggle }) {
   );
 }
 
-/** Shared panel body — identical on desktop rail and mobile drawer. */
+/** Shared panel body — identical on desktop panel and mobile drawer. */
 function PanelBody({ api, TitleTag, onClose }) {
   const { todos: items, date, toggle } = api;
 
@@ -73,8 +73,8 @@ function PanelBody({ api, TitleTag, onClose }) {
         </button>
       </header>
 
-      <div {...stylex.props(s.progress)}>
-        <div {...stylex.props(s.progressFill)} style={{ transform: `scaleX(${progress})` }} />
+      <div {...stylex.props(s.rail)}>
+        <div {...stylex.props(s.railFill)} style={{ transform: `scaleX(${progress})` }} />
       </div>
 
       {total === 0 ? (
@@ -107,8 +107,8 @@ function PanelBody({ api, TitleTag, onClose }) {
 
 /**
  * Today's to-do list — live read-through of the active schedule's events for
- * today. Desktop: companion side rail (no scrim) so editing the grid updates
- * the list in place. Mobile: swipeable bottom drawer.
+ * today. Desktop: floating side panel without a scrim so the grid stays
+ * editable and the list updates in place. Mobile: swipeable bottom drawer.
  */
 export function TodoPanel({ open, onOpenChange, api }) {
   const mobile = useMobileSheet();
@@ -142,11 +142,12 @@ export function TodoPanel({ open, onOpenChange, api }) {
     );
   }
 
-  // Desktop companion rail — always mounted so schedule edits re-render into
-  // the open list without a modal barrier over the grid.
+  // Desktop: same floating chrome as before, but no Dialog/scrim — always
+  // mounted so schedule edits re-render into the open list.
   return (
     <aside
-      {...stylex.props(s.rail, !open && s.railClosed)}
+      data-ui-todos=""
+      {...stylex.props(s.panel)}
       aria-hidden={!open}
       aria-label="오늘 할 일"
     >

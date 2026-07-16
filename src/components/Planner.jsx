@@ -240,24 +240,22 @@ export function Planner() {
         }
       />
 
-      <div {...stylex.props(planner.body)}>
-        <PlannerSurface
-          boardId={board.id}
-          events={events}
-          session={runtime.session}
-          views={runtime.views}
-          presence={runtime.presence}
-          readOnly={runtime.readOnly}
-          swapping={swapping}
-          updateEvent={runtime.eventsApi.updateEvent}
-          todayDow={runtime.clock.todayDow}
-          nowMin={runtime.clock.nowMin}
-          nowDay={runtime.clock.nowDay}
-          printShowMemos={runtime.print.prefs.showMemos}
-        />
+      <PlannerSurface
+        boardId={board.id}
+        events={events}
+        session={runtime.session}
+        views={runtime.views}
+        presence={runtime.presence}
+        readOnly={runtime.readOnly}
+        swapping={swapping}
+        updateEvent={runtime.eventsApi.updateEvent}
+        todayDow={runtime.clock.todayDow}
+        nowMin={runtime.clock.nowMin}
+        nowDay={runtime.clock.nowDay}
+        printShowMemos={runtime.print.prefs.showMemos}
+      />
 
-        <TodoPanel open={todosOpen} onOpenChange={setTodosOpen} api={todosApi} />
-      </div>
+      <TodoPanel open={todosOpen} onOpenChange={setTodosOpen} api={todosApi} />
 
       <PrintDialog {...runtime.print.dialog} />
 
