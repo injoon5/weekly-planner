@@ -9,6 +9,7 @@ export function defaultPrintPrefs() {
     showName: true,
     showDate: true,
     showTime: true,
+    showMemos: true,
   };
 }
 
@@ -20,6 +21,7 @@ export function normalizePrintPrefs(value) {
     showName: prefs.showName !== false,
     showDate: prefs.showDate !== false,
     showTime: prefs.showTime !== false,
+    showMemos: prefs.showMemos !== false,
   };
 }
 

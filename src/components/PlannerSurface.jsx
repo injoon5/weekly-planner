@@ -38,6 +38,7 @@ export function PlannerSurface({
   todayDow,
   nowMin,
   nowDay,
+  printShowMemos = true,
 }) {
   const visibleEvents = useMemo(
     () => views.visibleEvents(events),
@@ -64,6 +65,7 @@ export function PlannerSurface({
         days={views.days}
         compact={views.compact}
         showMemos={views.showMemos}
+        printShowMemos={printShowMemos}
         colorLabel={views.colorLabel}
         swapping={swapping}
       />

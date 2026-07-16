@@ -31,6 +31,7 @@ describe('print preference normalization', () => {
       showName: true,
       showDate: true,
       showTime: true,
+      showMemos: true,
     });
     expect(resolvePrintPrefs({ from: '2026-07-13', to: '2026-07-19' })).toEqual({
       ...defaultPrintPrefs(),
@@ -71,6 +72,7 @@ describe('print preference normalization', () => {
       showName: false,
       showDate: true,
       showTime: true,
+      showMemos: true,
     });
   });
 
@@ -97,6 +99,7 @@ describe('print preference normalization', () => {
         showName: false,
         showDate: true,
         showTime: true,
+        showMemos: true,
       }),
     );
   });
@@ -108,6 +111,7 @@ describe('print preference normalization', () => {
       showName: true,
       showDate: false,
       showTime: true,
+      showMemos: true,
     });
   });
 

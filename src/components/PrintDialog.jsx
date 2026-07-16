@@ -82,6 +82,12 @@ export function PrintDialog({ open, onOpenChange, draft, onPatch, onPrint }) {
           )}
 
           <SwitchRow
+            label="메모 표시"
+            checked={draft.showMemos}
+            onChange={(v) => onPatch({ showMemos: v })}
+          />
+
+          <SwitchRow
             label="시간 표시"
             checked={draft.showTime}
             onChange={(v) => onPatch({ showTime: v })}

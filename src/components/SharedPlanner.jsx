@@ -122,6 +122,7 @@ export function SharedPlanner() {
         todayDow={runtime.clock.todayDow}
         nowMin={runtime.clock.nowMin}
         nowDay={runtime.clock.nowDay}
+        printShowMemos={runtime.print.prefs.showMemos}
       />
 
       <PrintDialog {...runtime.print.dialog} />
