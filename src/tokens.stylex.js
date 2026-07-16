@@ -48,7 +48,7 @@ export const layout = stylex.defineVars({
   },
   gutW: {
     default: '54px',
-    [MOBILE]: '46px',
+    [MOBILE]: '50px',
     '@media print': '52px',
   },
   colMin: {
