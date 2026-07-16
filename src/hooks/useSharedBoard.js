@@ -50,7 +50,7 @@ export function useSharedBoard(token) {
   );
 
   const board = boardQ.data?.boards?.[0] || null;
-  const events = useMemo(() => fromInstantEvents(board?.events), [board?.events]);
+  const events = useMemo(() => fromInstantEvents(board?.events), [board]);
   const role = share?.role === 'editor' ? 'editor' : 'viewer';
   const canEdit = Boolean(board) && role === 'editor';
   const ruleParams = secret ? { secret } : null;

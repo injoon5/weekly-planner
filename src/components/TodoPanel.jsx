@@ -107,10 +107,10 @@ function PanelBody({ api, TitleTag, CloseTag }) {
 }
 
 /**
- * Today's to-do list — the active schedule's events for today, checkable for
- * personal tracking. Slide-in side panel on desktop, swipeable bottom drawer on
- * mobile — mirroring the app's Sheet split, but anchored to the right so it
- * reads as a companion rail rather than a modal.
+ * Today's to-do list — live read-through of the active schedule's events for
+ * today. Slide-in side panel on desktop, swipeable bottom drawer on mobile —
+ * mirroring the app's Sheet split, but anchored to the right so it reads as a
+ * companion rail rather than a centered modal.
  *
  * Mounts closed, then opens on layout so Base UI applies its enter transition.
  */

@@ -1,5 +1,5 @@
 import { PALETTE } from './config.js';
-import { clamp, diffDays, dt, isoDate, snapDur, snapMin } from './time.js';
+import { clamp, diffDays, dt, fmt, isoDate, snapDur, snapMin } from './time.js';
 
 /** Normalize a loose event-shaped object into app invariants. */
 export function eventFields(input = {}) {
@@ -63,6 +63,35 @@ export function fromInstantEvents(rows) {
     id: e.id,
     ...eventFields(e),
   }));
+}
+
+/** Weekday (0=Sun) for a planner ISO date (`YYYY-MM-DD`, 06:00→06:00 day). */
+export function weekdayFromPlannerDate(iso) {
+  const [y, m, d] = String(iso || '').split('-').map(Number);
+  if (!y || !m || !d) return 0;
+  return new Date(y, m - 1, d).getDay();
+}
+
+/**
+ * Derive today's to-do rows from board events for `weekday`.
+ * `checkedBy` is a Map/Set of eventIds marked done (or a Map of eventId → rows).
+ * Pure — schedule edits flow through here on every events change.
+ */
+export function buildTodayTodos(events, weekday, checkedBy) {
+  const isDone = (id) => {
+    if (!checkedBy) return false;
+    if (typeof checkedBy.has === 'function') return checkedBy.has(id);
+    return Boolean(checkedBy[id]);
+  };
+  return (events || [])
+    .filter((e) => e.day === weekday)
+    .sort((a, b) => a.start - b.start || a.dur - b.dur)
+    .map((e) => ({
+      id: e.id,
+      text: e.title || '',
+      time: fmt(e.start),
+      done: isDone(e.id),
+    }));
 }
 
 /** Column packing for overlapping events in one day. */

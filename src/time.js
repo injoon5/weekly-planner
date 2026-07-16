@@ -110,7 +110,9 @@ export function nowOnGrid(date = new Date()) {
     nowMin += DAY_MIN;
     nowDay = (nowDay + 6) % 7;
   }
-  return { nowMin, nowDay, todayDow: date.getDay() };
+  // todayDow matches the planner's 06:00→06:00 day (same as nowDay / plannerDate
+  // weekday) so the grid highlight, now-line, and today's to-dos agree.
+  return { nowMin, nowDay, todayDow: nowDay };
 }
 
 export { SLOT_MIN, SLOTS, DAY_MIN };

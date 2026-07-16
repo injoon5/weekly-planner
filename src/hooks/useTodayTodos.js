@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { checkTodoTx, db, uncheckTodoTx } from '../db.js';
+import { buildTodayTodos, weekdayFromPlannerDate } from '../models.js';
 import { commitTransaction } from '../transaction.js';
-import { fmt, plannerDate } from '../time.js';
+import { plannerDate } from '../time.js';
 
 /**
  * Today's to-do list = the active board's events scheduled for today, in start
@@ -10,6 +11,9 @@ import { fmt, plannerDate } from '../time.js';
  * realtime, but because `day` is a concrete planner date (06:00→06:00) the same
  * weekly event shows up unchecked again next week. Nothing here mutates the
  * schedule itself.
+ *
+ * The list is a live read-through of `events`: add/edit/delete/move on today's
+ * column updates the panel (and badge) on the next render — no snapshot.
  *
  * Requires the `todos` namespace + owner link to be pushed to Instant
  * (`npm run push:schema && npm run push:perms`).
@@ -35,10 +39,7 @@ export function useTodayTodos(user, events, onError) {
 
   // Today's weekday (0=Sun) in the planner's 06:00→06:00 convention — derived
   // from `day` so it can never drift from the check-state key.
-  const weekday = useMemo(() => {
-    const [y, m, d] = day.split('-').map(Number);
-    return new Date(y, m - 1, d).getDay();
-  }, [day]);
+  const weekday = useMemo(() => weekdayFromPlannerDate(day), [day]);
 
   const { data } = db.useQuery(
     user?.id ? { todos: { $: { where: { 'owner.id': user.id, day } } } } : null,
@@ -54,17 +55,10 @@ export function useTodayTodos(user, events, onError) {
     return map;
   }, [data]);
 
+  // Recompute whenever the schedule changes — Instant replaces `events` on
+  // every board/event write, so the open panel stays in sync with the grid.
   const todos = useMemo(
-    () =>
-      (events || [])
-        .filter((e) => e.day === weekday)
-        .sort((a, b) => a.start - b.start || a.dur - b.dur)
-        .map((e) => ({
-          id: e.id,
-          text: e.title || '',
-          time: fmt(e.start),
-          done: checkedBy.has(e.id),
-        })),
+    () => buildTodayTodos(events, weekday, checkedBy),
     [events, weekday, checkedBy],
   );
 

@@ -81,7 +81,10 @@ export function useWorkspace() {
       : null,
   );
   const board = detail.data?.boards?.[0] || null;
-  const events = useMemo(() => fromInstantEvents(board?.events), [board?.events]);
+  // Remap whenever the board row changes. Instant may keep the same `events`
+  // array reference across patches; keying off `board` keeps titles/times fresh
+  // for the grid and today's to-do list.
+  const events = useMemo(() => fromInstantEvents(board?.events), [board]);
   const myRole = useMemo(() => roleForBoard(board, user?.id), [board, user?.id]);
   const canEdit = myRole === 'owner' || myRole === 'editor';
   const isOwner = myRole === 'owner';
