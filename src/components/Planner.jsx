@@ -189,13 +189,14 @@ export function Planner() {
         }
         todosAction={
           <button
-            {...stylex.props(planner.ibtn, todoStyles.trigger)}
+            {...stylex.props(planner.ibtn, todoStyles.trigger, todosOpen && todoStyles.triggerOn)}
             type="button"
             aria-label="오늘 할 일"
             aria-expanded={todosOpen}
-            onClick={() => setTodosOpen(true)}
+            aria-pressed={todosOpen}
+            onClick={() => setTodosOpen((open) => !open)}
           >
-            <ListChecks size={15} strokeWidth={1.75} />
+            <ListChecks size={15} strokeWidth={todosOpen ? 2 : 1.75} />
             {remainingTodos > 0 && (
               <span {...stylex.props(todoStyles.badge)} aria-hidden="true">
                 {remainingTodos > 9 ? '9+' : remainingTodos}
@@ -239,22 +240,24 @@ export function Planner() {
         }
       />
 
-      <PlannerSurface
-        boardId={board.id}
-        events={events}
-        session={runtime.session}
-        views={runtime.views}
-        presence={runtime.presence}
-        readOnly={runtime.readOnly}
-        swapping={swapping}
-        updateEvent={runtime.eventsApi.updateEvent}
-        todayDow={runtime.clock.todayDow}
-        nowMin={runtime.clock.nowMin}
-        nowDay={runtime.clock.nowDay}
-        printShowMemos={runtime.print.prefs.showMemos}
-      />
+      <div {...stylex.props(planner.body)}>
+        <PlannerSurface
+          boardId={board.id}
+          events={events}
+          session={runtime.session}
+          views={runtime.views}
+          presence={runtime.presence}
+          readOnly={runtime.readOnly}
+          swapping={swapping}
+          updateEvent={runtime.eventsApi.updateEvent}
+          todayDow={runtime.clock.todayDow}
+          nowMin={runtime.clock.nowMin}
+          nowDay={runtime.clock.nowDay}
+          printShowMemos={runtime.print.prefs.showMemos}
+        />
 
-      <TodoPanel open={todosOpen} onOpenChange={setTodosOpen} api={todosApi} />
+        <TodoPanel open={todosOpen} onOpenChange={setTodosOpen} api={todosApi} />
+      </div>
 
       <PrintDialog {...runtime.print.dialog} />
 

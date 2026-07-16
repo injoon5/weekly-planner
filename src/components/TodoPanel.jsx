@@ -1,6 +1,5 @@
 import { useLayoutEffect, useState } from 'react';
 import { Checkbox } from '@base-ui/react/checkbox';
-import { Dialog } from '@base-ui/react/dialog';
 import { Drawer } from '@base-ui/react/drawer';
 import { ScrollArea } from '@base-ui/react/scroll-area';
 import * as stylex from '@stylexjs/stylex';
@@ -49,8 +48,8 @@ function TodoRow({ todo, index, onToggle }) {
   );
 }
 
-/** Shared panel body — identical on desktop dialog and mobile drawer. */
-function PanelBody({ api, TitleTag, CloseTag }) {
+/** Shared panel body — identical on desktop rail and mobile drawer. */
+function PanelBody({ api, TitleTag, onClose }) {
   const { todos: items, date, toggle } = api;
 
   const total = items.length;
@@ -69,13 +68,13 @@ function PanelBody({ api, TitleTag, CloseTag }) {
             {total > 0 && ` · ${done}/${total} 완료`}
           </span>
         </div>
-        <CloseTag {...stylex.props(s.close)} aria-label="닫기">
+        <button type="button" onClick={onClose} {...stylex.props(s.close)} aria-label="닫기">
           <X size={17} strokeWidth={1.9} />
-        </CloseTag>
+        </button>
       </header>
 
-      <div {...stylex.props(s.rail)}>
-        <div {...stylex.props(s.railFill)} style={{ transform: `scaleX(${progress})` }} />
+      <div {...stylex.props(s.progress)}>
+        <div {...stylex.props(s.progressFill)} style={{ transform: `scaleX(${progress})` }} />
       </div>
 
       {total === 0 ? (
@@ -107,27 +106,26 @@ function PanelBody({ api, TitleTag, CloseTag }) {
 }
 
 /**
- * Today's to-do list — the active schedule's events for today, checkable for
- * personal tracking. Slide-in side panel on desktop, swipeable bottom drawer on
- * mobile — mirroring the app's Sheet split, but anchored to the right so it
- * reads as a companion rail rather than a modal.
- *
- * Mounts closed, then opens on layout so Base UI applies its enter transition.
+ * Today's to-do list — live read-through of the active schedule's events for
+ * today. Desktop: companion side rail (no scrim) so editing the grid updates
+ * the list in place. Mobile: swipeable bottom drawer.
  */
 export function TodoPanel({ open, onOpenChange, api }) {
   const mobile = useMobileSheet();
   const [shown, setShown] = useState(false);
 
   useLayoutEffect(() => {
-    setShown(open);
-  }, [open]);
+    if (mobile) setShown(open);
+  }, [open, mobile]);
 
-  const handleOpenChange = (next) => {
-    setShown(next);
-    if (!next) onOpenChange(false);
-  };
+  const close = () => onOpenChange(false);
 
   if (mobile) {
+    const handleOpenChange = (next) => {
+      setShown(next);
+      if (!next) onOpenChange(false);
+    };
+
     return (
       <Drawer.Root open={shown} onOpenChange={handleOpenChange} swipeDirection="down">
         <Drawer.Portal>
@@ -135,7 +133,7 @@ export function TodoPanel({ open, onOpenChange, api }) {
           <Drawer.Viewport data-ui-drawer-viewport="">
             <Drawer.Popup data-ui-drawer="" {...stylex.props(s.panel, s.panelMobile)}>
               <Drawer.Content {...stylex.props(s.content)}>
-                <PanelBody api={api} TitleTag={Drawer.Title} CloseTag={Drawer.Close} />
+                <PanelBody api={api} TitleTag={Drawer.Title} onClose={close} />
               </Drawer.Content>
             </Drawer.Popup>
           </Drawer.Viewport>
@@ -144,14 +142,15 @@ export function TodoPanel({ open, onOpenChange, api }) {
     );
   }
 
+  // Desktop companion rail — always mounted so schedule edits re-render into
+  // the open list without a modal barrier over the grid.
   return (
-    <Dialog.Root open={shown} onOpenChange={handleOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Backdrop data-ui-todos-backdrop="" {...stylex.props(s.scrim)} />
-        <Dialog.Popup data-ui-todos="" {...stylex.props(s.panel)}>
-          <PanelBody api={api} TitleTag={Dialog.Title} CloseTag={Dialog.Close} />
-        </Dialog.Popup>
-      </Dialog.Portal>
-    </Dialog.Root>
+    <aside
+      {...stylex.props(s.rail, !open && s.railClosed)}
+      aria-hidden={!open}
+      aria-label="오늘 할 일"
+    >
+      <PanelBody api={api} TitleTag="h2" onClose={close} />
+    </aside>
   );
 }

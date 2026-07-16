@@ -19,6 +19,19 @@ export const planner = stylex.create({
     },
   },
 
+  // Hosts the week grid + today's to-do companion rail (absolute, right edge).
+  body: {
+    flex: 1,
+    minHeight: 0,
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    '@media print': {
+      display: 'block',
+      minHeight: 0,
+    },
+  },
+
   boot: {
     minHeight: '100dvh',
     display: 'flex',

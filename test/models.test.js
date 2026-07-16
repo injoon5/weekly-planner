@@ -3,12 +3,14 @@ import { describe, expect, it } from 'vitest';
 import {
   boardCoversDate,
   boardFields,
+  buildTodayTodos,
   eventFields,
   nextBoardName,
   nextBoardSortOrder,
   pack,
   pickLeastUsedColor,
   repeatWeeksOf,
+  weekdayFromPlannerDate,
 } from '../src/models.js';
 
 describe('model normalization', () => {
@@ -114,5 +116,60 @@ describe('event packing and board helpers', () => {
     expect(pickLeastUsedColor([{ color: 'coral' }, { color: 'coral' }])).toBe('amber');
     expect(nextBoardSortOrder([{ sortOrder: 2 }, { sortOrder: 8 }, {}])).toBe(9);
     expect(nextBoardName([{ name: '시간표 1' }, { name: '시간표 3' }])).toBe('시간표 2');
+  });
+});
+
+describe('today todos from schedule', () => {
+  it('maps planner ISO dates to local weekdays', () => {
+    // 2026-07-13 is a Monday
+    expect(weekdayFromPlannerDate('2026-07-13')).toBe(1);
+    expect(weekdayFromPlannerDate('2026-07-12')).toBe(0);
+  });
+
+  it('live-derives today\'s list from events: filter, sort, check state', () => {
+    const events = [
+      { id: 'b', day: 1, start: 120, dur: 60, title: 'Later' },
+      { id: 'a', day: 1, start: 60, dur: 30, title: 'Earlier' },
+      { id: 'c', day: 2, start: 60, dur: 30, title: 'Tomorrow' },
+    ];
+    const checked = new Map([['a', ['row-1']]]);
+
+    expect(buildTodayTodos(events, 1, checked)).toEqual([
+      { id: 'a', text: 'Earlier', time: '07:00', done: true },
+      { id: 'b', text: 'Later', time: '08:00', done: false },
+    ]);
+  });
+
+  it('reflects schedule edits: title, time, day moves, and deletes', () => {
+    let events = [
+      { id: 'a', day: 1, start: 60, dur: 30, title: 'Standup' },
+      { id: 'b', day: 1, start: 180, dur: 60, title: 'Deep work' },
+    ];
+    expect(buildTodayTodos(events, 1, new Set()).map((t) => t.text)).toEqual([
+      'Standup',
+      'Deep work',
+    ]);
+
+    // Rename + reschedule
+    events = [
+      { id: 'a', day: 1, start: 90, dur: 30, title: 'Daily' },
+      { id: 'b', day: 1, start: 180, dur: 60, title: 'Deep work' },
+    ];
+    expect(buildTodayTodos(events, 1, new Set())).toEqual([
+      { id: 'a', text: 'Daily', time: '07:30', done: false },
+      { id: 'b', text: 'Deep work', time: '09:00', done: false },
+    ]);
+
+    // Move off today
+    events = [
+      { id: 'a', day: 3, start: 90, dur: 30, title: 'Daily' },
+      { id: 'b', day: 1, start: 180, dur: 60, title: 'Deep work' },
+    ];
+    expect(buildTodayTodos(events, 1, new Set()).map((t) => t.id)).toEqual(['b']);
+
+    // Delete
+    events = [{ id: 'b', day: 1, start: 180, dur: 60, title: 'Deep work' }];
+    expect(buildTodayTodos(events, 1, new Set()).map((t) => t.id)).toEqual(['b']);
+    expect(buildTodayTodos([], 1, new Set())).toEqual([]);
   });
 });
