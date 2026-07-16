@@ -15,9 +15,12 @@ describe('vercel SPA hosting', () => {
   });
 
   it('rewrites non-API paths to the SPA shell', () => {
-    const spa = (vercel.rewrites || []).find(
+    const rewrites = vercel.rewrites || [];
+    expect(rewrites.some((r) => r.handle === 'filesystem')).toBe(true);
+    const spa = rewrites.find(
       (r) => typeof r.destination === 'string' && r.destination.includes('index.html'),
     );
     expect(spa).toBeTruthy();
+    expect(spa.source).toMatch(/api/);
   });
 });
