@@ -140,27 +140,12 @@ export const todos = stylex.create({
   list: {
     listStyle: 'none',
     margin: 0,
-    padding: '10px 12px 4px',
+    padding: '10px 12px 14px',
     display: 'flex',
     flexDirection: 'column',
-  },
-
-  // Grid-rows collapse gives a clean height + fade exit on delete.
-  rowWrap: {
-    display: 'grid',
-    gridTemplateRows: '1fr',
-    transitionProperty: 'grid-template-rows, opacity, transform',
-    transitionDuration: '.26s',
-    transitionTimingFunction: EASE_OUT,
-    '@media (prefers-reduced-motion: reduce)': {
-      transitionDuration: '0ms',
+    [MOBILE]: {
+      paddingBottom: 'calc(14px + env(safe-area-inset-bottom))',
     },
-  },
-
-  rowWrapOut: {
-    gridTemplateRows: '0fr',
-    opacity: 0,
-    transform: 'translateX(10px)',
   },
 
   rowClip: {
@@ -253,6 +238,33 @@ export const todos = stylex.create({
     strokeDashoffset: 0,
   },
 
+  // Time + title, laid inline so the start time reads as a chip before it.
+  rowText: {
+    flex: 1,
+    minWidth: 0,
+    display: 'flex',
+    alignItems: 'baseline',
+    gap: '10px',
+  },
+
+  time: {
+    flexShrink: 0,
+    fontSize: '12px',
+    fontWeight: 600,
+    lineHeight: 1.35,
+    letterSpacing: '-0.006em',
+    color: colors.muted,
+    fontVariantNumeric: 'tabular-nums',
+    transitionProperty: 'color, opacity',
+    transitionDuration: '.24s',
+    transitionTimingFunction: 'ease',
+  },
+
+  timeOn: {
+    color: colors.faint,
+    opacity: 0.72,
+  },
+
   // Wraps the label so the strike line can be absolutely positioned over it.
   labelWrap: {
     position: 'relative',
@@ -302,39 +314,6 @@ export const todos = stylex.create({
     transform: 'scaleX(1)',
   },
 
-  del: {
-    flexShrink: 0,
-    width: '28px',
-    height: '28px',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 0,
-    borderRadius: '8px',
-    backgroundColor: 'transparent',
-    color: colors.faint,
-    cursor: 'pointer',
-    fontFamily: 'inherit',
-    opacity: 0,
-    transitionProperty: 'opacity, background-color, color, transform',
-    transitionDuration: '.15s',
-    transitionTimingFunction: 'ease',
-    ':hover': { backgroundColor: colors.hov, color: colors.danger },
-    ':active': { transform: 'scale(.9)' },
-    ':focus-visible': {
-      opacity: 1,
-      boxShadow: `0 0 0 2px ${colors.paper}, 0 0 0 3.5px ${colors.ink}`,
-    },
-    // Touch has no hover — keep the control reachable.
-    '@media (hover: none)': { opacity: 0.6 },
-  },
-
-  rowShowDel: {
-    '@media (hover: hover)': {
-      ':hover': { opacity: 1 },
-    },
-  },
-
   // Empty state.
   empty: {
     flex: 1,
@@ -370,73 +349,6 @@ export const todos = stylex.create({
     color: colors.faint,
     lineHeight: 1.5,
     maxWidth: '200px',
-  },
-
-  // Footer add-form.
-  foot: {
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '12px 14px',
-    borderTop: `1px solid ${colors.line}`,
-    backgroundColor: colors.paper,
-    paddingBottom: '12px',
-    [MOBILE]: {
-      paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',
-    },
-  },
-
-  input: {
-    flex: 1,
-    minWidth: 0,
-    boxSizing: 'border-box',
-    fontFamily: 'inherit',
-    fontSize: '14px',
-    fontWeight: 500,
-    color: colors.ink,
-    backgroundColor: colors.field,
-    borderWidth: '1px',
-    borderStyle: 'solid',
-    borderColor: 'transparent',
-    borderRadius: '10px',
-    paddingBlock: '9px',
-    paddingInline: '12px',
-    outline: 'none',
-    transitionProperty: 'background-color, border-color, box-shadow',
-    transitionDuration: '.15s',
-    transitionTimingFunction: 'ease',
-    '::placeholder': { color: colors.faint, fontWeight: 450 },
-    ':hover': { backgroundColor: colors.fieldH },
-    ':focus': {
-      backgroundColor: colors.paper,
-      borderColor: colors.ink,
-      boxShadow: '0 0 0 3px rgba(27,27,32,.07)',
-    },
-  },
-
-  addBtn: {
-    flexShrink: 0,
-    width: '38px',
-    height: '38px',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 0,
-    borderRadius: '10px',
-    backgroundColor: colors.ink,
-    color: colors.onInk,
-    cursor: 'pointer',
-    fontFamily: 'inherit',
-    transitionProperty: 'opacity, transform',
-    transitionDuration: '.15s',
-    transitionTimingFunction: 'ease',
-    ':active': { transform: 'scale(.94)' },
-    ':disabled': {
-      opacity: 0.32,
-      cursor: 'not-allowed',
-      transform: 'none',
-    },
   },
 
   // Header trigger button (in the planner toolbar) + its remaining-count badge.

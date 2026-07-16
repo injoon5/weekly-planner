@@ -72,7 +72,7 @@ export function Planner() {
   const [swapBoardId, setSwapBoardId] = useState(board?.id);
 
   const [todosOpen, setTodosOpen] = useState(false);
-  const todosApi = useTodayTodos(user, toast);
+  const todosApi = useTodayTodos(user, events, toast);
   const remainingTodos = todosApi.todos.reduce((n, t) => n + (t.done ? 0 : 1), 0);
 
   useEffect(() => {

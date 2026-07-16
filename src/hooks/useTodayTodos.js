@@ -1,18 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
-import { createTodoTx, db, deleteTodoTx, setTodoDoneTx } from '../db.js';
+import { checkTodoTx, db, uncheckTodoTx } from '../db.js';
 import { commitTransaction } from '../transaction.js';
-import { plannerDate } from '../time.js';
+import { fmt, plannerDate } from '../time.js';
 
 /**
- * Today's to-dos, synced through Instant so they follow the user across
- * devices in realtime. Scoped to the planner day (`day`, 06:00→06:00), so the
- * list is empty each morning and never carries across weeks — it's a fresh
- * checklist for the day, independent of any board.
+ * Today's to-do list = the active board's events scheduled for today, in start
+ * order. Ticking one off is personal and ephemeral: the checked state is stored
+ * per (`day`, `eventId`) in Instant so it follows the user across devices in
+ * realtime, but because `day` is a concrete planner date (06:00→06:00) the same
+ * weekly event shows up unchecked again next week. Nothing here mutates the
+ * schedule itself.
  *
  * Requires the `todos` namespace + owner link to be pushed to Instant
  * (`npm run push:schema && npm run push:perms`).
  */
-export function useTodayTodos(user, onError) {
+export function useTodayTodos(user, events, onError) {
   const [day, setDay] = useState(plannerDate);
 
   // Roll to the next planner day at the 06:00 boundary while the app is open.
@@ -31,28 +33,39 @@ export function useTodayTodos(user, onError) {
     };
   }, []);
 
+  // Today's weekday (0=Sun) in the planner's 06:00→06:00 convention — derived
+  // from `day` so it can never drift from the check-state key.
+  const weekday = useMemo(() => {
+    const [y, m, d] = day.split('-').map(Number);
+    return new Date(y, m - 1, d).getDay();
+  }, [day]);
+
   const { data } = db.useQuery(
-    user?.id
-      ? {
-          todos: {
-            $: {
-              where: { 'owner.id': user.id, day },
-              order: { sortOrder: 'asc' },
-            },
-          },
-        }
-      : null,
+    user?.id ? { todos: { $: { where: { 'owner.id': user.id, day } } } } : null,
   );
+
+  // eventId → array of row ids marking it done today (usually one).
+  const checkedBy = useMemo(() => {
+    const map = new Map();
+    for (const t of data?.todos || []) {
+      if (!t.eventId) continue;
+      map.set(t.eventId, [...(map.get(t.eventId) || []), t.id]);
+    }
+    return map;
+  }, [data]);
 
   const todos = useMemo(
     () =>
-      (data?.todos || []).map((t) => ({
-        id: t.id,
-        text: t.text || '',
-        done: Boolean(t.done),
-        sortOrder: t.sortOrder ?? 0,
-      })),
-    [data],
+      (events || [])
+        .filter((e) => e.day === weekday)
+        .sort((a, b) => a.start - b.start || a.dur - b.dur)
+        .map((e) => ({
+          id: e.id,
+          text: e.title || '',
+          time: fmt(e.start),
+          done: checkedBy.has(e.id),
+        })),
+    [events, weekday, checkedBy],
   );
 
   const api = useMemo(() => {
@@ -60,23 +73,17 @@ export function useTodayTodos(user, onError) {
       commitTransaction((transaction) => db.transact(transaction), tx, { message, onError });
 
     return {
-      add(text) {
-        const clean = text.trim();
-        if (!clean || !user?.id) return;
-        const nextOrder = todos.reduce((m, t) => Math.max(m, t.sortOrder), -1) + 1;
-        const { tx } = createTodoTx(user.id, { day, text: clean, sortOrder: nextOrder });
-        run(tx, '할 일을 추가하지 못했어요');
-      },
       toggle(id) {
-        const target = todos.find((t) => t.id === id);
-        if (!target) return;
-        run(setTodoDoneTx(id, !target.done), '할 일을 변경하지 못했어요');
-      },
-      remove(id) {
-        run(deleteTodoTx(id), '할 일을 삭제하지 못했어요');
+        if (!user?.id) return;
+        const rows = checkedBy.get(id);
+        if (rows?.length) {
+          run(uncheckTodoTx(rows), '할 일을 변경하지 못했어요');
+        } else {
+          run(checkTodoTx(user.id, { day, eventId: id }).tx, '할 일을 변경하지 못했어요');
+        }
       },
     };
-  }, [day, todos, user?.id, onError]);
+  }, [day, checkedBy, user?.id, onError]);
 
   return { todos, date: day, ...api };
 }
