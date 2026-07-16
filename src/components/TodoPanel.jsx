@@ -1,17 +1,13 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { Checkbox } from '@base-ui/react/checkbox';
 import { Dialog } from '@base-ui/react/dialog';
 import { Drawer } from '@base-ui/react/drawer';
 import { ScrollArea } from '@base-ui/react/scroll-area';
 import * as stylex from '@stylexjs/stylex';
-import { ListChecks, Plus, X } from 'lucide-react';
+import { CalendarClock, X } from 'lucide-react';
 import { DAYS_KO } from '../config.js';
 import { useMobileSheet } from '../hooks/useMobileSheet.js';
 import { todos as s } from '../styles/todos.js';
-
-// Exit is deferred by this long so the row can play its collapse animation
-// before it leaves the list. Matches the .26s grid-rows transition + a hair.
-const REMOVE_MS = 280;
 
 function subtitle(iso) {
   const [y, m, d] = iso.split('-').map(Number);
@@ -20,40 +16,34 @@ function subtitle(iso) {
   return `${m}월 ${d}일 ${dow}요일`;
 }
 
-function TodoRow({ todo, index, leaving, onToggle, onRemove }) {
+function TodoRow({ todo, index, onToggle }) {
   return (
-    <li {...stylex.props(s.rowWrap, leaving && s.rowWrapOut)}>
-      <div {...stylex.props(s.rowClip)}>
-        <div
-          {...stylex.props(s.row, s.rowShowDel)}
-          // Cascade on open; a freshly added row plays the same soft entrance.
-          style={{ animationDelay: `${Math.min(index, 10) * 24}ms` }}
+    <li {...stylex.props(s.rowClip)}>
+      <div
+        {...stylex.props(s.row)}
+        // Cascade on open; a soft entrance per row.
+        style={{ animationDelay: `${Math.min(index, 10) * 24}ms` }}
+      >
+        <Checkbox.Root
+          checked={todo.done}
+          onCheckedChange={() => onToggle(todo.id)}
+          {...stylex.props(s.toggle)}
         >
-          <Checkbox.Root
-            checked={todo.done}
-            onCheckedChange={() => onToggle(todo.id)}
-            {...stylex.props(s.toggle)}
-          >
-            <span {...stylex.props(s.box, todo.done && s.boxOn)} aria-hidden="true">
-              <svg viewBox="0 0 14 14" {...stylex.props(s.check, todo.done && s.checkOn)}>
-                <path d="M2.5 7.5 L5.75 10.5 L11.5 3.75" />
-              </svg>
-            </span>
+          <span {...stylex.props(s.box, todo.done && s.boxOn)} aria-hidden="true">
+            <svg viewBox="0 0 14 14" {...stylex.props(s.check, todo.done && s.checkOn)}>
+              <path d="M2.5 7.5 L5.75 10.5 L11.5 3.75" />
+            </svg>
+          </span>
+          <span {...stylex.props(s.rowText)}>
+            <span {...stylex.props(s.time, todo.done && s.timeOn)}>{todo.time}</span>
             <span {...stylex.props(s.labelWrap)}>
-              <span {...stylex.props(s.label, todo.done && s.labelOn)}>{todo.text}</span>
+              <span {...stylex.props(s.label, todo.done && s.labelOn)}>
+                {todo.text || '제목 없음'}
+              </span>
               <span {...stylex.props(s.strike, todo.done && s.strikeOn)} aria-hidden="true" />
             </span>
-          </Checkbox.Root>
-
-          <button
-            type="button"
-            {...stylex.props(s.del)}
-            aria-label="삭제"
-            onClick={() => onRemove(todo.id)}
-          >
-            <X size={15} strokeWidth={2} />
-          </button>
-        </div>
+          </span>
+        </Checkbox.Root>
       </div>
     </li>
   );
@@ -61,35 +51,11 @@ function TodoRow({ todo, index, leaving, onToggle, onRemove }) {
 
 /** Shared panel body — identical on desktop dialog and mobile drawer. */
 function PanelBody({ api, TitleTag, CloseTag }) {
-  const { todos: items, date, add, toggle, remove } = api;
-  const [text, setText] = useState('');
-  const [leaving, setLeaving] = useState(() => new Set());
-  const inputRef = useRef(null);
+  const { todos: items, date, toggle } = api;
 
   const total = items.length;
   const done = items.reduce((n, t) => n + (t.done ? 1 : 0), 0);
   const progress = total ? done / total : 0;
-
-  const submit = (e) => {
-    e.preventDefault();
-    if (!text.trim()) return;
-    add(text);
-    setText('');
-    // Keep focus so several can be typed in a row.
-    inputRef.current?.focus();
-  };
-
-  const handleRemove = (id) => {
-    setLeaving((prev) => new Set(prev).add(id));
-    setTimeout(() => {
-      remove(id);
-      setLeaving((prev) => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
-    }, REMOVE_MS);
-  };
 
   return (
     <>
@@ -109,20 +75,17 @@ function PanelBody({ api, TitleTag, CloseTag }) {
       </header>
 
       <div {...stylex.props(s.rail)}>
-        <div
-          {...stylex.props(s.railFill)}
-          style={{ transform: `scaleX(${progress})` }}
-        />
+        <div {...stylex.props(s.railFill)} style={{ transform: `scaleX(${progress})` }} />
       </div>
 
       {total === 0 ? (
         <div {...stylex.props(s.empty)}>
           <span {...stylex.props(s.emptyIcon)} aria-hidden="true">
-            <ListChecks size={20} strokeWidth={1.75} />
+            <CalendarClock size={20} strokeWidth={1.75} />
           </span>
-          <span {...stylex.props(s.emptyTitle)}>새로운 하루예요</span>
+          <span {...stylex.props(s.emptyTitle)}>오늘 일정이 없어요</span>
           <span {...stylex.props(s.emptyHint)}>
-            오늘 해야 할 일을 적어보세요. 목록은 자정이 지나면 비워져요.
+            시간표에 오늘 일정을 추가하면 여기에서 하나씩 체크할 수 있어요.
           </span>
         </div>
       ) : (
@@ -130,14 +93,7 @@ function PanelBody({ api, TitleTag, CloseTag }) {
           <ScrollArea.Viewport style={{ height: '100%' }}>
             <ul {...stylex.props(s.list)}>
               {items.map((todo, i) => (
-                <TodoRow
-                  key={todo.id}
-                  todo={todo}
-                  index={i}
-                  leaving={leaving.has(todo.id)}
-                  onToggle={toggle}
-                  onRemove={handleRemove}
-                />
+                <TodoRow key={todo.id} todo={todo} index={i} onToggle={toggle} />
               ))}
             </ul>
           </ScrollArea.Viewport>
@@ -146,34 +102,14 @@ function PanelBody({ api, TitleTag, CloseTag }) {
           </ScrollArea.Scrollbar>
         </ScrollArea.Root>
       )}
-
-      <form {...stylex.props(s.foot)} onSubmit={submit}>
-        <input
-          ref={inputRef}
-          {...stylex.props(s.input)}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="할 일 추가"
-          enterKeyHint="done"
-          maxLength={140}
-          aria-label="할 일 추가"
-        />
-        <button
-          type="submit"
-          {...stylex.props(s.addBtn)}
-          disabled={!text.trim()}
-          aria-label="추가"
-        >
-          <Plus size={18} strokeWidth={2.2} />
-        </button>
-      </form>
     </>
   );
 }
 
 /**
- * Today's to-do list. Slide-in side panel on desktop, swipeable bottom drawer
- * on mobile — mirroring the app's Sheet split, but anchored to the right so it
+ * Today's to-do list — the active schedule's events for today, checkable for
+ * personal tracking. Slide-in side panel on desktop, swipeable bottom drawer on
+ * mobile — mirroring the app's Sheet split, but anchored to the right so it
  * reads as a companion rail rather than a modal.
  *
  * Mounts closed, then opens on layout so Base UI applies its enter transition.

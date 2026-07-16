@@ -48,12 +48,16 @@ const schema = i.schema({
       compact: i.boolean().optional(),
       showMemos: i.boolean().optional(),
     }),
-    /** Ephemeral per-day checklist, scoped to `day` (planner date, 06:00→06:00). */
+    /**
+     * Ephemeral "checked today" marks for schedule events. One row per event
+     * the user has ticked off, scoped to `day` (planner date, 06:00→06:00) and
+     * `eventId`. The to-do list itself is derived from the board's events; a row
+     * here only records that a given event is done *today*. Because the key is a
+     * concrete date, the same weekly event starts unchecked again next week.
+     */
     todos: i.entity({
       day: i.string().indexed(),
-      text: i.string(),
-      done: i.boolean(),
-      sortOrder: i.number().indexed(),
+      eventId: i.string().indexed(),
       createdAt: i.number().indexed(),
     }),
   },
