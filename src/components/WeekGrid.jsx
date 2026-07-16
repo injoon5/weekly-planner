@@ -308,15 +308,21 @@ export function WeekGrid({
             {Array.from({ length: 23 }, (_, k) => {
               const h = k + 1;
               const m = h * 60;
+              const isNextDay = m >= NEXT_DAY_START_MIN;
               return (
                 <div
                   key={h}
                   {...stylex.props(grid.glab)}
                   style={{ top: slotTop(m) }}
                 >
-                  <span {...stylex.props(grid.glabInner)}>
+                  <span
+                    {...stylex.props(
+                      grid.glabInner,
+                      isNextDay && grid.glabInnerNext,
+                    )}
+                  >
                     {fmt(m)}
-                    {m >= NEXT_DAY_START_MIN && <i {...stylex.props(grid.glabSup)}>+1</i>}
+                    {isNextDay && <i {...stylex.props(grid.glabSup)}>+1</i>}
                   </span>
                 </div>
               );

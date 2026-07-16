@@ -293,10 +293,18 @@ export const grid = stylex.create({
     display: 'inline-block',
   },
 
+  /** Reserves a trailing slot so +1 sits after the clock digits without covering them. */
+  glabInnerNext: {
+    paddingRight: '9px',
+    [MOBILE]: {
+      paddingRight: '8px',
+    },
+  },
+
   glabSup: {
     position: 'absolute',
-    top: '-2px',
-    right: '-1px',
+    top: '-3px',
+    right: 0,
     fontStyle: 'normal',
     fontSize: '7px',
     fontWeight: 650,
@@ -305,12 +313,12 @@ export const grid = stylex.create({
     letterSpacing: 0,
     pointerEvents: 'none',
     [MOBILE]: {
-      fontSize: '6.5px',
-      top: '-1px',
-      right: '0',
+      fontSize: '6px',
+      top: '-2px',
     },
     '@media print': {
       fontSize: '7px',
+      top: '-2px',
     },
   },
 
