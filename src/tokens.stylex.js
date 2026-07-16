@@ -48,7 +48,8 @@ export const layout = stylex.defineVars({
   },
   gutW: {
     default: '54px',
-    [MOBILE]: '50px',
+    // Keep room for "05:00" + reserved +1 slot on narrow screens.
+    [MOBILE]: '52px',
     '@media print': '52px',
   },
   colMin: {
