@@ -15,8 +15,6 @@ import {
 import { db } from '../db.js';
 import { applyDocumentTheme, readBootTheme } from '../theme-dom.js';
 import { landing } from '../styles/landing.js';
-import { planner } from '../styles/planner.js';
-import { ui } from '../styles/ui.js';
 import { IconSwap } from './ui/IconSwap.jsx';
 import { toast } from './ui/Toaster.jsx';
 
@@ -79,16 +77,24 @@ const FEATURES = [
   },
 ];
 
-// Mini planner used in the hero. Columns are 월–금; blocks are laid out against
-// a 09:00–17:00 window so the preview reads like a real week at a glance.
-const DAYS = ['월', '화', '수', '목', '금'];
-const PXPM = 188 / 480; // px per minute over the 8-hour window
+// A mini of the real planner grid — same weekday rail, today pill, hour lines,
+// event blocks and now-line the app uses. Laid out over a 09:00–18:00 window.
+const DAYS = [
+  ['월', 'Mon'],
+  ['화', 'Tue'],
+  ['수', 'Wed'],
+  ['목', 'Thu'],
+  ['금', 'Fri'],
+];
+const TODAY_COL = 2; // 수요일
+const NOW_START = 260; // 13:20, minutes from 09:00
+const PXPM = 200 / 540; // px per minute over the 9-hour window
 const PREVIEW_BLOCKS = [
   { day: 0, start: 60, dur: 90, color: 'coral', title: '디자인 리뷰', time: '10:00' },
-  { day: 0, start: 360, dur: 60, color: 'green', title: '운동', time: '15:00' },
+  { day: 0, start: 390, dur: 60, color: 'green', title: '운동', time: '15:30' },
   { day: 1, start: 120, dur: 75, color: 'sky', title: '1:1 미팅', time: '11:00' },
-  { day: 2, start: 30, dur: 165, color: 'violet', title: '집중 작업', time: '09:30' },
-  { day: 3, start: 180, dur: 90, color: 'amber', title: '점심 약속', time: '12:00' },
+  { day: 2, start: 30, dur: 150, color: 'violet', title: '집중 작업', time: '09:30' },
+  { day: 3, start: 210, dur: 90, color: 'amber', title: '점심 약속', time: '12:30' },
   { day: 4, start: 0, dur: 45, color: 'pink', title: '스탠드업', time: '09:00' },
   { day: 4, start: 420, dur: 60, color: 'teal', title: '주간 회고', time: '16:00' },
 ];
@@ -96,44 +102,52 @@ const PREVIEW_BLOCKS = [
 function PlannerPreview() {
   return (
     <div {...stylex.props(landing.preview)} role="img" aria-label="주간 시간표 미리보기">
-      <div {...stylex.props(landing.previewBar)}>
-        <i {...stylex.props(landing.dot)} style={{ background: '#E96D4F' }} />
-        <i {...stylex.props(landing.dot)} style={{ background: '#E6A23C' }} />
-        <i {...stylex.props(landing.dot)} style={{ background: '#53AE6E' }} />
-        <span {...stylex.props(landing.previewTitle)}>내 시간표 · 이번 주</span>
+      <div {...stylex.props(landing.pHead)}>
+        <div {...stylex.props(landing.pCorner)}>시간</div>
+        {DAYS.map(([ko, en], col) => (
+          <div key={ko} {...stylex.props(landing.pDay)}>
+            <span {...stylex.props(landing.pDko, col === TODAY_COL && landing.pToday)}>
+              {ko}
+            </span>
+            <span {...stylex.props(landing.pDen)}>{en}</span>
+          </div>
+        ))}
       </div>
-      <div {...stylex.props(landing.grid)}>
-        {/* time gutter */}
-        <div {...stylex.props(landing.gGut)}>
+      <div {...stylex.props(landing.pBody)}>
+        <div {...stylex.props(landing.pGut)}>
           {[9, 11, 13, 15, 17].map((h) => (
             <span
               key={h}
-              {...stylex.props(landing.gTime)}
-              style={{ top: `${(h - 9) * 60 * PXPM + 30}px` }}
+              {...stylex.props(landing.pTime)}
+              style={{ top: `${(h - 9) * 60 * PXPM}px` }}
             >
               {h}
             </span>
           ))}
         </div>
-        {DAYS.map((d, col) => (
-          <div key={d}>
-            <div {...stylex.props(landing.gHead)}>{d}</div>
-            <div {...stylex.props(landing.gCol)}>
-              {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-                <i key={i} {...stylex.props(landing.gLine)} style={{ top: `${i * 60 * PXPM}px` }} />
-              ))}
-              {PREVIEW_BLOCKS.filter((b) => b.day === col).map((b, i) => (
-                <div
-                  key={i}
-                  data-color={b.color}
-                  {...stylex.props(landing.block)}
-                  style={{ top: `${b.start * PXPM}px`, height: `${b.dur * PXPM}px` }}
-                >
-                  <div {...stylex.props(landing.blockT)}>{b.title}</div>
-                  <div {...stylex.props(landing.blockS)}>{b.time}</div>
-                </div>
-              ))}
-            </div>
+        {DAYS.map(([ko], col) => (
+          <div key={ko} {...stylex.props(landing.pCol)}>
+            {[10, 11, 12, 13, 14, 15, 16, 17].map((h) => (
+              <i
+                key={h}
+                {...stylex.props(landing.pLine)}
+                style={{ top: `${(h - 9) * 60 * PXPM}px` }}
+              />
+            ))}
+            {PREVIEW_BLOCKS.filter((b) => b.day === col).map((b, i) => (
+              <div
+                key={i}
+                data-color={b.color}
+                {...stylex.props(landing.pBlock)}
+                style={{ top: `${b.start * PXPM}px`, height: `${b.dur * PXPM}px` }}
+              >
+                <div {...stylex.props(landing.pBt)}>{b.title}</div>
+                {b.dur >= 60 && <div {...stylex.props(landing.pBm)}>{b.time}</div>}
+              </div>
+            ))}
+            {col === TODAY_COL && (
+              <div {...stylex.props(landing.pNow)} style={{ top: `${NOW_START * PXPM}px` }} />
+            )}
           </div>
         ))}
       </div>
@@ -165,17 +179,19 @@ function GuestButton({ variant = 'primary', label = '게스트로 시작하기',
       aria-busy={busy}
       style={style}
       {...stylex.props(
-        ui.btn,
-        variant === 'primary' ? ui.btnPrimary : ui.btnPlain,
-        landing.ctaSize,
+        landing.btn,
+        variant === 'primary' ? landing.btnPrimary : landing.btnGhost,
       )}
     >
       {busy ? (
-        '시작하는 중…'
+        <>
+          <span {...stylex.props(landing.spinner)} aria-hidden="true" />
+          시작하는 중…
+        </>
       ) : (
         <>
           {label}
-          <ArrowRight size={16} strokeWidth={2} {...stylex.props(landing.btnArrow)} />
+          <ArrowRight size={17} strokeWidth={2} {...stylex.props(landing.btnArrow)} />
         </>
       )}
     </button>
@@ -224,15 +240,15 @@ export function Landing() {
               type="button"
               onClick={toggle}
               aria-label={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
-              {...stylex.props(planner.ibtn)}
+              {...stylex.props(landing.iconBtn)}
             >
               <IconSwap
                 active={theme === 'dark'}
-                activeIcon={<Sun size={15} strokeWidth={1.75} />}
-                inactiveIcon={<Moon size={15} strokeWidth={1.75} />}
+                activeIcon={<Sun size={16} strokeWidth={1.75} />}
+                inactiveIcon={<Moon size={16} strokeWidth={1.75} />}
               />
             </button>
-            <button type="button" onClick={toLogin} {...stylex.props(ui.btn, ui.btnGhost)}>
+            <button type="button" onClick={toLogin} {...stylex.props(landing.navLink)}>
               로그인
             </button>
           </div>
@@ -262,7 +278,7 @@ export function Landing() {
                 <button
                   type="button"
                   onClick={toLogin}
-                  {...stylex.props(ui.btn, ui.btnPlain, landing.ctaSize)}
+                  {...stylex.props(landing.btn, landing.btnGhost)}
                 >
                   이메일로 로그인
                 </button>
