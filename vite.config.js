@@ -87,6 +87,8 @@ export default defineConfig({
         // App shell only — Instant owns its own IndexedDB offline cache + sync.
         globPatterns: ['**/*.{js,css,html,svg,png,ico,webp,woff2}'],
         navigateFallback: 'index.html',
+        // /api/* are Vercel serverless routes (OG image, share-meta, invite).
+        navigateFallbackDenylist: [/^\/api/],
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {

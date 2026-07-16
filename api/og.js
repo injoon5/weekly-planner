@@ -1,5 +1,10 @@
+import { readFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { ImageResponse } from '@vercel/og';
 import { sanitizeOgImageTitle } from '../src/og-meta.js';
+
+const fontDir = join(dirname(fileURLToPath(import.meta.url)), 'fonts');
 
 /**
  * Open Graph share card (1200×630), rendered on demand with @vercel/og
@@ -10,16 +15,15 @@ import { sanitizeOgImageTitle } from '../src/og-meta.js';
  * GET /api/og            → default card
  * GET /api/og?title=이름  → board-specific card (title capped at 24 chars)
  *
- * Node runtime: @vercel/og is supported on Node for non-Next Vite APIs, and
- * returning ImageResponse (Web Response) matches Vercel's web-handler shape.
+ * Node runtime + req/res handler: Vite API routes on Vercel use the Node
+ * serverless shape. Returning ImageResponse without writing to `res` leaves
+ * the connection open until the proxy times out (524).
  */
 export const config = {
   runtime: 'nodejs',
 };
 
-
-// Satori supports woff but not woff2; fetched once per instance, then cached.
-const FONT_CDN = 'https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/woff';
+// Satori supports woff but not woff2; bundled under api/fonts, loaded once per instance.
 let fontsPromise;
 
 function loadFonts() {
@@ -28,11 +32,12 @@ function loadFonts() {
       ['Medium', 500],
       ['SemiBold', 600],
       ['Bold', 700],
-    ].map(async ([name, weight]) => {
-      const res = await fetch(`${FONT_CDN}/Pretendard-${name}.woff`);
-      if (!res.ok) throw new Error(`font fetch failed: ${name} ${res.status}`);
-      return { name: 'Pretendard', weight, style: 'normal', data: await res.arrayBuffer() };
-    }),
+    ].map(async ([name, weight]) => ({
+      name: 'Pretendard',
+      weight,
+      style: 'normal',
+      data: await readFile(join(fontDir, `Pretendard-${name}.woff`)),
+    })),
   );
   return fontsPromise;
 }
@@ -285,17 +290,29 @@ const page = (title) =>
     card(),
   );
 
-export default async function handler(request) {
+export default async function handler(req, res) {
+  if (req.method === 'OPTIONS') {
+    res.statusCode = 204;
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    return res.end();
+  }
+  if (req.method && req.method !== 'GET') {
+    res.statusCode = 405;
+    res.setHeader('Allow', 'GET, OPTIONS');
+    return res.end('Method not allowed');
+  }
+
   let title = '주간 계획표';
   try {
-    const q = new URL(request.url, 'http://localhost').searchParams.get('title');
-    title = sanitizeOgImageTitle(q, '주간 계획표');
+    const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+    title = sanitizeOgImageTitle(url.searchParams.get('title'), '주간 계획표');
   } catch {
     /* keep default */
   }
 
   try {
-    return new ImageResponse(page(title), {
+    const image = new ImageResponse(page(title), {
       width: 1200,
       height: 630,
       fonts: await loadFonts(),
@@ -303,8 +320,14 @@ export default async function handler(request) {
         'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
       },
     });
+    res.statusCode = image.status;
+    image.headers.forEach((value, key) => {
+      res.setHeader(key, value);
+    });
+    return res.end(Buffer.from(await image.arrayBuffer()));
   } catch (err) {
     console.error('og image failed', err);
-    return new Response('OG image generation failed', { status: 500 });
+    res.statusCode = 500;
+    return res.end('OG image generation failed');
   }
 }

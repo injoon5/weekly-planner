@@ -89,4 +89,10 @@ describe('share OG hosting wiring', () => {
     expect(robots).toContain('Allow: /api/og');
     expect(robots).toContain('Allow: /api/share-meta');
   });
+
+  it('keeps /api routes out of the PWA navigate fallback', () => {
+    const vite = readFileSync(join(root, 'vite.config.js'), 'utf8');
+    expect(vite).toContain('navigateFallbackDenylist');
+    expect(vite).toMatch(/\/\^\\\/api/);
+  });
 });
