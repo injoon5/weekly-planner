@@ -450,8 +450,8 @@ export const landing = stylex.create({
   // Floating presence avatars over the preview — hints at real-time collab.
   presence: {
     position: 'absolute',
-    top: '10px',
-    right: '12px',
+    bottom: 'calc(100% + 12px)',
+    right: '4px',
     zIndex: 10,
     display: 'inline-flex',
     paddingBlock: '5px',
