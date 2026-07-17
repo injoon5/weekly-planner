@@ -54,11 +54,15 @@ export function GridEventBlock({
       onPointerLeave={() => setHov(false)}
       onKeyDown={onKeyDown}
     >
-      {/* No handles on 30-min blocks: the (invisible) hit zones would swallow
-          nearly the whole block on touch, breaking long-press move. */}
-      {!isXs && (
-        <div data-hh="t" {...stylex.props(grid.hh, grid.hhTop, showHandles && grid.hhVisible)} />
-      )}
+      <div
+        data-hh="t"
+        {...stylex.props(
+          grid.hh,
+          grid.hhTop,
+          isXs && grid.hhXs,
+          showHandles && grid.hhVisible,
+        )}
+      />
       <div {...stylex.props(grid.bt, isTall && grid.btTall)}>{ev.title || '일정'}</div>
       {ev.dur >= SLOT_MIN * 2 && (
         <div {...stylex.props(grid.bm)}>
@@ -79,9 +83,15 @@ export function GridEventBlock({
             {ev.memo}
           </div>
         )}
-      {!isXs && (
-        <div data-hh="b" {...stylex.props(grid.hh, grid.hhBot, showHandles && grid.hhVisible)} />
-      )}
+      <div
+        data-hh="b"
+        {...stylex.props(
+          grid.hh,
+          grid.hhBot,
+          isXs && grid.hhXs,
+          showHandles && grid.hhVisible,
+        )}
+      />
     </div>
   );
 }
