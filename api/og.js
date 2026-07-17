@@ -267,10 +267,11 @@ const dayHeaders = () =>
             },
             abs(
               {
-                // Optical center for Pretendard 수 in Satori (glyph sits high-left).
-                left: 3,
-                right: -1,
-                top: 12,
+                // Optical center for Pretendard 수 in Satori (glyph sits high-left by default;
+                // prior top:12 overshot and parked it low).
+                left: 2,
+                right: 0,
+                top: 9,
                 height: 18,
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -366,14 +367,14 @@ const lockedScheduleBody = (eventBlocks) => {
     },
     abs({ left: 0, top: 0, bottom: 0, width: 1, backgroundColor: T.line }),
     ...scheduleBody(eventBlocks, false),
-    // Low-opacity wash so the demo schedule peeks through without looking sharp.
+    // Soft frosted wash — schedule peeks through without reading as sharp content.
     abs({
       left: 0,
       top: 0,
       width: bodyW,
       height: bodyH,
       backgroundImage:
-        'linear-gradient(165deg, rgba(255,255,255,0.42) 0%, rgba(246,246,247,0.58) 48%, rgba(255,255,255,0.7) 100%)',
+        'linear-gradient(160deg, rgba(255,255,255,0.55) 0%, rgba(246,246,247,0.68) 42%, rgba(255,255,255,0.78) 100%)',
     }),
     abs({
       left: 0,
@@ -381,7 +382,7 @@ const lockedScheduleBody = (eventBlocks) => {
       width: bodyW,
       height: bodyH,
       backgroundImage:
-        'radial-gradient(ellipse at 58% 38%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 62%)',
+        'radial-gradient(ellipse at 62% 34%, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 58%)',
     }),
   );
 };
@@ -389,12 +390,13 @@ const lockedScheduleBody = (eventBlocks) => {
 /**
  * Lock sits between 화–수 (biased toward 수) and between the 11–12 hour rows.
  * Absolute coords — flex centering drifts badly in Satori.
+ * Padlock mass hangs low in the SVG, so cy is biased toward 11 for optical mid.
  */
-const LOCK_SIZE = 112;
+const LOCK_SIZE = 108;
 const lockedOverlay = () => {
-  // 화|수 seam is day(2); nudge into 수 so it reads closer to 수 than 화.
-  const cx = day(2) + COL * 0.22;
-  const cy = (y(11) + y(12)) / 2;
+  // Into 수 from the 화|수 seam (~38% of the 수 column).
+  const cx = day(2) + COL * 0.38;
+  const cy = y(11) + ROW * 0.32;
   return [
     abs(
       {
