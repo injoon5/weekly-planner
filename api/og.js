@@ -289,19 +289,6 @@ const timeGutter = () =>
     ),
   );
 
-/** Inner schedule body (grid lines + events). Blurred for password shares. */
-const scheduleBody = (eventBlocks, showNow) => [
-  ...[9, 10, 11, 12, 13, 14, 15].map((hr) =>
-    abs({ left: 0, right: 0, top: y(hr) - HEAD, height: 1, backgroundColor: T.gridHour }),
-  ),
-  ...[1, 2, 3, 4].map((i) =>
-    abs({ left: day(i) - GUT, top: 0, bottom: 0, width: 1, backgroundColor: T.gridHour }),
-  ),
-  // Reposition event/now blocks from card coords → body-local (origin at GUT, HEAD).
-  ...eventBlocks.map((node) => shiftAbs(node, -GUT, -HEAD)),
-  ...(showNow ? nowLine().map((node) => shiftAbs(node, -GUT, -HEAD)) : []),
-];
-
 function shiftAbs(node, dx, dy) {
   if (!node?.props?.style) return node;
   const style = { ...node.props.style };
@@ -310,7 +297,99 @@ function shiftAbs(node, dx, dy) {
   return { ...node, props: { ...node.props, style } };
 }
 
-/** Lock only — pure blur underneath, no frost wash / badge plate. */
+/**
+ * Soft event blobs for the locked card — no borders/text/accent.
+ * Sharp outlines survive a weak Satori blur; solid fills bloom cleanly.
+ */
+const softBlock = (d, h1, m1, h2, m2, color) => {
+  const [bg] = EV[color] || EV.sky;
+  const dur = h2 - h1 + (m2 - m1) / 60;
+  if (dur <= 0) return null;
+  return abs({
+    left: day(d) + 5,
+    top: y(h1, m1) + 2,
+    width: COL - 10,
+    height: Math.max(dur * ROW - 4, 28),
+    backgroundColor: bg,
+    borderRadius: 12,
+  });
+};
+
+function softBlocksFromDemo() {
+  return DEMO_BLOCKS.map(([d, h1, m1, h2, m2, color]) => softBlock(d, h1, m1, h2, m2, color)).filter(
+    Boolean,
+  );
+}
+
+/** Inner schedule body (grid lines + events). */
+const scheduleBody = (eventBlocks, showNow) => [
+  ...[9, 10, 11, 12, 13, 14, 15].map((hr) =>
+    abs({ left: 0, right: 0, top: y(hr) - HEAD, height: 1, backgroundColor: T.gridHour }),
+  ),
+  ...[1, 2, 3, 4].map((i) =>
+    abs({ left: day(i) - GUT, top: 0, bottom: 0, width: 1, backgroundColor: T.gridHour }),
+  ),
+  ...eventBlocks.map((node) => shiftAbs(node, -GUT, -HEAD)),
+  ...(showNow ? nowLine().map((node) => shiftAbs(node, -GUT, -HEAD)) : []),
+];
+
+/**
+ * Locked schedule body using backdrop-blur semantics:
+ *   1) soft schedule sample (no borders — outlines survive blur badly)
+ *   2) frosted glass overlay with backdropFilter (when the runtime supports it)
+ *   3) Satori polyfill: a padded `filter: blur` clone behind the glass, since
+ *      Satori/resvg do not implement backdrop-filter yet
+ */
+const lockedScheduleBody = (eventBlocks) => {
+  const bodyW = 5 * COL;
+  const bodyH = 640 - HEAD;
+  const pad = 72;
+  const soft = eventBlocks.map((node) => shiftAbs(node, -GUT, -HEAD));
+  const sample = abs(
+    {
+      left: pad,
+      top: pad,
+      width: bodyW,
+      height: bodyH,
+    },
+    ...soft,
+  );
+
+  return abs(
+    {
+      left: GUT,
+      top: HEAD,
+      width: bodyW,
+      height: bodyH,
+      overflow: 'hidden',
+      backgroundColor: T.paper,
+    },
+    // Backdrop sample — blurred clone of the schedule behind the glass.
+    abs(
+      {
+        left: -pad,
+        top: -pad,
+        width: bodyW + pad * 2,
+        height: bodyH + pad * 2,
+        backgroundColor: T.paper,
+        filter: 'blur(48px)',
+      },
+      sample,
+    ),
+    // Frosted glass — backdrop-filter for capable runtimes.
+    abs({
+      left: 0,
+      top: 0,
+      width: bodyW,
+      height: bodyH,
+      backgroundColor: 'rgba(255,255,255,0.12)',
+      backdropFilter: 'blur(48px)',
+      WebkitBackdropFilter: 'blur(48px)',
+    }),
+  );
+};
+
+/** Lock only — above center; no frost badge plate. */
 const lockedOverlay = () => [
   abs(
     {
@@ -319,7 +398,8 @@ const lockedOverlay = () => [
       right: 0,
       bottom: 0,
       alignItems: 'center',
-      justifyContent: 'center',
+      justifyContent: 'flex-start',
+      paddingTop: 28,
     },
     lockIcon(136),
   ),
@@ -340,24 +420,14 @@ const card = ({ eventBlocks, showNow, locked }) =>
       boxShadow: '0 24px 48px rgba(20,20,26,.18)',
       overflow: 'hidden',
     },
-    // Frame chrome — always sharp.
+    // Frame chrome — always sharp. Gutter rule stops at the header so it
+    // doesn't etch an outline against the blurred schedule body.
     ...dayHeaders(),
     abs({ left: 0, right: 0, top: HEAD, height: 1, backgroundColor: T.line }),
-    abs({ left: GUT, top: 0, bottom: 0, width: 1, backgroundColor: T.line }),
+    abs({ left: GUT, top: 0, width: 1, height: HEAD, backgroundColor: T.line }),
     ...timeGutter(),
-    // Schedule body — blurred inside for password shares.
     locked
-      ? abs(
-          {
-            left: GUT,
-            top: HEAD,
-            width: 5 * COL,
-            height: 640 - HEAD,
-            overflow: 'hidden',
-            filter: 'blur(28px)',
-          },
-          ...scheduleBody(eventBlocks, showNow),
-        )
+      ? lockedScheduleBody(eventBlocks)
       : abs(
           {
             left: GUT,
@@ -366,6 +436,8 @@ const card = ({ eventBlocks, showNow, locked }) =>
             height: 640 - HEAD,
             overflow: 'hidden',
           },
+          // Full-height gutter rule only when the body is sharp.
+          abs({ left: 0, top: 0, bottom: 0, width: 1, backgroundColor: T.line }),
           ...scheduleBody(eventBlocks, showNow),
         ),
     ...(locked ? lockedOverlay() : []),
@@ -477,9 +549,13 @@ function parseOgRequest(req) {
   const hasReal = url.searchParams.has('e');
   const events = hasReal ? decodeOgEvents(url.searchParams.get('e')) : null;
   const subtitle = ogImageSubtitle({ owner, eventCount }) || '';
-  // Locked cards always use the demo table (blurred) — never real events.
-  const eventBlocks = locked || !hasReal ? blocksFromDemo() : blocksFromEvents(events);
-  const showNow = locked || !hasReal;
+  // Locked cards use soft borderless blobs under a padded blur — never real events.
+  const eventBlocks = locked
+    ? softBlocksFromDemo()
+    : hasReal
+      ? blocksFromEvents(events)
+      : blocksFromDemo();
+  const showNow = !locked && !hasReal;
   return { title, subtitle, eventBlocks, showNow, locked };
 }
 
