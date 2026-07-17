@@ -30,7 +30,8 @@ export function PlannerSurface({
 
   if (surfacePending) {
     return (
-      <div {...stylex.props(planner.surfacePending)} aria-busy="true">
+      <div {...stylex.props(planner.surfacePending)} aria-busy="true" role="status">
+        <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
         불러오는 중…
       </div>
     );

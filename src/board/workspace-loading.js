@@ -1,6 +1,7 @@
 /**
  * Pure loading-gate helpers for the signed-in planner shell.
- * Keep chrome mounted once a board list exists; only cold-boot full-page.
+ * Keep chrome mounted once a board list exists; cold empty workspace uses a
+ * soft shell (header + surface pending), not a full-viewport takeover.
  */
 
 /**
@@ -23,8 +24,9 @@ export function isWorkspaceColdBoot({
 }
 
 /**
- * True when the planner should replace the whole tree with a boot screen.
- * Once boards exist, detail/prefs refresh must not tear down chrome.
+ * True when the planner cannot drive the full header from a list board yet.
+ * Callers should still show a soft chrome shell + surface pending — never a
+ * blank full-page boot.
  *
  * @param {{
  *   workspaceLoading?: boolean,

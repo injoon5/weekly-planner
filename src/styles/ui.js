@@ -36,13 +36,37 @@ export const reset = stylex.create({
     // (appended to <body>) always paint above page content.
     isolation: 'isolate',
   },
+  // Compact status — not a full-viewport takeover.
   boot: {
-    minHeight: '100dvh',
-    display: 'grid',
-    placeItems: 'center',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '8px',
+    paddingBlock: '48px',
+    paddingInline: '16px',
     color: colors.muted,
     fontSize: '13px',
     fontWeight: 500,
+  },
+  bootSpinner: {
+    width: '14px',
+    height: '14px',
+    flexShrink: 0,
+    borderRadius: '99px',
+    borderWidth: '2px',
+    borderStyle: 'solid',
+    borderColor: 'currentColor',
+    borderTopColor: 'transparent',
+    animationName: stylex.keyframes({ to: { transform: 'rotate(360deg)' } }),
+    animationDuration: '640ms',
+    animationTimingFunction: 'linear',
+    animationIterationCount: 'infinite',
+    opacity: 0.85,
+    '@media (prefers-reduced-motion: reduce)': {
+      animationName: 'none',
+      borderTopColor: 'currentColor',
+      opacity: 0.45,
+    },
   },
 });
 

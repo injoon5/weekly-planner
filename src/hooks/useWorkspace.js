@@ -15,8 +15,8 @@ import { ensureWorkspace } from '../board/workspace-ensure.js';
  * Includes owned and member boards (via Instant view perms).
  *
  * Loading gates:
- * - Cold boot (full-page) only while the board list is empty and still loading
- *   or bootstrap has not finished.
+ * - Soft shell (header + surface pending) while the board list is empty and
+ *   still loading or bootstrap has not finished — never a full-viewport blank.
  * - Once a list row exists, keep the planner shell mounted; detail/prefs can
  *   hydrate into the surface without tearing down the header.
  */
@@ -139,7 +139,7 @@ export function useWorkspace() {
     showViewerBanner,
     activeId: activeBoardId,
     setActiveId,
-    // Full-page boot only for a cold empty workspace — never for detail/prefs.
+    // Soft shell only for a cold empty workspace — never for detail/prefs.
     isLoading: isWorkspaceColdBoot({
       workspaceLoading: workspace.isLoading,
       ready,

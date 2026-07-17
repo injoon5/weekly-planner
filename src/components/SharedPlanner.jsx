@@ -39,10 +39,24 @@ export function SharedPlanner() {
   }, [shared.board?.name]);
 
   if (shared.isLoading) {
-    return <div {...stylex.props(planner.boot)}>불러오는 중…</div>;
+    return (
+      <div {...stylex.props(planner.app)} data-app-shell="shared">
+        <header {...stylex.props(planner.top)}>
+          <h1 {...stylex.props(planner.h1)}>주간 계획표</h1>
+        </header>
+        <div {...stylex.props(planner.surfacePending)} aria-busy="true" role="status">
+          <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
+          불러오는 중…
+        </div>
+      </div>
+    );
   }
   if (shared.error) {
-    return <div {...stylex.props(planner.boot)}>오류: {shared.error.message}</div>;
+    return (
+      <div {...stylex.props(planner.boot)} role="alert">
+        오류: {shared.error.message}
+      </div>
+    );
   }
   if (shared.state === 'notFound' || shared.state === 'disabled') {
     return (
@@ -95,7 +109,17 @@ export function SharedPlanner() {
   }
 
   if (!shared.board) {
-    return <div {...stylex.props(planner.boot)}>불러오는 중…</div>;
+    return (
+      <div {...stylex.props(planner.app)} data-app-shell="shared">
+        <header {...stylex.props(planner.top)}>
+          <h1 {...stylex.props(planner.h1)}>주간 계획표</h1>
+        </header>
+        <div {...stylex.props(planner.surfacePending)} aria-busy="true" role="status">
+          <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
+          불러오는 중…
+        </div>
+      </div>
+    );
   }
 
   const board = shared.board;

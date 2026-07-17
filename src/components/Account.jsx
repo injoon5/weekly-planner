@@ -377,10 +377,19 @@ export function Account() {
   const { theme, persistTheme } = useTheme(settings);
 
   if (!user || isLoading) {
-    return <div {...stylex.props(planner.boot)}>불러오는 중…</div>;
+    return (
+      <div {...stylex.props(planner.boot)} role="status" aria-live="polite">
+        <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
+        불러오는 중…
+      </div>
+    );
   }
   if (error) {
-    return <div {...stylex.props(planner.boot)}>오류: {error.message}</div>;
+    return (
+      <div {...stylex.props(planner.boot)} role="alert">
+        오류: {error.message}
+      </div>
+    );
   }
 
   const saveSettings = async (patch, message) => {

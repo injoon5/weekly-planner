@@ -33,18 +33,22 @@ function toRouterAuth(auth) {
   };
 }
 
-function BootScreen({ children }) {
-  return <div {...stylex.props(reset.boot)}>{children}</div>;
+function BootStatus({ children, error = false }) {
+  return (
+    <div {...stylex.props(reset.boot)} role={error ? 'alert' : 'status'} aria-live="polite">
+      {!error && <span {...stylex.props(reset.bootSpinner)} aria-hidden="true" />}
+      {children}
+    </div>
+  );
 }
 
 function RootLayout() {
   const { auth } = rootRoute.useRouteContext();
 
-  if (auth.isLoading) {
-    return <BootScreen>불러오는 중…</BootScreen>;
-  }
+  // Don't blank every route while Instant auth resolves — only `/` needs a
+  // compact gate (IndexPage). Login/landing/share paint immediately.
   if (auth.error) {
-    return <BootScreen>오류: {auth.error.message}</BootScreen>;
+    return <BootStatus error>오류: {auth.error.message}</BootStatus>;
   }
   return <Outlet />;
 }
@@ -69,6 +73,10 @@ const indexRoute = createRoute({
   path: '/',
   component: function IndexPage() {
     const { auth } = rootRoute.useRouteContext();
+    // Compact status only — avoid a full-viewport takeover while auth resolves.
+    if (auth.isLoading) {
+      return <BootStatus>불러오는 중…</BootStatus>;
+    }
     // Signed-out visitors get the marketing landing page (with guest sign-in);
     // signed-in users — including guests — go straight to their planner.
     return auth.user ? <Planner /> : <Landing />;

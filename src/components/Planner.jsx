@@ -44,12 +44,36 @@ function PlannerShell() {
     swapping,
   } = usePlannerContext();
 
-  // Cold empty workspace only — keep chrome once a list board exists.
-  if (isLoading || (!ready && !boards.length)) {
-    return <div {...stylex.props(planner.boot)}>불러오는 중…</div>;
+  // Cold empty workspace / no board yet — keep a light chrome shell and pending
+  // in the surface only (guest create + signed-in cold load). Never full-page.
+  const waitingForBoard = isLoading || (!ready && !boards.length) || !board;
+  if (error || waitingForBoard) {
+    const message = error
+      ? `오류: ${error.message}`
+      : isLoading || (!ready && !boards.length)
+        ? '불러오는 중…'
+        : '시간표를 준비하는 중…';
+    return (
+      <div {...stylex.props(planner.app)} data-app-shell="planner">
+        <header {...stylex.props(planner.top)}>
+          <h1 {...stylex.props(planner.h1)}>주간 계획표</h1>
+          <div {...stylex.props(planner.hbtns)}>
+            {user ? <AccountMenu user={user} /> : null}
+          </div>
+        </header>
+        <div
+          {...stylex.props(planner.surfacePending)}
+          aria-busy={!error}
+          role={error ? 'alert' : 'status'}
+        >
+          {!error && (
+            <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
+          )}
+          {message}
+        </div>
+      </div>
+    );
   }
-  if (error) return <div {...stylex.props(planner.boot)}>오류: {error.message}</div>;
-  if (!board) return <div {...stylex.props(planner.boot)}>시간표를 준비하는 중…</div>;
 
   return (
     <div {...stylex.props(planner.app)} data-app-shell="planner">

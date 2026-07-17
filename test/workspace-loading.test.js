@@ -16,7 +16,7 @@ describe('workspace loading gates', () => {
     expect(
       isWorkspaceColdBoot({ workspaceLoading: false, ready: true, boardCount: 0 }),
     ).toBe(false);
-    // Boards already present — never full-page boot for detail/prefs refresh.
+    // Boards already present — never soft-shell cold boot for detail/prefs refresh.
     expect(
       isWorkspaceColdBoot({ workspaceLoading: true, ready: false, boardCount: 2 }),
     ).toBe(false);
