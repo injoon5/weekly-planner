@@ -358,7 +358,8 @@ JSON `{ "error": "…" }` with conventional statuses:
 | `500` | Server misconfiguration or unexpected failure |
 
 Instant permission failures are mapped in `instantErrorStatus()` inside
-`api/v1/[...path].js`.
+`src/server/rest-api.js` (served via `api/v1/[a].js` and nested `[b]`/`[c]`
+entrypoints — Vite on Vercel has no catch-all API routes).
 
 ```json title="401 Unauthorized"
 { "error": "Invalid token" }

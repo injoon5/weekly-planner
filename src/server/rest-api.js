@@ -4,9 +4,9 @@ import {
   generateApiToken,
   hashApiToken,
   parseBearer,
-} from '../../src/server/api-tokens.js';
-import { linkedId, linkedIds } from '../../src/lib/links.js';
-import { eventFields, nextBoardSortOrder } from '../../src/board/models.js';
+} from './api-tokens.js';
+import { linkedId, linkedIds } from '../lib/links.js';
+import { eventFields, nextBoardSortOrder } from '../board/models.js';
 import {
   RestValidationError,
   createRateLimiter,
@@ -14,8 +14,8 @@ import {
   matchRestRoute,
   restBoardFields,
   restSegments,
-} from '../../src/server/rest.js';
-import schema from '../../src/db/schema.js';
+} from './rest.js';
+import schema from '../db/schema.js';
 
 const APP_ID = process.env.INSTANT_APP_ID || process.env.VITE_INSTANT_APP_ID;
 const ADMIN_TOKEN = process.env.INSTANT_ADMIN_TOKEN;
@@ -100,6 +100,9 @@ function instantErrorStatus(err) {
 
 /**
  * Token-authenticated REST API over the planner's Instant data.
+ *
+ * Entrypoints (Vite/Vercel has no catch-all API routes — one file per depth):
+ *   api/v1/[a].js | api/v1/[a]/[b].js | api/v1/[a]/[b]/[c].js
  *
  * Auth: `Authorization: Bearer wp_…` (create tokens on the account page or
  * via /api/tokens). All reads and writes are executed *as the token's owner*
