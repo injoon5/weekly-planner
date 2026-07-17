@@ -44,7 +44,13 @@ Required board link (`eventBoard`), cascade on board delete. UI writes go throug
 
 ### `settings`
 
-Optional `theme`. One row per user (`settingsOwner`).
+One row per user (`settingsOwner`). All optional:
+
+| Field | Notes |
+| --- | --- |
+| `theme` | `light` \| `dark` |
+| `displayName` | presence/account display name; falls back to email local part |
+| `presenceColor` | presence avatar color override (hex); falls back to email hash |
 
 ### `shares`
 
@@ -77,6 +83,21 @@ Per-user board view: `hiddenColors` (JSON), `hideWeekend`, `compact`, `showMemos
 | `createdAt` | indexed |
 
 Presence of a row means that event is checked off for that date. Same weekly event is unchecked again on a future date.
+
+### `apiTokens`
+
+Personal access tokens for the [REST API](/docs/api/rest).
+
+| Field | Notes |
+| --- | --- |
+| `hash` | unique indexed SHA-256 of the token — plaintext is never stored |
+| `prefix` | display prefix (`wp_ab12cd34`) so users can tell tokens apart |
+| `name` | optional label |
+| `createdAt` | indexed |
+| `lastUsedAt` | optional; refreshed at most once a minute |
+
+Required owner link (`apiTokenOwner`), cascade on user delete. Rows are
+created/rotated server-side only (`/api/tokens`).
 
 ## Rooms
 

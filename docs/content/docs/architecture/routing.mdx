@@ -14,6 +14,7 @@ File: `src/router.jsx`
 | `/` | If signed in → `Planner`. If signed out → `Landing`. |
 | `/login` | Magic-code login. Authenticated users redirect to `/`. |
 | `/s/$token` | Public shared planner. No auth guard. |
+| `/account` | [Account page](/docs/features/account). Signed-out visitors redirect to `/login`. |
 
 Root layout shows a boot screen while Instant auth is loading, or an error screen if auth fails.
 

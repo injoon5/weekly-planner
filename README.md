@@ -11,6 +11,8 @@ A realtime weekly timetable with magic-code auth. **React + Vite + TanStack Rout
 - **Draft-until-save editor** — cancel never leaves orphan events
 - **Import / export JSON** — and one-time migration from the old localStorage planner
 - **Print + dark mode**
+- **Account page** (`/account`) — display name, avatar color, theme, API tokens
+- **REST API** (`/api/v1`) — bearer-token access to boards/events/todos; tokens are generated on the account page and refreshable ([docs](docs/content/docs/api/rest.mdx))
 
 ## Quick start
 
@@ -30,6 +32,7 @@ Open `http://localhost:3000`, sign in with your email, enter the code Instant se
 | `/login` | signed out    | Login   |
 | `/`      | authenticated | Planner |
 | `/s/:token` | public link | Shared planner |
+| `/account` | authenticated | Account settings |
 
 Auth uses Instant's React hooks (`db.useAuth` / `db.useUser` / `db.useQuery`) from `@instantdb/react`, injected into TanStack Router context; `beforeLoad` redirects, and `router.invalidate()` re-runs guards when auth changes.
 
