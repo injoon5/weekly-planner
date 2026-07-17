@@ -395,8 +395,8 @@ const lockedScheduleBody = (eventBlocks) => {
 const LOCK_SIZE = 108;
 const lockedOverlay = () => {
   // Just past the 화|수 seam into 수 — between the two, closer to 수.
-  const cx = day(2) + COL * 0.16;
-  const cy = y(11) + ROW * 0.42;
+  const cx = day(2) + COL * 0.22;
+  const cy = y(11) + ROW * 0.38;
   return [
     abs(
       {
