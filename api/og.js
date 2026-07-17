@@ -326,8 +326,7 @@ const scheduleBody = (eventBlocks, showNow) => [
 ];
 
 /**
- * Locked schedule: empty grid + subtle pastel wash from schedule colors.
- * No event cards — colors only, as soft gradient blobs.
+ * Locked schedule: empty grid only — no event cards, no color wash.
  */
 const lockedScheduleBody = () => {
   const bodyW = 5 * COL;
@@ -343,42 +342,6 @@ const lockedScheduleBody = () => {
     },
     abs({ left: 0, top: 0, bottom: 0, width: 1, backgroundColor: T.line }),
     ...scheduleBody([], false),
-    // Pastel schedule colors as soft atmosphere (no card shapes).
-    abs({
-      left: 0,
-      top: 0,
-      width: bodyW,
-      height: bodyH,
-      backgroundImage: 'radial-gradient(ellipse at 18% 22%, rgba(255,227,221,0.72) 0%, rgba(255,227,221,0) 55%)',
-    }),
-    abs({
-      left: 0,
-      top: 0,
-      width: bodyW,
-      height: bodyH,
-      backgroundImage: 'radial-gradient(ellipse at 72% 28%, rgba(230,226,250,0.7) 0%, rgba(230,226,250,0) 52%)',
-    }),
-    abs({
-      left: 0,
-      top: 0,
-      width: bodyW,
-      height: bodyH,
-      backgroundImage: 'radial-gradient(ellipse at 42% 68%, rgba(216,235,250,0.68) 0%, rgba(216,235,250,0) 58%)',
-    }),
-    abs({
-      left: 0,
-      top: 0,
-      width: bodyW,
-      height: bodyH,
-      backgroundImage: 'radial-gradient(ellipse at 88% 78%, rgba(217,240,219,0.65) 0%, rgba(217,240,219,0) 50%)',
-    }),
-    abs({
-      left: 0,
-      top: 0,
-      width: bodyW,
-      height: bodyH,
-      backgroundImage: 'radial-gradient(ellipse at 12% 82%, rgba(255,235,198,0.55) 0%, rgba(255,235,198,0) 48%)',
-    }),
   );
 };
 
@@ -546,7 +509,7 @@ function parseOgRequest(req) {
   const hasReal = url.searchParams.has('e');
   const events = hasReal ? decodeOgEvents(url.searchParams.get('e')) : null;
   const subtitle = ogImageSubtitle({ owner, eventCount }) || '';
-  // Locked cards: empty grid + pastel gradient wash — never real events/cards.
+  // Locked cards: empty grid + lock — never real events/cards.
   const eventBlocks = locked ? [] : hasReal ? blocksFromEvents(events) : blocksFromDemo();
   const showNow = !locked && !hasReal;
   return { title, subtitle, eventBlocks, showNow, locked };
