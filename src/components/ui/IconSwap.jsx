@@ -12,7 +12,7 @@ const s = stylex.create({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    transitionProperty: 'opacity, transform, filter',
+    transitionProperty: 'opacity, transform',
     transitionDuration: '.3s',
     transitionTimingFunction: 'cubic-bezier(.2,0,0,1)',
     '@media (prefers-reduced-motion: reduce)': {
@@ -28,13 +28,11 @@ const s = stylex.create({
   shown: {
     opacity: 1,
     transform: 'scale(1)',
-    filter: 'blur(0px)',
   },
 
   hiddenLayer: {
     opacity: 0,
     transform: 'scale(.25)',
-    filter: 'blur(4px)',
   },
 });
 

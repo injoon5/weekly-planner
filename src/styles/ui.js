@@ -26,9 +26,6 @@ export const reset = stylex.create({
     textRendering: 'optimizeLegibility',
     WebkitTextSizeAdjust: '100%',
     WebkitTapHighlightColor: 'transparent',
-    transitionProperty: 'background-color',
-    transitionDuration: '200ms',
-    transitionTimingFunction: 'ease',
   },
   app: {
     height: '100%',

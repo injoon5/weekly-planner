@@ -3,6 +3,7 @@ import { colors, layout } from './tokens.stylex.js';
 
 const MOBILE = '@media screen and (max-width: 720px)';
 const PRINT = '@media print';
+const REDUCE_TRANSPARENCY = '@media (prefers-reduced-transparency: reduce)';
 const TPLC = `${layout.gutW} repeat(7, minmax(${layout.colMin}, 1fr))`;
 const GRID_BODY_HEIGHT = 'var(--grid-body-height)';
 const GRID_HOUR_HEIGHT = 'var(--grid-hour-height)';
@@ -119,6 +120,16 @@ export const grid = stylex.create({
     WebkitBackdropFilter: 'blur(10px) saturate(1.5)',
     backdropFilter: 'blur(10px) saturate(1.5)',
     borderBottom: `1px solid ${colors.line}`,
+    [MOBILE]: {
+      backgroundColor: colors.bg,
+      WebkitBackdropFilter: 'none',
+      backdropFilter: 'none',
+    },
+    [REDUCE_TRANSPARENCY]: {
+      backgroundColor: colors.bg,
+      WebkitBackdropFilter: 'none',
+      backdropFilter: 'none',
+    },
     [PRINT]: {
       overflow: 'visible',
     },
@@ -137,11 +148,9 @@ export const grid = stylex.create({
     // Synced from JS via --head-day-width / --head-scroll-x (see syncHeadTrack).
     width: 'var(--head-day-width, 100%)',
     transform: 'translate3d(var(--head-scroll-x, 0px), 0, 0)',
-    willChange: 'transform',
     '@media print': {
       width: '100%',
       transform: 'none',
-      willChange: 'auto',
     },
   },
 
@@ -158,6 +167,16 @@ export const grid = stylex.create({
     WebkitBackdropFilter: 'blur(8px)',
     backdropFilter: 'blur(8px)',
     borderRight: `1px solid ${colors.line}`,
+    [MOBILE]: {
+      backgroundColor: colors.bg,
+      WebkitBackdropFilter: 'none',
+      backdropFilter: 'none',
+    },
+    [REDUCE_TRANSPARENCY]: {
+      backgroundColor: colors.bg,
+      WebkitBackdropFilter: 'none',
+      backdropFilter: 'none',
+    },
   },
 
   dcell: {
@@ -238,6 +257,16 @@ export const grid = stylex.create({
     WebkitBackdropFilter: 'blur(8px)',
     backdropFilter: 'blur(8px)',
     borderRight: `1px solid ${colors.line}`,
+    [MOBILE]: {
+      backgroundColor: colors.bg,
+      WebkitBackdropFilter: 'none',
+      backdropFilter: 'none',
+    },
+    [REDUCE_TRANSPARENCY]: {
+      backgroundColor: colors.bg,
+      WebkitBackdropFilter: 'none',
+      backdropFilter: 'none',
+    },
     [PRINT]: {
       position: 'relative',
       left: 'auto',
@@ -385,8 +414,8 @@ export const grid = stylex.create({
     cursor: 'grab',
     outline: 'none',
     boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--ev-accent) 22%, transparent)',
-    transitionProperty: 'top, left, width, height, box-shadow, transform',
-    transitionDuration: '.14s, .16s, .16s, .14s, .18s, .18s',
+    transitionProperty: 'box-shadow, transform',
+    transitionDuration: '.18s',
     transitionTimingFunction: 'cubic-bezier(.2,0,0,1)',
     '::before': {
       content: '""',

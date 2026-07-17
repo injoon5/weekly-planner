@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { DAYS_KO, SLOT_MIN } from '../lib/config.js';
 import { geoX, slotHeight, slotTop } from '../grid/grid-layout.js';
 import { fmt } from '../lib/time.js';
 import { grid } from '../styles/grid.js';
 
-export function GridEventBlock({
+function GridEventBlockImpl({
   ev,
   isDrag,
   isSel,
@@ -13,7 +13,7 @@ export function GridEventBlock({
   showMemos,
   printShowMemos,
   colorLabel,
-  onKeyDown,
+  onOpenEdit,
   readOnly,
   dayCount,
   visualDay,
@@ -52,7 +52,15 @@ export function GridEventBlock({
       }
       onPointerEnter={() => setHov(true)}
       onPointerLeave={() => setHov(false)}
-      onKeyDown={onKeyDown}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onOpenEdit(ev.id);
+        } else if (!readOnly && (e.key === 'Delete' || e.key === 'Backspace')) {
+          e.preventDefault();
+          onOpenEdit(ev.id);
+        }
+      }}
     >
       <div
         data-hh="t"
@@ -95,3 +103,5 @@ export function GridEventBlock({
     </div>
   );
 }
+
+export const GridEventBlock = memo(GridEventBlockImpl);

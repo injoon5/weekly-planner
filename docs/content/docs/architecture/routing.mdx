@@ -17,11 +17,11 @@ File: `src/router.jsx`
 | `/s/$token` | Public shared planner. No auth guard. |
 | `/account` | [Account page](/docs/features/account). Signed-out visitors redirect to `/login`. |
 
-Root layout only shows a compact error status if auth fails. While Instant auth is loading, routes still paint — `/` uses a compact status (not a full-viewport takeover); `/login`, `/home`, and share links render immediately.
+Root layout only shows a compact error status if auth fails. While Instant auth is loading, routes still paint — `/` uses a compact status only when no cached `user` is restored yet; `/login`, `/home`, and share links render immediately.
 
 ## Eager vs lazy routes
 
-`Landing` and `Planner` are **static imports** on `/` so a signed-in cold load does not hit another blank pending screen after auth. `Login`, `Account`, and `SharedPlanner` stay `lazyRouteComponent`. `defaultPendingComponent` is unset so secondary lazy routes do not blank the whole app shell.
+`Landing` and `Planner` are **lazy** so signed-in cold loads do not pull marketing JS (and signed-out loads skip the planner bundle). Compact `BootStatus` is the `defaultPendingComponent` while chunks resolve. `Login`, `Account`, and `SharedPlanner` stay lazy as well.
 
 ## Boot sequence (signed-in `/`)
 

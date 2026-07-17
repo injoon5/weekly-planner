@@ -96,15 +96,7 @@ export function WeekGridCanvas({
               readOnly={readOnly}
               dayCount={dayCount}
               visualDay={visualDay}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onOpenEdit(ev.id);
-                } else if (!readOnly && (e.key === 'Delete' || e.key === 'Backspace')) {
-                  e.preventDefault();
-                  onOpenEdit(ev.id);
-                }
-              }}
+              onOpenEdit={onOpenEdit}
             />
           );
         })}

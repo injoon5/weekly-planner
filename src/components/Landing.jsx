@@ -21,6 +21,12 @@ import { IconSwap } from './ui/IconSwap.jsx';
 import { PresenceAvatars } from './PresenceAvatars.jsx';
 import { toast } from './ui/toast.js';
 
+/** Presence room only for signed-in visitors — signed-out skip the websocket. */
+function LandingPresenceAvatars() {
+  const { peers } = useLandingPresence();
+  return <PresenceAvatars peers={peers} />;
+}
+
 /** Pre-auth theme toggle — no Instant settings yet, so we drive the DOM + cache
  *  directly. `useTheme` takes over once the user is signed in. */
 function useLocalTheme() {
@@ -227,14 +233,23 @@ export function Landing() {
   const auth = db.useAuth();
   const signedIn = Boolean(auth.user);
   const { theme, toggle } = useLocalTheme();
-  const { peers } = useLandingPresence();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        setScrolled(window.scrollY > 8);
+      });
+    };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, []);
 
   // Incrementing delay per hero element for the entrance stagger.
@@ -326,7 +341,7 @@ export function Landing() {
 
             <div {...riseIn()} {...stylex.props(landing.previewWrap)}>
               <div {...stylex.props(landing.presenceSlot)}>
-                <PresenceAvatars peers={peers} />
+                {signedIn ? <LandingPresenceAvatars /> : <PresenceAvatars peers={[]} />}
               </div>
               <PlannerPreview />
             </div>

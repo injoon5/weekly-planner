@@ -110,28 +110,37 @@ export function useViewControls({
     [hiddenColors, hideWeekend, compact, showMemos, user, storageKey, boardId, persistRemote],
   );
 
-  const toggleColor = (color) => {
-    const next = hiddenColors.includes(color)
-      ? hiddenColors.filter((c) => c !== color)
-      : [...hiddenColors, color];
-    applyPrefs({ hiddenColors: next });
-  };
+  const toggleColor = useCallback(
+    (color) => {
+      const next = hiddenColors.includes(color)
+        ? hiddenColors.filter((c) => c !== color)
+        : [...hiddenColors, color];
+      applyPrefs({ hiddenColors: next });
+    },
+    [hiddenColors, applyPrefs],
+  );
 
-  const colorLabel = (color) => labelsFromBoard[color] || COLOR_LABELS_KO[color] || color;
+  const colorLabel = useCallback(
+    (color) => labelsFromBoard[color] || COLOR_LABELS_KO[color] || color,
+    [labelsFromBoard],
+  );
 
-  const setColorLabel = async (color, label) => {
-    if (!canRenameColors || !boardId) return false;
-    const next = { ...labelsFromBoard, [color]: label };
-    if (!label.trim()) delete next[color];
-    const tx = patchBoardTx(boardId, { colorLabels: serializeColorLabels(next) });
-    if (!tx) return true;
-    return isOk(
-      await commitTransaction((transaction) => db.transact(transaction), tx, {
-        message: '색상 이름을 저장하지 못했어요',
-        onError: toast,
-      }),
-    );
-  };
+  const setColorLabel = useCallback(
+    async (color, label) => {
+      if (!canRenameColors || !boardId) return false;
+      const next = { ...labelsFromBoard, [color]: label };
+      if (!label.trim()) delete next[color];
+      const tx = patchBoardTx(boardId, { colorLabels: serializeColorLabels(next) });
+      if (!tx) return true;
+      return isOk(
+        await commitTransaction((transaction) => db.transact(transaction), tx, {
+          message: '색상 이름을 저장하지 못했어요',
+          onError: toast,
+        }),
+      );
+    },
+    [canRenameColors, boardId, labelsFromBoard],
+  );
 
   const hiddenColorSet = useMemo(() => new Set(hiddenColors), [hiddenColors]);
 
@@ -145,20 +154,41 @@ export function useViewControls({
     return [1, 2, 3, 4, 5];
   }, [hideWeekend]);
 
-  return {
-    palette: PALETTE,
-    hiddenColors,
-    hideWeekend,
-    compact,
-    showMemos,
-    days,
-    canRenameColors: Boolean(canRenameColors),
-    toggleColor,
-    setHideWeekend: (v) => applyPrefs({ hideWeekend: v }),
-    setCompact: (v) => applyPrefs({ compact: v }),
-    setShowMemos: (v) => applyPrefs({ showMemos: v }),
-    colorLabel,
-    setColorLabel,
-    visibleEvents,
-  };
+  const setHideWeekend = useCallback((v) => applyPrefs({ hideWeekend: v }), [applyPrefs]);
+  const setCompact = useCallback((v) => applyPrefs({ compact: v }), [applyPrefs]);
+  const setShowMemos = useCallback((v) => applyPrefs({ showMemos: v }), [applyPrefs]);
+
+  return useMemo(
+    () => ({
+      palette: PALETTE,
+      hiddenColors,
+      hideWeekend,
+      compact,
+      showMemos,
+      days,
+      canRenameColors: Boolean(canRenameColors),
+      toggleColor,
+      setHideWeekend,
+      setCompact,
+      setShowMemos,
+      colorLabel,
+      setColorLabel,
+      visibleEvents,
+    }),
+    [
+      hiddenColors,
+      hideWeekend,
+      compact,
+      showMemos,
+      days,
+      canRenameColors,
+      toggleColor,
+      setHideWeekend,
+      setCompact,
+      setShowMemos,
+      colorLabel,
+      setColorLabel,
+      visibleEvents,
+    ],
+  );
 }

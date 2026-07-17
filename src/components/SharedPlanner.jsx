@@ -1,6 +1,6 @@
+import { useEffect } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { Link, useParams } from '@tanstack/react-router';
-import { useEffect } from 'react';
 import { usePlannerRuntime } from '../hooks/usePlannerRuntime.js';
 import { useSharedBoard } from '../hooks/useSharedBoard.js';
 import { useTheme } from '../hooks/useTheme.js';
@@ -10,6 +10,8 @@ import { auth as authStyles } from '../styles/auth.js';
 import { PrintDialog } from './PrintDialog.jsx';
 import { PlannerHeader } from './PlannerHeader.jsx';
 import { PlannerSurface } from './PlannerSurface.jsx';
+
+const PLANNER_SCROLL_LOCK = 'planner-scroll-lock';
 
 export function SharedPlanner() {
   const { token } = useParams({ from: '/s/$token' });
@@ -27,6 +29,11 @@ export function SharedPlanner() {
     role: shared.role,
     guestLabel: shared.canEdit ? '공유 편집' : '공유 보기',
   });
+
+  useEffect(() => {
+    document.documentElement.classList.add(PLANNER_SCROLL_LOCK);
+    return () => document.documentElement.classList.remove(PLANNER_SCROLL_LOCK);
+  }, []);
 
   useEffect(() => {
     const name = shared.board?.name?.trim();

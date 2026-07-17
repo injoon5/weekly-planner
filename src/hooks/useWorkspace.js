@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { db } from '../db/instant.js';
 import { roleForBoard, shouldShowViewerBanner } from '../sharing/member-policy.js';
 import { boardCoversDate, fromInstantEvents } from '../board/models.js';
@@ -43,6 +43,7 @@ export function useWorkspace() {
   const [activeId, setActiveId] = useState(null);
   const [ready, setReady] = useState(false);
   const [bootNote, setBootNote] = useState(null);
+  const clearBootNote = useCallback(() => setBootNote(null), []);
 
   // Prefer the user's selection; otherwise open the schedule that covers today.
   const activeBoardId = useMemo(() => {
@@ -51,6 +52,9 @@ export function useWorkspace() {
     const today = isoDate();
     return (boards.find((b) => boardCoversDate(b, today)) || boards[0]).id;
   }, [boards, activeId]);
+
+  // Lean detail: events + role links. Share rows / nested member users load
+  // only when the Share popover opens (see ShareAction).
   const detail = db.useQuery(
     activeBoardId
       ? {
@@ -58,9 +62,8 @@ export function useWorkspace() {
             $: { where: { id: activeBoardId } },
             owner: {},
             events: {},
-            members: { user: {} },
+            members: {},
             editors: {},
-            shares: {},
           },
         }
       : null,
@@ -103,6 +106,12 @@ export function useWorkspace() {
     hasDetailBoard: Boolean(detailBoard),
     hasListBoard: Boolean(listBoard),
   });
+  const isLoading = isWorkspaceColdBoot({
+    workspaceLoading: workspace.isLoading,
+    ready,
+    boardCount: boards.length,
+  });
+  const error = workspace.error || detail.error || prefsQuery.error;
 
   useEffect(() => {
     if (workspace.isLoading || !user) return;
@@ -127,29 +136,46 @@ export function useWorkspace() {
     };
   }, [workspace.isLoading, user, user?.id, boards.length, settings, settings?.id]);
 
-  return {
-    user,
-    boards,
-    board,
-    events,
-    settings,
-    boardPrefs,
-    myRole,
-    canEdit,
-    isOwner,
-    showViewerBanner,
-    activeId: activeBoardId,
-    setActiveId,
-    // Soft shell only for a cold empty workspace — never for detail/prefs.
-    isLoading: isWorkspaceColdBoot({
-      workspaceLoading: workspace.isLoading,
+  return useMemo(
+    () => ({
+      user,
+      boards,
+      board,
+      events,
+      settings,
+      boardPrefs,
+      myRole,
+      canEdit,
+      isOwner,
+      showViewerBanner,
+      activeId: activeBoardId,
+      setActiveId,
+      // Soft shell only for a cold empty workspace — never for detail/prefs.
+      isLoading,
+      surfacePending,
+      error,
       ready,
-      boardCount: boards.length,
+      bootNote,
+      clearBootNote,
     }),
-    surfacePending,
-    error: workspace.error || detail.error || prefsQuery.error,
-    ready,
-    bootNote,
-    clearBootNote: () => setBootNote(null),
-  };
+    [
+      user,
+      boards,
+      board,
+      events,
+      settings,
+      boardPrefs,
+      myRole,
+      canEdit,
+      isOwner,
+      showViewerBanner,
+      activeBoardId,
+      isLoading,
+      surfacePending,
+      error,
+      ready,
+      bootNote,
+      clearBootNote,
+    ],
+  );
 }

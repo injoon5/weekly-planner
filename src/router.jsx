@@ -11,13 +11,13 @@ import {
 import * as stylex from '@stylexjs/stylex';
 import { db } from './db/instant.js';
 import { Toaster } from './components/ui/Toaster.jsx';
-import { Landing } from './components/Landing.jsx';
-import { Planner } from './components/Planner.jsx';
 import { AppUpdateProvider } from './hooks/AppUpdateProvider.jsx';
 import { reset } from './styles/ui.js';
 
-// Secondary routes stay lazy; `/` (Landing + Planner) is eager so cold loads
-// do not hit defaultPendingComponent and blank the shell after auth.
+// Split Landing vs Planner so signed-in cold loads don't pull marketing JS
+// (and vice versa). Compact BootStatus covers the brief chunk gap.
+const Landing = lazyRouteComponent(() => import('./components/Landing.jsx'), 'Landing');
+const Planner = lazyRouteComponent(() => import('./components/Planner.jsx'), 'Planner');
 const Login = lazyRouteComponent(() => import('./components/Login.jsx'), 'Login');
 const SharedPlanner = lazyRouteComponent(
   () => import('./components/SharedPlanner.jsx'),
@@ -122,8 +122,8 @@ const router = createRouter({
     auth: undefined,
   },
   defaultPreload: 'intent',
-  // Avoid blanking the whole app shell while secondary lazy routes load.
-  defaultPendingComponent: undefined,
+  // Compact status while lazy Landing/Planner/secondary chunks resolve.
+  defaultPendingComponent: () => <BootStatus>불러오는 중…</BootStatus>,
 });
 
 function InnerApp() {
@@ -131,7 +131,7 @@ function InnerApp() {
 
   useEffect(() => {
     void router.invalidate();
-  }, [auth.isLoading, auth.user]);
+  }, [auth.isLoading, auth.user?.id]);
 
   return <RouterProvider router={router} context={{ auth: toRouterAuth(auth) }} />;
 }

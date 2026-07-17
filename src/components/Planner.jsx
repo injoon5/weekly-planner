@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { planner } from '../styles/planner.js';
 import { PlannerProvider } from '../planner/PlannerProvider.jsx';
@@ -11,12 +12,20 @@ import { PrintDialog } from './PrintDialog.jsx';
 import { ShareAction } from './ShareAction.jsx';
 import { TodosAction } from './TodosAction.jsx';
 
+const PLANNER_SCROLL_LOCK = 'planner-scroll-lock';
+
 /**
  * Signed-in workspace shell: loads the workspace, then wires header clusters
  * (BoardNav / AccountMenu / TodosAction / ShareAction) around the shared
  * planner surface. The shared-link shell lives in SharedPlanner.jsx.
  */
 export function Planner() {
+  // Prefer a class over html:has(...) — cheaper style invalidation on mount.
+  useEffect(() => {
+    document.documentElement.classList.add(PLANNER_SCROLL_LOCK);
+    return () => document.documentElement.classList.remove(PLANNER_SCROLL_LOCK);
+  }, []);
+
   return (
     <PlannerProvider>
       <PlannerShell />

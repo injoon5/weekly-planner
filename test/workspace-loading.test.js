@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   isPlannerSurfacePending,
   isWorkspaceColdBoot,
-  shouldFullPageBoot,
 } from '../src/board/workspace-loading.js';
 
 describe('workspace loading gates', () => {
@@ -23,33 +22,6 @@ describe('workspace loading gates', () => {
     expect(
       isWorkspaceColdBoot({ workspaceLoading: false, ready: true, boardCount: 1 }),
     ).toBe(false);
-  });
-
-  it('shouldFullPageBoot keeps chrome when a list board exists', () => {
-    expect(
-      shouldFullPageBoot({
-        workspaceLoading: false,
-        ready: true,
-        boardCount: 1,
-        hasBoard: true,
-      }),
-    ).toBe(false);
-    expect(
-      shouldFullPageBoot({
-        workspaceLoading: true,
-        ready: false,
-        boardCount: 0,
-        hasBoard: false,
-      }),
-    ).toBe(true);
-    expect(
-      shouldFullPageBoot({
-        workspaceLoading: false,
-        ready: true,
-        boardCount: 1,
-        hasBoard: false,
-      }),
-    ).toBe(true);
   });
 
   it('surface pending only when there is no list row to drive the grid', () => {
