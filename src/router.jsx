@@ -10,6 +10,7 @@ import {
 } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { db } from './db/instant.js';
+import { RefreshBanner } from './components/RefreshBanner.jsx';
 import { Toaster } from './components/ui/Toaster.jsx';
 import { Landing } from './components/Landing.jsx';
 import { Planner } from './components/Planner.jsx';
@@ -131,6 +132,7 @@ export function App() {
     <div {...stylex.props(reset.app)}>
       <InnerApp />
       <Toaster />
+      <RefreshBanner />
     </div>
   );
 }

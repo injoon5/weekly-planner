@@ -133,6 +133,48 @@
   transform: translateY(100%);
 }
 
+/* ---- Refresh banner (deployment update) --------------------------------- */
+
+[data-ui-refresh-viewport] {
+  position: fixed;
+  left: 50%;
+  /* Sit on the week table, just under the planner header chrome. */
+  top: calc(64px + env(safe-area-inset-top));
+  width: 0;
+  height: 0;
+  z-index: 55;
+  pointer-events: none;
+}
+
+[data-ui-refresh-toast] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: auto;
+  transform: translateX(calc(-50% + var(--toast-swipe-movement-x, 0px)))
+    translateY(var(--toast-swipe-movement-y, 0px));
+  transition:
+    transform 0.22s cubic-bezier(0.2, 0, 0, 1),
+    opacity 0.18s ease;
+}
+
+[data-ui-refresh-toast][data-starting-style] {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-8px) scale(0.98);
+}
+
+[data-ui-refresh-toast][data-ending-style] {
+  opacity: 0;
+  transform: translateX(calc(-50% + var(--toast-swipe-movement-x, 0px)))
+    translateY(calc(var(--toast-swipe-movement-y, 0px) - 6px)) scale(0.98);
+}
+
+@media screen and (max-width: 720px) {
+  [data-ui-refresh-viewport] {
+    top: calc(56px + env(safe-area-inset-top));
+  }
+}
+
 /* ---- Toast pill ---------------------------------------------------------- */
 
 [data-ui-toast-viewport] {
