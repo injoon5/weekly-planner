@@ -1,5 +1,6 @@
 import { init, id } from '@instantdb/admin';
 import {
+  apiTokenLookupHashes,
   apiTokenPrefixOf,
   generateApiToken,
   hashApiToken,
@@ -19,6 +20,7 @@ import schema from '../db/schema.js';
 
 const APP_ID = process.env.INSTANT_APP_ID || process.env.VITE_INSTANT_APP_ID;
 const ADMIN_TOKEN = process.env.INSTANT_ADMIN_TOKEN;
+const API_TOKEN_PEPPER = process.env.API_TOKEN_PEPPER || '';
 
 // Per-token bucket, same token-bucket semantics as Instant's own rate limits
 // (https://www.instantdb.com/docs/rate-limits). Per-instance memory is fine
@@ -148,19 +150,25 @@ export default async function handler(req, res) {
   const db = init({ appId: APP_ID, adminToken: ADMIN_TOKEN, schema });
 
   try {
-    const hash = await hashApiToken(bearer);
-
-    const gate = limiter.take(hash);
+    // Peppered hash first (when configured), then legacy unpeppered.
+    const hashes = await apiTokenLookupHashes(bearer, API_TOKEN_PEPPER);
+    const gate = limiter.take(hashes[0]);
     if (!gate.ok) {
       return json(res, 429, { error: 'Rate limit exceeded' }, {
         'Retry-After': String(gate.retryAfterSec),
       });
     }
 
-    const { apiTokens } = await db.query({
-      apiTokens: { $: { where: { hash } }, owner: {} },
-    });
-    const tokenRow = apiTokens?.[0];
+    let tokenRow = null;
+    for (const hash of hashes) {
+      const { apiTokens } = await db.query({
+        apiTokens: { $: { where: { hash } }, owner: {} },
+      });
+      if (apiTokens?.[0]) {
+        tokenRow = apiTokens[0];
+        break;
+      }
+    }
     const owner = tokenRow?.owner;
     if (!tokenRow || !owner?.id || !owner.email) {
       return json(res, 401, { error: 'Invalid token' });
@@ -332,7 +340,7 @@ export default async function handler(req, res) {
         // Rotate the calling token: same row, new secret. The old value stops
         // working immediately; the response is the only time the new one is shown.
         const token = generateApiToken();
-        const newHash = await hashApiToken(token);
+        const newHash = await hashApiToken(token, API_TOKEN_PEPPER);
         await db.transact(
           db.tx.apiTokens[tokenRow.id].update({
             hash: newHash,

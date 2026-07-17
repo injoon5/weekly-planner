@@ -11,6 +11,7 @@ import { UiSelect } from './ui/UiSelect.jsx';
 import { Sheet } from './ui/Sheet.jsx';
 import { editor } from '../styles/editor.js';
 import { planner } from '../styles/planner.js';
+import { ui } from '../styles/ui.js';
 
 /**
  * Draft-until-save editor (Dialog on desktop, Drawer on mobile).
@@ -204,12 +205,12 @@ export function Editor({
             {readOnly ? (
               <>
                 <span {...stylex.props(editor.sp)} />
-                <Sheet.Close {...stylex.props(planner.btn, planner.btnPrimary)}>
+                <Sheet.Close {...stylex.props(planner.btn, ui.btnPrimary)}>
                   닫기
                 </Sheet.Close>
               </>
             ) : isNew ? (
-              <Sheet.Close {...stylex.props(planner.btn, planner.btnGhost)}>취소</Sheet.Close>
+              <Sheet.Close {...stylex.props(planner.btn, ui.btnGhost)}>취소</Sheet.Close>
             ) : (
               <HoldToConfirm
                 {...stylex.props(planner.btn, planner.btnDanger)}
@@ -224,7 +225,7 @@ export function Editor({
                 <span {...stylex.props(editor.sp)} />
                 <button
                   type="button"
-                  {...stylex.props(planner.btn, planner.btnPrimary)}
+                  {...stylex.props(planner.btn, ui.btnPrimary)}
                   onClick={() => onSave(local)}
                 >
                   {isNew ? '추가' : '완료'}

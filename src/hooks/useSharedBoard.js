@@ -76,7 +76,12 @@ export function useSharedBoard(token) {
     setBusy(true);
     setUnlockError('');
     try {
-      const hashed = await hashSharePassword(token, password.trim());
+      // PBKDF2 when the share row has a public salt; else legacy SHA-256(token:pw).
+      const hashed = await hashSharePassword(
+        token,
+        password.trim(),
+        share?.passwordSalt || null,
+      );
       writeShareUnlock(token, hashed);
       setManualSecret(hashed);
     } catch {

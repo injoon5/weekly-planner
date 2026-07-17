@@ -5,7 +5,6 @@ import { useTodayTodos } from '../hooks/useTodayTodos.js';
 import { planner } from '../styles/planner.js';
 import { todos as todoStyles } from '../styles/todos.js';
 import { TodoPanel } from './TodoPanel.jsx';
-import { toast } from './ui/Toaster.jsx';
 
 /**
  * Header trigger for today's to-do panel; the badge counts what's left.
@@ -13,7 +12,7 @@ import { toast } from './ui/Toaster.jsx';
  */
 export function TodosAction({ user, events }) {
   const [open, setOpen] = useState(false);
-  const api = useTodayTodos(user, events, toast);
+  const api = useTodayTodos(user, events);
   const remaining = api.todos.reduce((n, t) => n + (t.done ? 0 : 1), 0);
 
   return (

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { isOk } from '../lib/command-result.js';
 import { THEME_KEY } from '../lib/config.js';
+import { toast } from '../lib/notify.js';
 import { db } from '../db/instant.js';
 import { applyDocumentTheme, readBootTheme } from '../theme/theme-dom.js';
 import { commitTransaction } from '../db/transaction.js';
@@ -11,7 +12,7 @@ import { persistThemeTx } from '../db/tx/theme.js';
  * Print: beforeprint flips StyleX chrome to light; event colors use @media screen
  * dark rules so print inherits the base light palette without a second CSS dump.
  */
-export function useTheme(settings, onError) {
+export function useTheme(settings) {
   const [theme, setTheme] = useState(readBootTheme);
   const themeRef = useRef(theme);
   themeRef.current = theme;
@@ -45,7 +46,7 @@ export function useTheme(settings, onError) {
     if (!tx) return true;
     const result = await commitTransaction((transaction) => db.transact(transaction), tx, {
       message: '테마를 저장하지 못했어요',
-      onError,
+      onError: toast,
     });
     if (!isOk(result)) setTheme(previous);
     return isOk(result);

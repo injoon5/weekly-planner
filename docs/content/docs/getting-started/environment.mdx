@@ -11,8 +11,15 @@ Copy `.env.example` to `.env` for local work.
 
 | Variable | Used by | Purpose |
 | --- | --- | --- |
-| `INSTANT_APP_ID` | Instant CLI, Vercel APIs | Same value as `src/lib/config.js` → `APP_ID`. Also accepted as `VITE_INSTANT_APP_ID` in API routes. |
+| `VITE_INSTANT_APP_ID` | Browser (`src/lib/config.js`) | Instant app id for the Vite client. |
+| `INSTANT_APP_ID` | Instant CLI, Vercel APIs | Same value as `VITE_INSTANT_APP_ID`. Serverless also accepts `VITE_INSTANT_APP_ID`. |
 | `INSTANT_ADMIN_TOKEN` | `push:*`, `/api/invite`, `/api/share-meta` | Instant admin SDK. Set in Vercel **Preview** and **Production**. |
+
+## Optional
+
+| Variable | Used by | Purpose |
+| --- | --- | --- |
+| `API_TOKEN_PEPPER` | `/api/tokens`, `/api/v1` | Peppers REST API token hashes. Leave empty for legacy unpeppered hashes; verify still accepts both when set. |
 
 ## Auth origins (previews)
 
@@ -30,7 +37,7 @@ Copy `.env.example` to `.env` for local work.
 
 ## Browser vs server
 
-- **Browser** Instant client reads `APP_ID` from `src/lib/config.js` (not Vite `import.meta.env`).
+- **Browser** Instant client reads `import.meta.env.VITE_INSTANT_APP_ID` via `src/lib/config.js`.
 - **Serverless** routes read Instant credentials from process env.
 - Theme, print prefs, share unlocks, and legacy migration use **localStorage / sessionStorage** keys defined in `src/lib/config.js` — not env vars.
 

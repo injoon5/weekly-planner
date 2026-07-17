@@ -27,7 +27,7 @@ Members can **leave**; only owners invite/remove/change roles (except self-leave
 | Mode | Read secret | Notes |
 | --- | --- | --- |
 | Open | `secret = token` | Usable even before metadata loads |
-| Password | `secret = sha256(token:password)` | Unlock stored in **sessionStorage** |
+| Password | PBKDF2(password, `passwordSalt`) → `secret` | Legacy rows: `sha256(token:password)`. Unlock stored in **sessionStorage** |
 
 | Role | Edit |
 | --- | --- |

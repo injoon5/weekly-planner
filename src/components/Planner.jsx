@@ -1,11 +1,6 @@
-import { useEffect } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import { useBoardSwap } from '../hooks/useBoardSwap.js';
-import { useBoardTransfer } from '../hooks/useBoardTransfer.js';
-import { usePlannerRuntime } from '../hooks/usePlannerRuntime.js';
-import { useTheme } from '../hooks/useTheme.js';
-import { useWorkspace } from '../hooks/useWorkspace.js';
 import { planner } from '../styles/planner.js';
+import { PlannerProvider, usePlannerContext } from '../planner/planner-context.jsx';
 import { AccountMenu } from './AccountMenu.jsx';
 import { BoardNav } from './BoardNav.jsx';
 import { MoreMenu } from './MoreMenu.jsx';
@@ -14,7 +9,6 @@ import { PlannerSurface } from './PlannerSurface.jsx';
 import { PrintDialog } from './PrintDialog.jsx';
 import { ShareAction } from './ShareAction.jsx';
 import { TodosAction } from './TodosAction.jsx';
-import { toast } from './ui/Toaster.jsx';
 
 /**
  * Signed-in workspace shell: loads the workspace, then wires header clusters
@@ -22,15 +16,19 @@ import { toast } from './ui/Toaster.jsx';
  * planner surface. The shared-link shell lives in SharedPlanner.jsx.
  */
 export function Planner() {
+  return (
+    <PlannerProvider>
+      <PlannerShell />
+    </PlannerProvider>
+  );
+}
+
+function PlannerShell() {
   const {
     user,
     boards,
     board,
     events,
-    settings,
-    boardPrefs,
-    myRole,
-    canEdit,
     isOwner,
     showViewerBanner,
     setActiveId,
@@ -38,31 +36,12 @@ export function Planner() {
     surfacePending,
     error,
     ready,
-    bootNote,
-    clearBootNote,
-  } = useWorkspace();
-
-  const { theme, toggleTheme } = useTheme(settings, toast);
-  const runtime = usePlannerRuntime({
-    board,
-    events,
-    boardPrefs,
-    user,
-    settings,
-    canRenameColors: isOwner,
-    role: myRole,
-    canEdit,
-    onError: toast,
-  });
-  const transfer = useBoardTransfer({ user, boards, setActiveId, toast, isOwner });
-  const swapping = useBoardSwap(board?.id);
-
-  useEffect(() => {
-    if (!bootNote) return;
-    toast(bootNote);
-    clearBootNote();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot boot toast
-  }, [bootNote]);
+    theme,
+    toggleTheme,
+    runtime,
+    transfer,
+    swapping,
+  } = usePlannerContext();
 
   // Cold empty workspace only — keep chrome once a list board exists.
   if (isLoading || (!ready && !boards.length)) {

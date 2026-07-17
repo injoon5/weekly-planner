@@ -114,13 +114,13 @@ export function PrintDialog({ open, onOpenChange, draft, onPatch, onPrint }) {
           <div {...stylex.props(editor.dfoot)}>
             <button
               type="button"
-              {...stylex.props(planner.btn, planner.btnPrimary)}
+              {...stylex.props(planner.btn, ui.btnPrimary)}
               onClick={onPrint}
             >
               <Printer size={14} strokeWidth={1.75} />
               인쇄하기
             </button>
-            <Sheet.Close {...stylex.props(planner.btn, planner.btnGhost)}>취소</Sheet.Close>
+            <Sheet.Close {...stylex.props(planner.btn, ui.btnGhost)}>취소</Sheet.Close>
           </div>
           </Sheet.Popup>
         </Sheet.Viewport>

@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { isOk } from '../lib/command-result.js';
+import { toast } from '../lib/notify.js';
 import { db } from '../db/instant.js';
 import {
   buildExportPayload,
@@ -15,7 +16,7 @@ import { commitTransaction } from '../db/transaction.js';
  * hidden file input the shell renders; `askImport` clicks it, `onImportFile`
  * ingests the picked file. Payload logic lives in board-import-export.js.
  */
-export function useBoardTransfer({ user, boards, setActiveId, toast, isOwner = true }) {
+export function useBoardTransfer({ user, boards, setActiveId, isOwner = true }) {
   const fileRef = useRef(null);
 
   const doExport = async () => {

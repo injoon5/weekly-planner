@@ -36,6 +36,12 @@ const schema = i.schema({
       token: i.string().unique().indexed(),
       secret: i.string().indexed(),
       editSecret: i.string().indexed().optional(),
+      /**
+       * Public PBKDF2 salt for password-mode shares (hex). Readable on token
+       * lookup so guests can derive `secret` before Instant checks membership.
+       * Absent on legacy SHA-256(token:password) rows and open shares.
+       */
+      passwordSalt: i.string().optional(),
       mode: i.string(),
       role: i.string(),
       enabled: i.boolean(),

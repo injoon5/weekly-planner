@@ -51,9 +51,10 @@ src/
   router.jsx            # TanStack Router + Instant auth
   instant.js            # Instant client
   schema.js             # Instant schema (source of truth)
-  config.js             # APP_ID, grid constants, storage keys
+  config.js             # VITE_INSTANT_APP_ID → APP_ID, grid constants, storage keys
   components/           # UI
   hooks/                # Feature hooks
+  planner/              # PlannerProvider context for the signed-in shell
   tx/                   # Transaction builders
   styles/               # StyleX modules + CSS bridges
 instant.schema.ts       # CLI re-export of src/db/schema.js

@@ -21,21 +21,19 @@ describe('vercel SPA hosting', () => {
     );
     expect(spa).toBeTruthy();
     expect(spa.source).toMatch(/api/);
-    expect(rewrites.some((r) => r.destination?.startsWith('/api/'))).toBe(true);
   });
 
-  it('exposes one REST entrypoint per path depth (no Vite catch-all)', () => {
-    // [...path] only matches a single segment on non-Next Vercel projects, so
-    // /api/v1/boards/:id was platform NOT_FOUND while /api/v1/boards worked.
-    const entries = [
-      'api/v1/[a].js',
-      'api/v1/[a]/[b].js',
-      'api/v1/[a]/[b]/[c].js',
-      'src/server/rest-api.js',
-    ];
-    for (const rel of entries) {
-      expect(existsSync(join(root, rel)), rel).toBe(true);
-    }
+  it('routes nested REST paths through a single /api/v1 entry', () => {
+    // Vite-on-Vercel has no multi-segment catch-all, so nested
+    // `/api/v1/boards/:id/events` rewrites to one serverless file.
+    const rewrites = vercel.rewrites || [];
+    const rest = rewrites.find(
+      (r) => r.source === '/api/v1/(.*)' && r.destination === '/api/v1',
+    );
+    expect(rest).toBeTruthy();
+    expect(existsSync(join(root, 'api/v1.js'))).toBe(true);
+    expect(existsSync(join(root, 'src/server/rest-api.js'))).toBe(true);
+    expect(existsSync(join(root, 'api/v1/[a].js'))).toBe(false);
     expect(existsSync(join(root, 'api/v1/[...path].js'))).toBe(false);
   });
 });

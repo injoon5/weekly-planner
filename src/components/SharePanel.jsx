@@ -10,7 +10,6 @@ import { ui } from '../styles/ui.js';
 import { linkedId } from '../lib/links.js';
 import { isOk } from '../lib/command-result.js';
 import { sharePath } from '../sharing/share.js';
-import { toast } from './ui/Toaster.jsx';
 
 const MODE_OPTS = [
   { value: 'open', label: '공개 링크' },
@@ -173,7 +172,7 @@ export function SharePanel({
   refreshToken,
   myMembershipId,
 }) {
-  const actions = useShareActions({ board, isOwner, toast });
+  const actions = useShareActions({ board, isOwner });
   const share = enabledShareOf(board);
 
   return (

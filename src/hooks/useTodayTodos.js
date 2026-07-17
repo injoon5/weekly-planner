@@ -3,6 +3,7 @@ import { db } from '../db/instant.js';
 import { buildTodayTodos, weekdayFromPlannerDate } from '../board/models.js';
 import { commitTransaction } from '../db/transaction.js';
 import { checkTodoTx, uncheckTodoTx } from '../db/tx/todos.js';
+import { toast } from '../lib/notify.js';
 import { plannerDate } from '../lib/time.js';
 
 /**
@@ -19,7 +20,7 @@ import { plannerDate } from '../lib/time.js';
  * Requires the `todos` namespace + owner link to be pushed to Instant
  * (`npm run push:schema && npm run push:perms`).
  */
-export function useTodayTodos(user, events, onError) {
+export function useTodayTodos(user, events) {
   const [day, setDay] = useState(plannerDate);
 
   // Roll to the next planner day at the 06:00 boundary while the app is open.
@@ -65,7 +66,10 @@ export function useTodayTodos(user, events, onError) {
 
   const api = useMemo(() => {
     const run = (tx, message) =>
-      commitTransaction((transaction) => db.transact(transaction), tx, { message, onError });
+      commitTransaction((transaction) => db.transact(transaction), tx, {
+        message,
+        onError: toast,
+      });
 
     return {
       toggle(id) {
@@ -78,7 +82,7 @@ export function useTodayTodos(user, events, onError) {
         }
       },
     };
-  }, [day, checkedBy, user?.id, onError]);
+  }, [day, checkedBy, user?.id]);
 
   return { todos, date: day, ...api };
 }

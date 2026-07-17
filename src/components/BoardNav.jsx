@@ -3,7 +3,6 @@ import { useBoardLifecycle } from '../hooks/useBoardLifecycle.js';
 import { BoardMenu } from './BoardMenu.jsx';
 import { BoardTabs } from './BoardTabs.jsx';
 import { MenuPopover } from './ui/MenuPopover.jsx';
-import { toast } from './ui/Toaster.jsx';
 
 /**
  * Board tab strip + the active-tab board menu. The menu is anchored to the
@@ -21,7 +20,6 @@ export function BoardNav({ user, boards, board, events, isOwner, onSelect }) {
     events,
     setActiveId: onSelect,
     closeMenu,
-    toast,
     isOwner,
   });
 

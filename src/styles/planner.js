@@ -390,36 +390,12 @@ export const planner = stylex.create({
         bottom: '-7px',
       },
     },
-    '@media screen and (max-width: 720px)': {
+    [MOBILE]: {
       paddingInline: '9px',
     },
   },
 
-  btnPrimary: {
-    backgroundColor: colors.ink,
-    color: colors.onInk,
-    ':hover': {
-      opacity: 0.92,
-    },
-  },
-
-  btnPlain: {
-    backgroundColor: colors.paper,
-    color: colors.muted,
-    boxShadow: `inset 0 0 0 1px ${colors.edge}, 0 1px 2px rgba(27,27,32,.05)`,
-    ':hover': {
-      color: colors.ink,
-      boxShadow: `inset 0 0 0 1px ${colors.edgeH}, 0 1px 2px rgba(27,27,32,.06)`,
-    },
-  },
-
-  btnGhost: {
-    backgroundColor: 'transparent',
-    color: colors.muted,
-    ':hover': {
-      backgroundColor: colors.hov,
-    },
-  },
+  // btnPrimary / btnPlain / btnGhost live in ui.js — compose with planner.btn.
 
   btnDanger: {
     position: 'relative',
@@ -435,7 +411,7 @@ export const planner = stylex.create({
 
   btnLabelHide: {
     display: 'inline',
-    '@media screen and (max-width: 720px)': {
+    [MOBILE]: {
       display: 'none',
     },
   },

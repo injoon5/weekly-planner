@@ -1,5 +1,14 @@
-/** Single app id for the browser. Instant CLI reads the same value from `.env`. */
-export const APP_ID = '957d09d1-44df-4541-8ebe-70ba7f1388c1';
+/**
+ * Instant app id for the browser. Set `VITE_INSTANT_APP_ID` in `.env`
+ * (same value as `INSTANT_APP_ID` used by CLI + serverless).
+ */
+const envAppId = import.meta.env.VITE_INSTANT_APP_ID;
+if (!envAppId || typeof envAppId !== 'string') {
+  throw new Error(
+    'Missing VITE_INSTANT_APP_ID — copy .env.example to .env and set the Instant app id',
+  );
+}
+export const APP_ID = envAppId;
 
 /** Public docs site (Fumadocs). */
 export const DOCS_URL = 'https://docs.plan.ij5.dev';

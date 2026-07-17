@@ -4,6 +4,7 @@ import { Moon, MoreHorizontal, Printer, Sun } from 'lucide-react';
 import { fmtRange, fmtRepeat } from '../lib/time.js';
 import { menus } from '../styles/menus.js';
 import { planner } from '../styles/planner.js';
+import { ui } from '../styles/ui.js';
 import { PresenceAvatars } from './PresenceAvatars.jsx';
 import { PrintMeta } from './PrintMeta.jsx';
 import { ViewControls } from './ViewControls.jsx';
@@ -76,7 +77,7 @@ export function PlannerHeader({
         </MenuPopover>
 
         <button
-          {...stylex.props(planner.btn, planner.btnPlain)}
+          {...stylex.props(planner.btn, ui.btnPlain)}
           type="button"
           aria-label="인쇄"
           onClick={onPrint}
