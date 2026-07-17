@@ -304,21 +304,21 @@ export function Landing() {
                   <OpenPlannerButton onClick={toPlanner} />
                 ) : (
                   <>
-                    <GuestButton onSignedIn={afterGuestSignIn} />
                     <button
                       type="button"
                       onClick={toLogin}
-                      {...stylex.props(landing.btn, landing.btnGhost)}
+                      {...stylex.props(landing.btn, landing.btnPrimary)}
                     >
                       이메일로 로그인
                     </button>
+                    <GuestButton variant="ghost" onSignedIn={afterGuestSignIn} />
                   </>
                 )}
               </div>
               <p {...riseIn()} {...stylex.props(landing.ctaNote)}>
                 {signedIn
                   ? '이미 로그인되어 있어요. 시간표로 바로 이동할 수 있습니다.'
-                  : '이메일 없이 바로 시작 · 나중에 계정으로 저장하면 데이터는 그대로예요.'}
+                  : '이메일로 로그인하거나 · 게스트로 바로 시작해도 괜찮아요.'}
               </p>
             </div>
 
