@@ -5,22 +5,20 @@ import { useAppUpdate } from '../hooks/useAppUpdate.jsx';
 import { colors } from '../styles/tokens.stylex.js';
 import { ui } from '../styles/ui.js';
 
-const MOBILE = '@media screen and (max-width: 720px)';
-
 // Concentric: outer 16 = button 8 + padding 8.
 const s = stylex.create({
   banner: {
     position: 'absolute',
-    // Sit on the table’s top-right (pane has 12px side margin).
+    // Top-right of the week table card.
     top: '10px',
-    right: '22px',
+    right: '10px',
     left: 'auto',
     zIndex: 40,
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
     width: 'max-content',
-    maxWidth: 'min(360px, calc(100% - 36px))',
+    maxWidth: 'min(360px, calc(100% - 20px))',
     padding: '8px 8px 8px 14px',
     borderRadius: '16px',
     backgroundColor: colors.glass,
@@ -30,10 +28,6 @@ const s = stylex.create({
     boxShadow: `0 0 0 1px ${colors.edge}, 0 4px 12px rgba(20, 20, 26, 0.10), 0 16px 32px -16px rgba(20, 20, 26, 0.28)`,
     color: colors.ink,
     pointerEvents: 'auto',
-    [MOBILE]: {
-      right: '10px',
-      maxWidth: 'min(360px, calc(100% - 20px))',
-    },
     '@media print': {
       display: 'none',
     },
@@ -88,7 +82,7 @@ const s = stylex.create({
     display: 'block',
     flexShrink: 0,
     // Lucide RefreshCw sits optically high next to Hangul — nudge down.
-    transform: 'translateY(1.5px)',
+    transform: 'translateY(2px)',
   },
 });
 
