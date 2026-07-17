@@ -374,7 +374,7 @@ const lockedScheduleBody = (eventBlocks) => {
       width: bodyW,
       height: bodyH,
       backgroundImage:
-        'linear-gradient(150deg, rgba(233,109,79,0.10) 0%, rgba(255,255,255,0.62) 38%, rgba(78,158,219,0.12) 100%)',
+        'linear-gradient(150deg, rgba(233,109,79,0.09) 0%, rgba(255,255,255,0.38) 45%, rgba(78,158,219,0.11) 100%)',
     }),
     abs({
       left: 0,
@@ -382,7 +382,7 @@ const lockedScheduleBody = (eventBlocks) => {
       width: bodyW,
       height: bodyH,
       backgroundImage:
-        'radial-gradient(ellipse at 55% 36%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.18) 45%, rgba(255,255,255,0) 72%)',
+        'radial-gradient(ellipse at 52% 40%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 70%)',
     }),
   );
 };
