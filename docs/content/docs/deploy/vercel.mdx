@@ -17,16 +17,15 @@ description: SPA rewrites, headers, env scopes, and OG URL injection for the pro
 ## REST API routes (`/api/v1`)
 
 Vite projects on Vercel only get **single-segment** dynamic API paths — Next.js
-`[...path]` catch-alls are not supported and nested URLs return platform
-`NOT_FOUND`. Depth is explicit instead:
+`[...path]` catch-alls are not supported. Nested REST URLs rewrite to one
+serverless entry:
 
-| File | Matches |
+| Piece | Role |
 | --- | --- |
-| `api/v1/[a].js` | `/api/v1/me`, `/boards`, `/todos`, … |
-| `api/v1/[a]/[b].js` | `/boards/:id`, `/events/:id`, `/token/refresh`, … |
-| `api/v1/[a]/[b]/[c].js` | `/boards/:id/events` |
+| `vercel.json` rewrite `/api/v1/(.*)` → `/api/v1` | Nested paths hit one function |
+| `api/v1.js` | Re-exports `src/server/rest-api.js` |
 
-All three re-export `src/server/rest-api.js`.
+So `/api/v1/boards/:id/events` and `/api/v1/me` share the same handler.
 
 ## Environment (Preview + Production)
 

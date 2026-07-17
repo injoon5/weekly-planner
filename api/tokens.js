@@ -10,6 +10,7 @@ import schema from '../src/db/schema.js';
 
 const APP_ID = process.env.INSTANT_APP_ID || process.env.VITE_INSTANT_APP_ID;
 const ADMIN_TOKEN = process.env.INSTANT_ADMIN_TOKEN;
+const API_TOKEN_PEPPER = process.env.API_TOKEN_PEPPER || '';
 
 /** Personal-access-token cap per account. */
 const MAX_TOKENS = 10;
@@ -124,7 +125,7 @@ export default async function handler(req, res) {
         return json(res, 404, { error: '토큰을 찾을 수 없어요' });
       }
       const token = generateApiToken();
-      const hash = await hashApiToken(token);
+      const hash = await hashApiToken(token, API_TOKEN_PEPPER);
       await db.transact(
         db.tx.apiTokens[row.id].update({ hash, prefix: apiTokenPrefixOf(token) }),
       );
@@ -136,7 +137,7 @@ export default async function handler(req, res) {
       return json(res, 400, { error: `토큰은 최대 ${MAX_TOKENS}개까지 만들 수 있어요` });
     }
     const token = generateApiToken();
-    const hash = await hashApiToken(token);
+    const hash = await hashApiToken(token, API_TOKEN_PEPPER);
     const tid = id();
     const row = {
       name: apiTokenName(body.name),

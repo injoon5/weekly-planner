@@ -3,6 +3,7 @@ import { Separator } from '@base-ui/react/separator';
 import * as stylex from '@stylexjs/stylex';
 import { Download, Upload } from 'lucide-react';
 import { menus } from '../styles/menus.js';
+import { ui } from '../styles/ui.js';
 
 /** Extra actions for the header's ⋯ popover: JSON export/import + usage hints. */
 export function MoreMenu({ onExport, onImport }) {
@@ -23,11 +24,11 @@ export function MoreMenu({ onExport, onImport }) {
         </Popover.Close>
       )}
       <Separator {...stylex.props(menus.mdiv)} />
-      <div {...stylex.props(menus.mcap, menus.hintFine)}>
+      <div {...stylex.props(menus.mcap, ui.hintFine)}>
         빈 칸을 클릭하거나 드래그해 일정을 만들고, 블록을 끌어 옮기거나 위·아래 가장자리로 길이를 조절할 수
         있어요. 모든 변경은 계정에 실시간 동기화됩니다.
       </div>
-      <div {...stylex.props(menus.mcap, menus.hintCoarse)}>
+      <div {...stylex.props(menus.mcap, ui.hintCoarse)}>
         빈 칸을 탭해 일정을 추가하고, 블록을 길게 눌러 옮길 수 있어요. 모든 변경은 계정에 실시간
         동기화됩니다.
       </div>

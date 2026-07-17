@@ -15,7 +15,10 @@ import {
 import { db } from '../db/instant.js';
 import { applyDocumentTheme, readBootTheme } from '../theme/theme-dom.js';
 import { landing } from '../styles/landing.js';
+import { ui } from '../styles/ui.js';
+import { useLandingPresence } from '../hooks/useLandingPresence.js';
 import { IconSwap } from './ui/IconSwap.jsx';
+import { PresenceAvatars } from './PresenceAvatars.jsx';
 import { toast } from './ui/Toaster.jsx';
 
 /** Pre-auth theme toggle — no Instant settings yet, so we drive the DOM + cache
@@ -39,8 +42,8 @@ function useLocalTheme() {
 
 const BrandMark = ({ large }) => (
   <span {...stylex.props(landing.mark, large && landing.markLg)} aria-hidden="true">
-    <i {...stylex.props(landing.markA)} />
-    <i {...stylex.props(landing.markB)} />
+    <i {...stylex.props(ui.markA)} />
+    <i {...stylex.props(ui.markB)} />
   </span>
 );
 
@@ -226,6 +229,7 @@ export function Landing() {
   const auth = db.useAuth();
   const signedIn = Boolean(auth.user);
   const { theme, toggle } = useLocalTheme();
+  const { peers } = useLandingPresence();
   const [scrolled, setScrolled] = useState(false);
   const stagger = useRef(0);
 
@@ -324,16 +328,8 @@ export function Landing() {
             </div>
 
             <div {...riseIn()} {...stylex.props(landing.previewWrap)}>
-              <div {...stylex.props(landing.presence)}>
-                <span {...stylex.props(landing.avatars)}>
-                  <span {...stylex.props(landing.avatar)} style={{ background: '#E96D4F' }}>
-                    지
-                  </span>
-                  <span {...stylex.props(landing.avatar)} style={{ background: '#4E9EDB' }}>
-                    민
-                  </span>
-                </span>
-                <span {...stylex.props(landing.presenceTxt)}>2명 편집 중</span>
+              <div {...stylex.props(landing.presenceSlot)}>
+                <PresenceAvatars peers={peers} />
               </div>
               <PlannerPreview />
             </div>

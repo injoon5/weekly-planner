@@ -21,28 +21,9 @@ export const auth = stylex.create({
     paddingInline: '24px',
     boxShadow: `0 0 0 1px ${colors.edge}, 0 4px 12px rgba(20,20,26,.06), 0 24px 48px -20px rgba(20,20,26,.28)`,
   },
-  mark: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '10px',
-    backgroundColor: colors.ink,
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '3px',
-    padding: '8px',
+  /** Spacing under the shared ui.mark brand tile. */
+  markGap: {
     marginBottom: '18px',
-  },
-  markA: {
-    borderRadius: '3px',
-    backgroundColor: '#E96D4F',
-    alignSelf: 'end',
-    height: '14px',
-  },
-  markB: {
-    borderRadius: '3px',
-    backgroundColor: '#4E9EDB',
-    alignSelf: 'start',
-    height: '12px',
   },
   title: {
     margin: 0,

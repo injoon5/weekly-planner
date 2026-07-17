@@ -364,7 +364,7 @@ export function Account() {
 
   const { data, isLoading, error } = db.useQuery(user ? { settings: {} } : null);
   const settings = data?.settings?.[0] || null;
-  const { theme, persistTheme } = useTheme(settings, toast);
+  const { theme, persistTheme } = useTheme(settings);
 
   if (!user || isLoading) {
     return <div {...stylex.props(planner.boot)}>불러오는 중…</div>;

@@ -1,4 +1,5 @@
 import { fail, ok } from '../lib/command-result.js';
+import { toast } from '../lib/notify.js';
 import { db } from '../db/instant.js';
 import { memberRoleTxs, removeMemberTxs } from '../sharing/member-policy.js';
 import {
@@ -30,7 +31,7 @@ function errorMessage(err, fallback) {
 }
 
 /** Share links + member invite/role — owner-only except leave. */
-export function useShareActions({ board, isOwner = true, toast }) {
+export function useShareActions({ board, isOwner = true }) {
   const activeShare = () => activeShareOf(board);
 
   const failWith = (message, error) => {

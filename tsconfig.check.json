@@ -12,6 +12,7 @@
     "skipLibCheck": true
   },
   "include": [
+    "src/vite-env.d.ts",
     "src/board/legacy.js",
     "src/board/models.js",
     "src/board/prefs.js",

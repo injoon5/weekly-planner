@@ -1,7 +1,10 @@
 /**
  * Personal access tokens for the REST API. Pure helpers shared by the
- * serverless functions and tests — only the SHA-256 hash of a token is ever
- * stored; the plaintext is shown once at creation/rotation.
+ * serverless functions and tests — only a hash of the token is ever stored;
+ * the plaintext is shown once at creation/rotation.
+ *
+ * Hash = SHA-256(pepper ? `${pepper}:${token}` : token). Pepper comes from
+ * `API_TOKEN_PEPPER` on the server; leave unset for legacy unpeppered hashes.
  */
 
 export const API_TOKEN_PREFIX = 'wp_';
@@ -36,11 +39,30 @@ export function apiTokenPrefixOf(token) {
   return String(token || '').slice(0, DISPLAY_CHARS);
 }
 
-/** @param {string} token @returns {Promise<string>} hex SHA-256 */
-export async function hashApiToken(token) {
-  const data = new TextEncoder().encode(String(token));
+/**
+ * @param {string} token
+ * @param {string | null | undefined} [pepper]
+ * @returns {Promise<string>} hex SHA-256
+ */
+export async function hashApiToken(token, pepper = '') {
+  const material = pepper ? `${pepper}:${token}` : String(token);
+  const data = new TextEncoder().encode(material);
   const digest = await globalThis.crypto.subtle.digest('SHA-256', data);
   return hex(new Uint8Array(digest));
+}
+
+/**
+ * Candidate hashes to look up for a bearer token (peppered first when set,
+ * then legacy unpeppered so existing rows keep working after pepper is added).
+ * @param {string} token
+ * @param {string | null | undefined} [pepper]
+ * @returns {Promise<string[]>}
+ */
+export async function apiTokenLookupHashes(token, pepper = '') {
+  const hashes = [];
+  if (pepper) hashes.push(await hashApiToken(token, pepper));
+  hashes.push(await hashApiToken(token, ''));
+  return [...new Set(hashes)];
 }
 
 /** Normalize a user-supplied token label. */

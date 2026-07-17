@@ -2,6 +2,7 @@ import * as stylex from '@stylexjs/stylex';
 import { colors, layout } from './tokens.stylex.js';
 
 const MOBILE = '@media screen and (max-width: 720px)';
+const PRINT = '@media print';
 const TPLC = `${layout.gutW} repeat(7, minmax(${layout.colMin}, 1fr))`;
 const GRID_BODY_HEIGHT = 'var(--grid-body-height)';
 const GRID_HOUR_HEIGHT = 'var(--grid-hour-height)';
@@ -46,19 +47,7 @@ export const grid = stylex.create({
     },
   },
 
-  emptyHintFine: {
-    display: 'inline',
-    '@media (pointer: coarse)': {
-      display: 'none',
-    },
-  },
-
-  emptyHintCoarse: {
-    display: 'none',
-    '@media (pointer: coarse)': {
-      display: 'inline',
-    },
-  },
+  // emptyHintFine / emptyHintCoarse → ui.hintFine / ui.hintCoarse
 
   pane: {
     flex: 1,
@@ -130,16 +119,8 @@ export const grid = stylex.create({
     WebkitBackdropFilter: 'blur(10px) saturate(1.5)',
     backdropFilter: 'blur(10px) saturate(1.5)',
     borderBottom: `1px solid ${colors.line}`,
-    '@media print': {
-      backgroundColor: '#fff',
-      backdropFilter: 'none',
-      WebkitBackdropFilter: 'none',
+    [PRINT]: {
       overflow: 'visible',
-    },
-    '@media (prefers-reduced-transparency: reduce)': {
-      backgroundColor: colors.paper,
-      backdropFilter: 'none',
-      WebkitBackdropFilter: 'none',
     },
   },
 
@@ -177,16 +158,6 @@ export const grid = stylex.create({
     WebkitBackdropFilter: 'blur(8px)',
     backdropFilter: 'blur(8px)',
     borderRight: `1px solid ${colors.line}`,
-    '@media print': {
-      backgroundColor: '#fff',
-      backdropFilter: 'none',
-      WebkitBackdropFilter: 'none',
-    },
-    '@media (prefers-reduced-transparency: reduce)': {
-      backgroundColor: colors.paper,
-      backdropFilter: 'none',
-      WebkitBackdropFilter: 'none',
-    },
   },
 
   dcell: {
@@ -267,17 +238,9 @@ export const grid = stylex.create({
     WebkitBackdropFilter: 'blur(8px)',
     backdropFilter: 'blur(8px)',
     borderRight: `1px solid ${colors.line}`,
-    '@media print': {
+    [PRINT]: {
       position: 'relative',
       left: 'auto',
-      backgroundColor: '#fff',
-      backdropFilter: 'none',
-      WebkitBackdropFilter: 'none',
-    },
-    '@media (prefers-reduced-transparency: reduce)': {
-      backgroundColor: colors.paper,
-      backdropFilter: 'none',
-      WebkitBackdropFilter: 'none',
     },
   },
 

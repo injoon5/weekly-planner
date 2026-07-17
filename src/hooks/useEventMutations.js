@@ -1,4 +1,5 @@
 import { isOk } from '../lib/command-result.js';
+import { toast } from '../lib/notify.js';
 import { db } from '../db/instant.js';
 import {
   createEventTx,
@@ -9,11 +10,11 @@ import {
 import { commitTransaction } from '../db/transaction.js';
 
 /** Event CRUD only — shared by workspace + share shells. */
-export function useEventMutations({ board, canEdit = true, ruleParams = null, onError }) {
+export function useEventMutations({ board, canEdit = true, ruleParams = null }) {
   const transact = async (tx, message) => {
     return await commitTransaction((transaction) => db.transact(transaction), tx, {
       message,
-      onError,
+      onError: toast,
     });
   };
 

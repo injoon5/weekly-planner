@@ -17,10 +17,9 @@ export function usePlannerRuntime({
   canRenameColors = false,
   storageKey,
   guestLabel,
-  onError,
 }) {
   const clock = usePlannerClock();
-  const eventsApi = useEventMutations({ board, canEdit, ruleParams, onError });
+  const eventsApi = useEventMutations({ board, canEdit, ruleParams });
   const session = useEditorSession({ events, eventsApi });
   const views = useViewControls({
     board,
@@ -28,7 +27,6 @@ export function usePlannerRuntime({
     user,
     canRenameColors,
     storageKey,
-    onError,
   });
   const presence = useBoardPresence({
     boardId: board?.id,

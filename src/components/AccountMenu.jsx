@@ -7,6 +7,7 @@ import { CircleUserRound, LogOut, Settings2, UserPlus } from 'lucide-react';
 import { db } from '../db/instant.js';
 import { menus } from '../styles/menus.js';
 import { planner } from '../styles/planner.js';
+import { ui } from '../styles/ui.js';
 import { UpgradeDialog } from './UpgradeDialog.jsx';
 import { MenuPopover } from './ui/MenuPopover.jsx';
 
@@ -59,7 +60,7 @@ export function AccountMenu({ user }) {
     <>
       {isGuest && (
         <button
-          {...stylex.props(planner.btn, planner.btnPlain)}
+          {...stylex.props(planner.btn, ui.btnPlain)}
           type="button"
           onClick={() => setUpgradeOpen(true)}
         >

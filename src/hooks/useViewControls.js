@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { isOk } from '../lib/command-result.js';
 import { COLOR_LABELS_KO, PALETTE } from '../lib/config.js';
+import { toast } from '../lib/notify.js';
 import { db } from '../db/instant.js';
 import {
   defaultViewPrefs,
@@ -44,7 +45,6 @@ export function useViewControls({
   user,
   canRenameColors,
   storageKey,
-  onError,
 }) {
   const boardId = board?.id;
   const labelsFromBoard = useMemo(() => parseColorLabels(board?.colorLabels), [board?.colorLabels]);
@@ -78,11 +78,11 @@ export function useViewControls({
       return isOk(
         await commitTransaction((transaction) => db.transact(transaction), tx, {
           message: '보기 설정을 저장하지 못했어요',
-          onError,
+          onError: toast,
         }),
       );
     },
-    [user, boardId, boardPrefs?.id, onError],
+    [user, boardId, boardPrefs?.id],
   );
 
   const applyPrefs = useCallback(
@@ -128,7 +128,7 @@ export function useViewControls({
     return isOk(
       await commitTransaction((transaction) => db.transact(transaction), tx, {
         message: '색상 이름을 저장하지 못했어요',
-        onError,
+        onError: toast,
       }),
     );
   };

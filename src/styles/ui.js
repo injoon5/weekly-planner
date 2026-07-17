@@ -1,6 +1,10 @@
 import * as stylex from '@stylexjs/stylex';
 import { colors, layout } from './tokens.stylex.js';
 
+const COARSE = '@media (pointer: coarse)';
+const PRINT = '@media print';
+const REDUCE_TRANSPARENCY = '@media (prefers-reduced-transparency: reduce)';
+
 export const reset = stylex.create({
   html: {
     height: '100%',
@@ -138,5 +142,53 @@ export const ui = stylex.create({
     backgroundColor: colors.edgeH,
     margin: '-4px auto 10px',
     flexShrink: 0,
+  },
+
+  /** Brand mark tiles (Login + Landing). */
+  mark: {
+    width: '36px',
+    height: '36px',
+    borderRadius: '10px',
+    backgroundColor: colors.ink,
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '3px',
+    padding: '8px',
+    flexShrink: 0,
+  },
+  markA: {
+    borderRadius: '3px',
+    backgroundColor: '#E96D4F',
+    alignSelf: 'end',
+    height: '14px',
+  },
+  markB: {
+    borderRadius: '3px',
+    backgroundColor: '#4E9EDB',
+    alignSelf: 'start',
+    height: '12px',
+  },
+
+  hintFine: {
+    display: 'block',
+    [COARSE]: { display: 'none' },
+  },
+  hintCoarse: {
+    display: 'none',
+    [COARSE]: { display: 'block' },
+  },
+
+  /** Compose onto frosted surfaces: print + reduced-transparency fallbacks. */
+  glassOpaque: {
+    [PRINT]: {
+      backgroundColor: '#fff',
+      backdropFilter: 'none',
+      WebkitBackdropFilter: 'none',
+    },
+    [REDUCE_TRANSPARENCY]: {
+      backgroundColor: colors.paper,
+      backdropFilter: 'none',
+      WebkitBackdropFilter: 'none',
+    },
   },
 });

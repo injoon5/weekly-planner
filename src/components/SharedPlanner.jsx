@@ -10,12 +10,11 @@ import { auth as authStyles } from '../styles/auth.js';
 import { PrintDialog } from './PrintDialog.jsx';
 import { PlannerHeader } from './PlannerHeader.jsx';
 import { PlannerSurface } from './PlannerSurface.jsx';
-import { toast } from './ui/Toaster.jsx';
 
 export function SharedPlanner() {
   const { token } = useParams({ from: '/s/$token' });
   const shared = useSharedBoard(token);
-  const { theme, toggleTheme } = useTheme(null, toast);
+  const { theme, toggleTheme } = useTheme(null);
   const runtime = usePlannerRuntime({
     board: shared.board,
     events: shared.events,
@@ -27,7 +26,6 @@ export function SharedPlanner() {
     storageKey: token,
     role: shared.role,
     guestLabel: shared.canEdit ? '공유 편집' : '공유 보기',
-    onError: toast,
   });
 
   useEffect(() => {
@@ -51,7 +49,7 @@ export function SharedPlanner() {
       <div {...stylex.props(planner.boot)}>
         <div {...stylex.props(planner.bootStack)}>
           <div>공유 링크를 찾을 수 없어요</div>
-          <Link to="/login" {...stylex.props(planner.btn, planner.btnPlain)}>
+          <Link to="/login" {...stylex.props(planner.btn, ui.btnPlain)}>
             로그인
           </Link>
         </div>

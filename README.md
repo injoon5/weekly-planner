@@ -61,7 +61,7 @@ vercel.json
 
 ## Instant setup
 
-1. App id in **`src/lib/config.js`** (`APP_ID`). Same value in `.env` as `INSTANT_APP_ID`.
+1. Copy `.env.example` → `.env` and set **`INSTANT_APP_ID`** and **`VITE_INSTANT_APP_ID`** to the same Instant app id (CLI/server vs Vite client).
 2. Admin token in `.env` from the [Instant dashboard](https://www.instantdb.com/dash).
 3. Optional lock:
 

@@ -22,9 +22,9 @@ export function Login() {
   return (
     <main {...stylex.props(auth.root)}>
       <div {...stylex.props(auth.card)}>
-        <div {...stylex.props(auth.mark)} aria-hidden="true">
-          <i {...stylex.props(auth.markA)} />
-          <i {...stylex.props(auth.markB)} />
+        <div {...stylex.props(ui.mark, auth.markGap)} aria-hidden="true">
+          <i {...stylex.props(ui.markA)} />
+          <i {...stylex.props(ui.markB)} />
         </div>
 
         {!sentEmail ? (

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   API_TOKEN_PREFIX,
+  apiTokenLookupHashes,
   apiTokenName,
   apiTokenPrefixOf,
   generateApiToken,
@@ -39,6 +40,25 @@ describe('api tokens', () => {
     expect(a).toBe(b);
     expect(a).toMatch(/^[0-9a-f]{64}$/);
     expect(a).not.toContain(token.slice(3));
+  });
+
+  it('peppers the hash when a pepper is provided', async () => {
+    const token = generateApiToken();
+    const plain = await hashApiToken(token);
+    const peppered = await hashApiToken(token, 's3cret');
+    expect(peppered).not.toBe(plain);
+    expect(peppered).toBe(await hashApiToken(token, 's3cret'));
+  });
+
+  it('lookup hashes prefer peppered then legacy', async () => {
+    const token = generateApiToken();
+    const withPepper = await apiTokenLookupHashes(token, 'pep');
+    expect(withPepper).toEqual([
+      await hashApiToken(token, 'pep'),
+      await hashApiToken(token, ''),
+    ]);
+    const legacyOnly = await apiTokenLookupHashes(token, '');
+    expect(legacyOnly).toEqual([await hashApiToken(token, '')]);
   });
 
   it('keeps a short display prefix', () => {

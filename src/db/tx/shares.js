@@ -1,6 +1,9 @@
 import { db, id } from '../instant.js';
 
-export function createShareTx(boardId, { token, secret, editSecret, mode, role, enabled = true }) {
+export function createShareTx(
+  boardId,
+  { token, secret, editSecret, mode, role, enabled = true, passwordSalt },
+) {
   const sid = id();
   return {
     sid,
@@ -13,6 +16,7 @@ export function createShareTx(boardId, { token, secret, editSecret, mode, role, 
         enabled,
         createdAt: Date.now(),
         ...(editSecret ? { editSecret } : {}),
+        ...(passwordSalt ? { passwordSalt } : {}),
       })
       .link({ board: boardId }),
   };
@@ -20,7 +24,7 @@ export function createShareTx(boardId, { token, secret, editSecret, mode, role, 
 
 export function patchShareTx(shareId, patch) {
   const clean = {};
-  for (const k of ['token', 'secret', 'editSecret', 'mode', 'role', 'enabled']) {
+  for (const k of ['token', 'secret', 'editSecret', 'mode', 'role', 'enabled', 'passwordSalt']) {
     if (patch[k] !== undefined) clean[k] = patch[k];
   }
   if (!Object.keys(clean).length) return null;

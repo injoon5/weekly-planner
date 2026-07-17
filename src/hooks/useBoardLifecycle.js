@@ -1,4 +1,5 @@
 import { isOk } from '../lib/command-result.js';
+import { toast } from '../lib/notify.js';
 import { db } from '../db/instant.js';
 import { nextBoardName, nextBoardSortOrder } from '../board/models.js';
 import { defaultBoardRange } from '../lib/time.js';
@@ -18,7 +19,6 @@ export function useBoardLifecycle({
   events,
   setActiveId,
   closeMenu,
-  toast,
   isOwner = true,
 }) {
   const commit = async (transaction, message) =>

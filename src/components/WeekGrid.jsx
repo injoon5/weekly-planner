@@ -25,6 +25,7 @@ import { fmt } from '../lib/time.js';
 import { compactLayout, layout } from '../styles/tokens.stylex.js';
 import { grid } from '../styles/grid.js';
 import { planner } from '../styles/planner.js';
+import { ui } from '../styles/ui.js';
 import { GridCursors } from './GridCursors.jsx';
 import { GridEventBlock } from './GridEventBlock.jsx';
 import { RefreshBanner } from './RefreshBanner.jsx';
@@ -155,11 +156,11 @@ export function WeekGrid({
       <RefreshBanner />
 
       <div
-        {...stylex.props(grid.headClip)}
+        {...stylex.props(grid.headClip, ui.glassOpaque)}
         ref={headClipRef}
         style={{ gridTemplateColumns: headColTemplate }}
       >
-        <div {...stylex.props(grid.corner)}>시간</div>
+        <div {...stylex.props(grid.corner, ui.glassOpaque)}>시간</div>
         <div {...stylex.props(grid.headMask)}>
           <div
             {...stylex.props(grid.headTrack)}
@@ -202,7 +203,7 @@ export function WeekGrid({
               if (gestureRef.current) e.preventDefault();
             }}
           >
-          <div {...stylex.props(grid.gutter)} ref={gutRef}>
+          <div {...stylex.props(grid.gutter, ui.glassOpaque)} ref={gutRef}>
             {Array.from({ length: 23 }, (_, k) => {
               const h = k + 1;
               const m = h * 60;
@@ -331,10 +332,10 @@ export function WeekGrid({
 
       {!readOnly && events.length === 0 && !drag && (
         <div {...stylex.props(grid.emptyHint)} aria-hidden>
-          <span {...stylex.props(grid.emptyHintFine)}>
+          <span {...stylex.props(ui.hintFine)}>
             빈 칸을 클릭하거나 드래그해 일정을 만들어요
           </span>
-          <span {...stylex.props(grid.emptyHintCoarse)}>빈 칸을 탭해 일정을 추가해요</span>
+          <span {...stylex.props(ui.hintCoarse)}>빈 칸을 탭해 일정을 추가해요</span>
         </div>
       )}
     </main>

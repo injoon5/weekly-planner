@@ -101,18 +101,6 @@ export const landing = stylex.create({
     padding: '9px',
     gap: '3.5px',
   },
-  markA: {
-    borderRadius: '2.5px',
-    backgroundColor: CORAL,
-    alignSelf: 'end',
-    height: '9px',
-  },
-  markB: {
-    borderRadius: '2.5px',
-    backgroundColor: BLUE,
-    alignSelf: 'start',
-    height: '8px',
-  },
 
   // ── Layout shell ───────────────────────────────────────────────────────
   shell: {
@@ -449,36 +437,14 @@ export const landing = stylex.create({
       boxShadow: `0 0 0 1.5px ${colors.nowHalo}`,
     },
   },
-  // Floating presence avatars over the preview — hints at real-time collab.
-  presence: {
+  // Real Instant presence (PresenceAvatars) sits above the preview.
+  presenceSlot: {
     position: 'absolute',
     bottom: 'calc(100% + 12px)',
     right: '4px',
     zIndex: 10,
-    display: 'inline-flex',
-    paddingBlock: '5px',
-    paddingInline: '9px 11px',
-    borderRadius: '99px',
-    backgroundColor: colors.paper,
-    boxShadow: `0 0 0 1px ${colors.edge}, 0 10px 24px -12px rgba(20,20,26,.4)`,
-    alignItems: 'center',
-    gap: '7px',
     [TIGHT]: { display: 'none' },
   },
-  avatars: { display: 'inline-flex' },
-  avatar: {
-    width: '20px',
-    height: '20px',
-    borderRadius: '99px',
-    marginLeft: '-6px',
-    boxShadow: `0 0 0 2px ${colors.paper}`,
-    display: 'grid',
-    placeItems: 'center',
-    fontSize: '9px',
-    fontWeight: 700,
-    color: '#fff',
-  },
-  presenceTxt: { fontSize: '10.5px', fontWeight: 560, color: colors.muted },
 
   // ── Section scaffolding ────────────────────────────────────────────────
   section: {

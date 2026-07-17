@@ -391,18 +391,4 @@ export const menus = stylex.create({
     transform: 'scale(.9)',
   },
 
-  hintFine: {
-    display: 'block',
-    '@media (pointer: coarse)': {
-      display: 'none',
-    },
-  },
-
-  hintCoarse: {
-    display: 'none',
-    '@media (pointer: coarse)': {
-      display: 'block',
-    },
-  },
-
 });
