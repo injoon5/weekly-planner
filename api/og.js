@@ -367,22 +367,14 @@ const lockedScheduleBody = (eventBlocks) => {
     },
     abs({ left: 0, top: 0, bottom: 0, width: 1, backgroundColor: T.line }),
     ...scheduleBody(eventBlocks, false),
-    // Soft brand-tinted frost — readable as a veil, not a hard white sheet.
+    // Soft brand-tinted frost — coral → sky, low opacity.
     abs({
       left: 0,
       top: 0,
       width: bodyW,
       height: bodyH,
       backgroundImage:
-        'linear-gradient(150deg, rgba(233,109,79,0.09) 0%, rgba(255,255,255,0.38) 45%, rgba(78,158,219,0.11) 100%)',
-    }),
-    abs({
-      left: 0,
-      top: 0,
-      width: bodyW,
-      height: bodyH,
-      backgroundImage:
-        'radial-gradient(ellipse at 52% 40%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 70%)',
+        'linear-gradient(145deg, rgba(233,109,79,0.14) 0%, rgba(255,255,255,0.32) 48%, rgba(78,158,219,0.16) 100%)',
     }),
   );
 };
@@ -390,13 +382,13 @@ const lockedScheduleBody = (eventBlocks) => {
 /**
  * Lock sits between 화–수 (biased toward 수) and between the 11–12 hour rows.
  * Absolute coords — flex centering drifts badly in Satori.
- * Padlock mass hangs low in the SVG, so cy is biased toward 11 for optical mid.
+ * Sized to fit the 86px hour band; cy biased up because the SVG mass hangs low.
  */
-const LOCK_SIZE = 108;
+const LOCK_SIZE = 92;
 const lockedOverlay = () => {
-  // Just past the 화|수 seam into 수 — between the two, closer to 수.
-  const cx = day(2) + COL * 0.22;
-  const cy = y(11) + ROW * 0.38;
+  // Past the 화|수 seam into 수 — between the two, clearly closer to 수.
+  const cx = day(2) + COL * 0.28;
+  const cy = y(11) + ROW * 0.4;
   return [
     abs(
       {
