@@ -87,8 +87,10 @@ const DAYS = [
   ['목', 'Thu'],
   ['금', 'Fri'],
 ];
-const NOW_START = 260; // 13:20, minutes from 09:00
 const PXPM = 270 / 540; // px per minute over the 9-hour window
+/** Demo now-line vertical band (minutes from 09:00) — mid-day, not near edges. */
+const NOW_MIN = 120; // 11:00
+const NOW_MAX = 390; // 15:30
 const PREVIEW_BLOCKS = [
   { day: 0, start: 60, dur: 90, color: 'coral', title: '디자인 리뷰', time: '10:00' },
   { day: 0, start: 360, dur: 90, color: 'green', title: '운동', time: '15:00' },
@@ -105,8 +107,14 @@ function previewTodayCol(date = new Date()) {
   return jsDay >= 1 && jsDay <= 5 ? jsDay - 1 : null;
 }
 
+/** Random minutes-from-09:00 for the demo now-line, clamped to a mid-grid band. */
+function previewNowStart(rand = Math.random) {
+  return NOW_MIN + Math.floor(rand() * (NOW_MAX - NOW_MIN + 1));
+}
+
 function PlannerPreview() {
   const todayCol = previewTodayCol();
+  const [nowStart] = useState(previewNowStart);
   return (
     <div {...stylex.props(landing.preview)} role="img" aria-label="주간 시간표 미리보기">
       <div {...stylex.props(landing.pHead)}>
@@ -153,7 +161,7 @@ function PlannerPreview() {
               </div>
             ))}
             {col === todayCol && (
-              <div {...stylex.props(landing.pNow)} style={{ top: `${NOW_START * PXPM}px` }} />
+              <div {...stylex.props(landing.pNow)} style={{ top: `${nowStart * PXPM}px` }} />
             )}
           </div>
         ))}
