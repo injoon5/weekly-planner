@@ -313,30 +313,6 @@ function shiftAbs(node, dx, dy) {
   return { ...node, props: { ...node.props, style } };
 }
 
-/**
- * Soft event blobs for the locked card — no borders/text/accent.
- * Titles stay hidden; color blocks hint at a real schedule under the veil.
- */
-const softBlock = (d, h1, m1, h2, m2, color) => {
-  const [bg] = EV[color] || EV.sky;
-  const dur = h2 - h1 + (m2 - m1) / 60;
-  if (dur <= 0) return null;
-  return abs({
-    left: day(d) + 5,
-    top: y(h1, m1) + 2,
-    width: COL - 10,
-    height: Math.max(dur * ROW - 4, 28),
-    backgroundColor: bg,
-    borderRadius: 12,
-  });
-};
-
-function softBlocksFromDemo() {
-  return DEMO_BLOCKS.map(([d, h1, m1, h2, m2, color]) => softBlock(d, h1, m1, h2, m2, color)).filter(
-    Boolean,
-  );
-}
-
 /** Inner schedule body (grid lines + events). */
 const scheduleBody = (eventBlocks, showNow) => [
   ...[9, 10, 11, 12, 13, 14, 15].map((hr) =>
@@ -350,10 +326,10 @@ const scheduleBody = (eventBlocks, showNow) => [
 ];
 
 /**
- * Locked schedule: soft color blobs + a light frosted gradient veil.
- * (Satori has no real backdrop-filter — keep it simple.)
+ * Locked schedule: empty grid + subtle pastel wash from schedule colors.
+ * No event cards — colors only, as soft gradient blobs.
  */
-const lockedScheduleBody = (eventBlocks) => {
+const lockedScheduleBody = () => {
   const bodyW = 5 * COL;
   const bodyH = 640 - HEAD;
   return abs(
@@ -366,15 +342,42 @@ const lockedScheduleBody = (eventBlocks) => {
       backgroundColor: T.paper,
     },
     abs({ left: 0, top: 0, bottom: 0, width: 1, backgroundColor: T.line }),
-    ...scheduleBody(eventBlocks, false),
-    // Soft brand-tinted frost — coral → sky, low opacity.
+    ...scheduleBody([], false),
+    // Pastel schedule colors as soft atmosphere (no card shapes).
     abs({
       left: 0,
       top: 0,
       width: bodyW,
       height: bodyH,
-      backgroundImage:
-        'linear-gradient(145deg, rgba(233,109,79,0.14) 0%, rgba(255,255,255,0.32) 48%, rgba(78,158,219,0.16) 100%)',
+      backgroundImage: 'radial-gradient(ellipse at 18% 22%, rgba(255,227,221,0.72) 0%, rgba(255,227,221,0) 55%)',
+    }),
+    abs({
+      left: 0,
+      top: 0,
+      width: bodyW,
+      height: bodyH,
+      backgroundImage: 'radial-gradient(ellipse at 72% 28%, rgba(230,226,250,0.7) 0%, rgba(230,226,250,0) 52%)',
+    }),
+    abs({
+      left: 0,
+      top: 0,
+      width: bodyW,
+      height: bodyH,
+      backgroundImage: 'radial-gradient(ellipse at 42% 68%, rgba(216,235,250,0.68) 0%, rgba(216,235,250,0) 58%)',
+    }),
+    abs({
+      left: 0,
+      top: 0,
+      width: bodyW,
+      height: bodyH,
+      backgroundImage: 'radial-gradient(ellipse at 88% 78%, rgba(217,240,219,0.65) 0%, rgba(217,240,219,0) 50%)',
+    }),
+    abs({
+      left: 0,
+      top: 0,
+      width: bodyW,
+      height: bodyH,
+      backgroundImage: 'radial-gradient(ellipse at 12% 82%, rgba(255,235,198,0.55) 0%, rgba(255,235,198,0) 48%)',
     }),
   );
 };
@@ -382,11 +385,9 @@ const lockedScheduleBody = (eventBlocks) => {
 /**
  * Lock sits between 화–수 (biased toward 수) and between the 11–12 hour rows.
  * Absolute coords — flex centering drifts badly in Satori.
- * Sized to fit the 86px hour band; cy biased up because the SVG mass hangs low.
  */
-const LOCK_SIZE = 92;
+const LOCK_SIZE = 128;
 const lockedOverlay = () => {
-  // Past the 화|수 seam into 수 — between the two, clearly closer to 수.
   const cx = day(2) + COL * 0.28;
   const cy = y(11) + ROW * 0.4;
   return [
@@ -424,7 +425,7 @@ const card = ({ eventBlocks, showNow, locked }) =>
     abs({ left: GUT, top: 0, width: 1, height: HEAD, backgroundColor: T.line }),
     ...timeGutter(),
     locked
-      ? lockedScheduleBody(eventBlocks)
+      ? lockedScheduleBody()
       : abs(
           {
             left: GUT,
@@ -545,12 +546,8 @@ function parseOgRequest(req) {
   const hasReal = url.searchParams.has('e');
   const events = hasReal ? decodeOgEvents(url.searchParams.get('e')) : null;
   const subtitle = ogImageSubtitle({ owner, eventCount }) || '';
-  // Locked cards use soft borderless blobs under a light veil — never real events.
-  const eventBlocks = locked
-    ? softBlocksFromDemo()
-    : hasReal
-      ? blocksFromEvents(events)
-      : blocksFromDemo();
+  // Locked cards: empty grid + pastel gradient wash — never real events/cards.
+  const eventBlocks = locked ? [] : hasReal ? blocksFromEvents(events) : blocksFromDemo();
   const showNow = !locked && !hasReal;
   return { title, subtitle, eventBlocks, showNow, locked };
 }

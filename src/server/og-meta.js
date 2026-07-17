@@ -232,7 +232,7 @@ export function resolveShareOgCard(share, board, extras = {}) {
       ...blank,
       title: '공유된 주간 계획표',
       description: '비밀번호가 필요한 공유 시간표예요',
-      // Demo grid stays under a light veil + lock — never leak real data.
+      // Empty grid + pastel gradient wash + lock — never leak real data.
       locked: true,
     };
   }

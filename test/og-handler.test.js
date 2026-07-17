@@ -73,7 +73,7 @@ describe('/api/og handler', () => {
     expect(body.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
   });
 
-  it('renders password-locked cards with veiled demo grid', async () => {
+  it('renders password-locked cards with pastel gradient wash', async () => {
     const { status, body } = await renderOg('/api/og?title=%EC%A3%BC%EA%B0%84%20%EA%B3%84%ED%9A%8D%ED%91%9C&locked=1');
     expect(status).toBe(200);
     expect(body.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
@@ -203,7 +203,7 @@ describe('/api/og handler', () => {
           '03-open-with-owner-schedule.png — open share with owner + real events',
           '04-open-empty-schedule.png — open share, empty board (no demo fallback)',
           '05-long-title-owner.png — long title/owner truncation (ellipsis)',
-          '06-password-locked.png — password share: veiled demo grid + lock',
+          '06-password-locked.png — password share: pastel gradient wash + lock',
           '07-full-grid-long-cards.png — dense 1h grid with very long event titles',
           '08-half-hour-title-only.png — 30-min cards show title only (no time)',
           '',
