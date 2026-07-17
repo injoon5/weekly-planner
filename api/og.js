@@ -268,9 +268,9 @@ const dayHeaders = () =>
             abs(
               {
                 // Optical center for Pretendard 수 in Satori (glyph sits high-left).
-                left: 1,
-                right: 0,
-                top: 11,
+                left: 3,
+                right: -1,
+                top: 12,
                 height: 18,
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -314,7 +314,7 @@ function shiftAbs(node, dx, dy) {
 
 /**
  * Soft event blobs for the locked card — no borders/text/accent.
- * Sharp outlines survive a weak Satori blur; solid fills bloom cleanly.
+ * Titles stay hidden; color blocks hint at a real schedule under the veil.
  */
 const softBlock = (d, h1, m1, h2, m2, color) => {
   const [bg] = EV[color] || EV.sky;
@@ -349,27 +349,12 @@ const scheduleBody = (eventBlocks, showNow) => [
 ];
 
 /**
- * Locked schedule body using backdrop-blur semantics:
- *   1) soft schedule sample (no borders — outlines survive blur badly)
- *   2) frosted glass overlay with backdropFilter (when the runtime supports it)
- *   3) Satori polyfill: a padded `filter: blur` clone behind the glass, since
- *      Satori/resvg do not implement backdrop-filter yet
+ * Locked schedule: soft color blobs + a light frosted gradient veil.
+ * (Satori has no real backdrop-filter — keep it simple.)
  */
 const lockedScheduleBody = (eventBlocks) => {
   const bodyW = 5 * COL;
   const bodyH = 640 - HEAD;
-  const pad = 72;
-  const soft = eventBlocks.map((node) => shiftAbs(node, -GUT, -HEAD));
-  const sample = abs(
-    {
-      left: pad,
-      top: pad,
-      width: bodyW,
-      height: bodyH,
-    },
-    ...soft,
-  );
-
   return abs(
     {
       left: GUT,
@@ -379,46 +364,51 @@ const lockedScheduleBody = (eventBlocks) => {
       overflow: 'hidden',
       backgroundColor: T.paper,
     },
-    // Backdrop sample — blurred clone of the schedule behind the glass.
-    abs(
-      {
-        left: -pad,
-        top: -pad,
-        width: bodyW + pad * 2,
-        height: bodyH + pad * 2,
-        backgroundColor: T.paper,
-        filter: 'blur(48px)',
-      },
-      sample,
-    ),
-    // Frosted glass — backdrop-filter for capable runtimes.
+    abs({ left: 0, top: 0, bottom: 0, width: 1, backgroundColor: T.line }),
+    ...scheduleBody(eventBlocks, false),
+    // Low-opacity wash so the demo schedule peeks through without looking sharp.
     abs({
       left: 0,
       top: 0,
       width: bodyW,
       height: bodyH,
-      backgroundColor: 'rgba(255,255,255,0.12)',
-      backdropFilter: 'blur(48px)',
-      WebkitBackdropFilter: 'blur(48px)',
+      backgroundImage:
+        'linear-gradient(165deg, rgba(255,255,255,0.42) 0%, rgba(246,246,247,0.58) 48%, rgba(255,255,255,0.7) 100%)',
+    }),
+    abs({
+      left: 0,
+      top: 0,
+      width: bodyW,
+      height: bodyH,
+      backgroundImage:
+        'radial-gradient(ellipse at 58% 38%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 62%)',
     }),
   );
 };
 
-/** Lock only — above center; no frost badge plate. */
-const lockedOverlay = () => [
-  abs(
-    {
-      left: GUT,
-      top: HEAD,
-      right: 0,
-      bottom: 0,
-      alignItems: 'center',
-      justifyContent: 'flex-start',
-      paddingTop: 28,
-    },
-    lockIcon(136),
-  ),
-];
+/**
+ * Lock sits between 화–수 (biased toward 수) and between the 11–12 hour rows.
+ * Absolute coords — flex centering drifts badly in Satori.
+ */
+const LOCK_SIZE = 112;
+const lockedOverlay = () => {
+  // 화|수 seam is day(2); nudge into 수 so it reads closer to 수 than 화.
+  const cx = day(2) + COL * 0.22;
+  const cy = (y(11) + y(12)) / 2;
+  return [
+    abs(
+      {
+        left: Math.round(cx - LOCK_SIZE / 2),
+        top: Math.round(cy - LOCK_SIZE / 2),
+        width: LOCK_SIZE,
+        height: LOCK_SIZE,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      lockIcon(LOCK_SIZE),
+    ),
+  ];
+};
 
 const card = ({ eventBlocks, showNow, locked }) =>
   abs(
@@ -435,8 +425,6 @@ const card = ({ eventBlocks, showNow, locked }) =>
       boxShadow: '0 24px 48px rgba(20,20,26,.18)',
       overflow: 'hidden',
     },
-    // Frame chrome — always sharp. Gutter rule stops at the header so it
-    // doesn't etch an outline against the blurred schedule body.
     ...dayHeaders(),
     abs({ left: 0, right: 0, top: HEAD, height: 1, backgroundColor: T.line }),
     abs({ left: GUT, top: 0, width: 1, height: HEAD, backgroundColor: T.line }),
@@ -451,7 +439,6 @@ const card = ({ eventBlocks, showNow, locked }) =>
             height: 640 - HEAD,
             overflow: 'hidden',
           },
-          // Full-height gutter rule only when the body is sharp.
           abs({ left: 0, top: 0, bottom: 0, width: 1, backgroundColor: T.line }),
           ...scheduleBody(eventBlocks, showNow),
         ),
@@ -564,7 +551,7 @@ function parseOgRequest(req) {
   const hasReal = url.searchParams.has('e');
   const events = hasReal ? decodeOgEvents(url.searchParams.get('e')) : null;
   const subtitle = ogImageSubtitle({ owner, eventCount }) || '';
-  // Locked cards use soft borderless blobs under a padded blur — never real events.
+  // Locked cards use soft borderless blobs under a light veil — never real events.
   const eventBlocks = locked
     ? softBlocksFromDemo()
     : hasReal
