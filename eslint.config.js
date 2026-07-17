@@ -4,7 +4,9 @@ import reactHooks from 'eslint-plugin-react-hooks';
 
 export default [
   {
-    ignores: ['dist/**', 'node_modules/**', '.vite/**', 'dev-dist/**'],
+    // docs/ is a separate Next.js workspace with its own eslint setup
+    // (`cd docs && npm run lint`); linting it from the root mixes configs.
+    ignores: ['dist/**', 'node_modules/**', '.vite/**', 'dev-dist/**', 'docs/**'],
   },
   {
     linterOptions: {

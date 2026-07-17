@@ -12,6 +12,7 @@
     "skipLibCheck": true
   },
   "include": [
+    "src/api-tokens.js",
     "src/command-result.js",
     "src/config.js",
     "src/drag.js",
@@ -24,6 +25,7 @@
     "src/models.js",
     "src/prefs.js",
     "src/print-prefs.js",
+    "src/rest.js",
     "src/roles.js",
     "src/share-access.js",
     "src/share-policy.js",

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
+import { useNavigate } from '@tanstack/react-router';
 import { MoreHorizontal, CircleUserRound, Share2, UserPlus, ListChecks } from 'lucide-react';
 import { db } from '../instant.js';
 import { findMemberForUser } from '../member-policy.js';
@@ -42,6 +43,7 @@ export function Planner() {
   } = useWorkspace();
 
   const auth = db.useAuth();
+  const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme(settings, toast);
 
   // Board menu is anchored to the active tab inside BoardTabs, so it runs as a
@@ -64,6 +66,7 @@ export function Planner() {
     events,
     boardPrefs,
     user,
+    settings,
     canRenameColors: isOwner,
     role: myRole,
     canEdit,
@@ -183,6 +186,7 @@ export function Planner() {
                 email={user.email}
                 isGuest={isGuest}
                 onUpgrade={() => setUpgradeOpen(true)}
+                onAccount={() => void navigate({ to: '/account' })}
                 onSignOut={() => db.auth.signOut()}
               />
             </MenuPopover>

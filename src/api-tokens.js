@@ -1,0 +1,55 @@
+/**
+ * Personal access tokens for the REST API. Pure helpers shared by the
+ * serverless functions and tests — only the SHA-256 hash of a token is ever
+ * stored; the plaintext is shown once at creation/rotation.
+ */
+
+export const API_TOKEN_PREFIX = 'wp_';
+/** Random payload bytes → 48 hex chars after the prefix. */
+const TOKEN_BYTES = 24;
+/** Characters of the token kept for display (`wp_ab12cd34`). */
+const DISPLAY_CHARS = API_TOKEN_PREFIX.length + 8;
+
+const MAX_NAME = 40;
+
+/** @param {Uint8Array} bytes */
+function hex(bytes) {
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/** @returns {string} a fresh `wp_…` token (plaintext — hash before storing). */
+export function generateApiToken() {
+  const bytes = globalThis.crypto.getRandomValues(new Uint8Array(TOKEN_BYTES));
+  return API_TOKEN_PREFIX + hex(bytes);
+}
+
+/** @param {string} token @returns {boolean} */
+export function isApiTokenShape(token) {
+  return (
+    typeof token === 'string' &&
+    new RegExp(`^${API_TOKEN_PREFIX}[0-9a-f]{${TOKEN_BYTES * 2}}$`).test(token)
+  );
+}
+
+/** Display prefix stored alongside the hash so users can tell tokens apart. */
+export function apiTokenPrefixOf(token) {
+  return String(token || '').slice(0, DISPLAY_CHARS);
+}
+
+/** @param {string} token @returns {Promise<string>} hex SHA-256 */
+export async function hashApiToken(token) {
+  const data = new TextEncoder().encode(String(token));
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', data);
+  return hex(new Uint8Array(digest));
+}
+
+/** Normalize a user-supplied token label. */
+export function apiTokenName(input) {
+  return typeof input === 'string' ? input.trim().slice(0, MAX_NAME) : '';
+}
+
+/** `Authorization: Bearer wp_…` → token, or null when absent/malformed. */
+export function parseBearer(headerValue) {
+  const m = /^Bearer\s+(\S+)$/i.exec(String(headerValue || '').trim());
+  return m && isApiTokenShape(m[1]) ? m[1] : null;
+}

@@ -20,6 +20,7 @@ const SharedPlanner = lazyRouteComponent(
   () => import('./components/SharedPlanner.jsx'),
   'SharedPlanner',
 );
+const Account = lazyRouteComponent(() => import('./components/Account.jsx'), 'Account');
 
 function toRouterAuth(auth) {
   return {
@@ -77,7 +78,18 @@ const shareRoute = createRoute({
   component: SharedPlanner,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, loginRoute, shareRoute]);
+const accountRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/account',
+  beforeLoad: ({ context }) => {
+    if (!context.auth.isLoading && !context.auth.user) {
+      throw redirect({ to: '/login' });
+    }
+  },
+  component: Account,
+});
+
+const routeTree = rootRoute.addChildren([indexRoute, loginRoute, shareRoute, accountRoute]);
 
 const router = createRouter({
   routeTree,

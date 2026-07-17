@@ -27,6 +27,10 @@ const schema = i.schema({
     }),
     settings: i.entity({
       theme: i.string().optional(),
+      /** Presence/account display name; falls back to the email local part. */
+      displayName: i.string().optional(),
+      /** Presence avatar color override (hex); falls back to an email hash. */
+      presenceColor: i.string().optional(),
     }),
     shares: i.entity({
       token: i.string().unique().indexed(),
@@ -59,6 +63,20 @@ const schema = i.schema({
       day: i.string().indexed(),
       eventId: i.string().indexed(),
       createdAt: i.number().indexed(),
+    }),
+    /**
+     * Personal access tokens for the REST API (`/api/v1/*`). Only the SHA-256
+     * hash is stored — the plaintext token is shown once at creation/rotation.
+     * Rows are created/rotated server-side (`/api/tokens`); clients may list
+     * and revoke their own (the `hash` field is never readable client-side).
+     */
+    apiTokens: i.entity({
+      name: i.string().optional(),
+      hash: i.string().unique().indexed(),
+      /** First characters of the token, for display (`wp_ab12cd34`). */
+      prefix: i.string(),
+      createdAt: i.number().indexed(),
+      lastUsedAt: i.number().optional(),
     }),
   },
   links: {
@@ -159,6 +177,16 @@ const schema = i.schema({
         onDelete: 'cascade',
       },
       reverse: { on: '$users', has: 'many', label: 'todos' },
+    },
+    apiTokenOwner: {
+      forward: {
+        on: 'apiTokens',
+        has: 'one',
+        label: 'owner',
+        required: true,
+        onDelete: 'cascade',
+      },
+      reverse: { on: '$users', has: 'many', label: 'apiTokens' },
     },
   },
   rooms: {
