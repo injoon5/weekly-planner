@@ -73,9 +73,36 @@ export function nowLineStyle(nowMin, visualCol, dayCount = 7) {
   };
 }
 
+const HEAD_TRACK_SELECTOR = '[data-head-track]';
+
+/** Reset synced header vars so print shows every day label, not a scrolled slice. */
+/** @param {ParentNode} root */
+export function prepareHeadTracksForPrint(root = document) {
+  for (const track of root.querySelectorAll(HEAD_TRACK_SELECTOR)) {
+    if (!track.style) continue;
+    track.style.removeProperty('--head-day-width');
+    track.style.setProperty('--head-scroll-x', '0px');
+    track.style.width = '100%';
+    track.style.transform = 'none';
+  }
+}
+
+/** Drop print-only inline overrides; ResizeObserver sync restores screen layout. */
+/** @param {ParentNode} root */
+export function restoreHeadTracksAfterPrint(root = document) {
+  for (const track of root.querySelectorAll(HEAD_TRACK_SELECTOR)) {
+    if (!track.style) continue;
+    track.style.removeProperty('--head-day-width');
+    track.style.removeProperty('--head-scroll-x');
+    track.style.removeProperty('width');
+    track.style.removeProperty('transform');
+  }
+}
+
 /** Sync the sliding day-header track with the scrollable grid body. */
 export function syncHeadTrack(pane, body, gut, track, dayColEls) {
   if (!pane || !body || !track) return;
+  if (typeof window !== 'undefined' && window.matchMedia('print').matches) return;
 
   // Never write scrollLeft/Top from the scroll path. On iOS Safari, rubber-band
   // overscroll + JS clamping fights every frame and the grid "vibrates".

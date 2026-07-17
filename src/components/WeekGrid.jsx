@@ -161,6 +161,7 @@ export function WeekGrid({
           <div
             {...stylex.props(grid.headTrack)}
             ref={headTrackRef}
+            data-head-track=""
             style={{ gridTemplateColumns: dayColTemplate }}
           >
             {days.map((d, i) => (

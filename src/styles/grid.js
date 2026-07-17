@@ -134,6 +134,7 @@ export const grid = stylex.create({
       backgroundColor: '#fff',
       backdropFilter: 'none',
       WebkitBackdropFilter: 'none',
+      overflow: 'visible',
     },
     '@media (prefers-reduced-transparency: reduce)': {
       backgroundColor: colors.paper,

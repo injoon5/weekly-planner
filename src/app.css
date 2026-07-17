@@ -56,3 +56,13 @@ html body {
 @page {
   margin: 8mm;
 }
+
+/* Screen sync pins the day-header track to scroll position via CSS vars.
+   Those pixel locks must not survive into print or only 일/월/화 show. */
+@media print {
+  [data-head-track] {
+    width: 100% !important;
+    transform: none !important;
+    --head-scroll-x: 0px !important;
+  }
+}
