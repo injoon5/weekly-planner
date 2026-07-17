@@ -145,11 +145,22 @@ export const grid = stylex.create({
   headMask: {
     overflow: 'hidden',
     minWidth: 0,
+    '@media print': {
+      overflow: 'visible',
+    },
   },
 
   headTrack: {
     display: 'grid',
+    // Synced from JS via --head-day-width / --head-scroll-x (see syncHeadTrack).
+    width: 'var(--head-day-width, 100%)',
+    transform: 'translate3d(var(--head-scroll-x, 0px), 0, 0)',
     willChange: 'transform',
+    '@media print': {
+      width: '100%',
+      transform: 'none',
+      willChange: 'auto',
+    },
   },
 
   corner: {

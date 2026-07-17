@@ -160,7 +160,7 @@ describe('grid event views', () => {
     };
     const body = { offsetWidth: 700 };
     const gut = { offsetWidth: 46 };
-    const track = { style: {} };
+    const track = { style: cssVarStyle() };
     const dayCols = [
       { offsetLeft: 46, offsetWidth: 80 },
       { offsetLeft: 126, offsetWidth: 80 },
@@ -173,8 +173,8 @@ describe('grid event views', () => {
 
     syncHeadTrack(pane, body, gut, track, dayCols);
 
-    expect(track.style.width).toBe('560px');
-    expect(track.style.transform).toBe('translate3d(-120px, 0, 0)');
+    expect(track.style.getPropertyValue('--head-day-width')).toBe('560px');
+    expect(track.style.getPropertyValue('--head-scroll-x')).toBe('-120px');
   });
 
   it('does not mutate scroll offsets while syncing (iOS rubber-band safe)', () => {
@@ -185,12 +185,12 @@ describe('grid event views', () => {
     };
     const body = { offsetWidth: 700 };
     const gut = { offsetWidth: 46 };
-    const track = { style: {} };
+    const track = { style: cssVarStyle() };
 
     syncHeadTrack(pane, body, gut, track, []);
 
     expect(pane.scrollLeft).toBe(-24);
-    expect(track.style.transform).toBe('translate3d(-0px, 0, 0)');
+    expect(track.style.getPropertyValue('--head-scroll-x')).toBe('-0px');
   });
 
   it('clamps header transform when scroll overshoots the far edge', () => {
@@ -199,11 +199,24 @@ describe('grid event views', () => {
       scrollWidth: 900,
       clientWidth: 360,
     };
-    const track = { style: {} };
+    const track = { style: cssVarStyle() };
 
     syncHeadTrack(pane, { offsetWidth: 700 }, { offsetWidth: 46 }, track, []);
 
     expect(pane.scrollLeft).toBe(620);
-    expect(track.style.transform).toBe('translate3d(-540px, 0, 0)');
+    expect(track.style.getPropertyValue('--head-scroll-x')).toBe('-540px');
   });
 });
+
+/** Minimal CSSStyleDeclaration stand-in for custom property writes. */
+function cssVarStyle() {
+  const props = Object.create(null);
+  return {
+    setProperty(name, value) {
+      props[name] = String(value);
+    },
+    getPropertyValue(name) {
+      return props[name] ?? '';
+    },
+  };
+}

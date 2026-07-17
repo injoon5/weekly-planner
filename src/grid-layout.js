@@ -93,8 +93,11 @@ export function syncHeadTrack(pane, body, gut, track, dayColEls) {
     dayWidth = Math.max(0, body.offsetWidth - gut.offsetWidth);
   }
 
-  if (dayWidth > 0) track.style.width = `${dayWidth}px`;
-  track.style.transform = `translate3d(-${scrollLeft}px, 0, 0)`;
+  // CSS vars (not inline width/transform) so @media print can show every day
+  // label — print reflows the body to full page width, but a pixel-locked
+  // header stay clipped to 일/월/화 inside overflow:hidden.
+  if (dayWidth > 0) track.style.setProperty('--head-day-width', `${dayWidth}px`);
+  track.style.setProperty('--head-scroll-x', `-${scrollLeft}px`);
 }
 
 /**
