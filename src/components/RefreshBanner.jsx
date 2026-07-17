@@ -103,7 +103,7 @@ export function RefreshBanner() {
     >
       <div {...stylex.props(s.copy)} data-ui-refresh-copy="">
         <p {...stylex.props(s.title)}>앱 업데이트가 있어요</p>
-        <p {...stylex.props(s.desc)}>새로고침하면 최신 앱으로 바뀌어요</p>
+        <p {...stylex.props(s.desc)}>새로고침해서 최신 버전을 사용하세요</p>
       </div>
       <Button
         type="button"
