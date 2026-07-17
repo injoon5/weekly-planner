@@ -182,8 +182,32 @@ export const menus = stylex.create({
   },
 
   colorRow: {
-    // Centers the 18px swatches on the same vertical axis as menu-item icons.
-    paddingLeft: '7px',
+    // Swatch sits on the same x as menu-item icons (18px control in a ~24px rail).
+    // Full padding shorthand so we don't fight `drow`'s asymmetric padding.
+    gap: '10px',
+    padding: '4px 3px 4px 7px',
+    minHeight: '36px',
+    boxSizing: 'border-box',
+    '@media (pointer: coarse)': {
+      // Match SwitchRow / mi touch rhythm so the color list doesn't feel
+      // tighter than the toggles above it.
+      padding: '6px 3px 6px 7px',
+      minHeight: '44px',
+    },
+  },
+
+  // ui.input sets width:100%, which inside a flex row next to the swatch
+  // resolves against the full popover and crowds/wraps on narrow screens.
+  colorLabelInput: {
+    width: 'auto',
+    flex: 1,
+    minWidth: 0,
+  },
+
+  colorLabelText: {
+    flex: 1,
+    minWidth: 0,
+    paddingBlock: '2px',
   },
 
   shareUrl: {
