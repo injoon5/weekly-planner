@@ -2,7 +2,13 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ImageResponse } from '@vercel/og';
-import { sanitizeOgImageTitle } from '../src/server/og-meta.js';
+import {
+  decodeOgEvents,
+  ogImageSubtitle,
+  sanitizeOgImageTitle,
+  sanitizeOgOwner,
+  OG_DAY_ORIGIN,
+} from '../src/server/og-meta.js';
 
 const fontDir = join(dirname(fileURLToPath(import.meta.url)), 'fonts');
 
@@ -12,8 +18,9 @@ const fontDir = join(dirname(fileURLToPath(import.meta.url)), 'fonts');
  * Pretendard, and a cropped week-grid card built from the real design tokens
  * (src/tokens.stylex.js, src/styles/palette.css).
  *
- * GET /api/og            → default card
- * GET /api/og?title=이름  → board-specific card (title capped at 24 chars)
+ * GET /api/og                         → default demo card
+ * GET /api/og?title=이름               → titled demo card
+ * GET /api/og?title=…&owner=…&n=12&e=… → open-share card with real schedule snippet
  *
  * Node runtime + req/res handler: Vite API routes on Vercel use the Node
  * serverless shape. Returning ImageResponse without writing to `res` leaves
@@ -60,8 +67,11 @@ const EV = {
   coral: ['#ffe3dd', '#a13a28', 'rgba(233,109,79,'],
   amber: ['#ffebc6', '#8a5a06', 'rgba(230,162,60,'],
   green: ['#d9f0db', '#22683a', 'rgba(83,174,110,'],
+  teal: ['#d3efea', '#136259', 'rgba(63,169,155,'],
   sky: ['#d8ebfa', '#175e92', 'rgba(78,158,219,'],
   violet: ['#e6e2fa', '#4a3ea8', 'rgba(133,120,222,'],
+  pink: ['#fadfed', '#a02c6e', 'rgba(224,99,168,'],
+  graphite: ['#eaeaee', '#41414b', 'rgba(143,143,156,'],
 };
 
 // Mini week grid: 5 day columns, hour rows 9:00–14:00, ~1.6× app metrics.
@@ -74,6 +84,20 @@ const CARD_W = GUT + 5 * COL;
 const day = (d) => GUT + d * COL;
 const y = (h, m = 0) => HEAD + PAD + (h - 9 + m / 60) * ROW;
 
+/** Demo blocks used when no real schedule is supplied (landing / password / disabled). */
+const DEMO_BLOCKS = [
+  [0, 10, 0, 11, 30, 'sky', '팀 회의'],
+  [0, 13, 0, 14, 0, 'green', '운동'],
+  [1, 9, 30, 11, 0, 'coral', '스터디'],
+  [1, 12, 0, 13, 0, 'amber', '점심 약속'],
+  [2, 10, 30, 12, 0, 'violet', '디자인 리뷰'],
+  [2, 13, 30, 15, 0, 'sky', '프로젝트'],
+  [3, 9, 0, 10, 0, 'green', '운동'],
+  [3, 11, 30, 13, 0, 'coral', '수업'],
+  [4, 10, 0, 11, 0, 'amber', '멘토링'],
+  [4, 12, 30, 14, 30, 'green', '작업 시간'],
+];
+
 // Satori accepts plain React-shaped element objects; a tiny helper keeps this
 // file dependency-free instead of pulling in a JSX transform.
 const h = (type, style, ...children) => ({
@@ -84,15 +108,16 @@ const abs = (style, ...children) =>
   h('div', { position: 'absolute', display: 'flex', ...style }, ...children);
 
 const block = (d, h1, m1, h2, m2, color, title) => {
-  const [bg, fg, accent] = EV[color];
+  const [bg, fg, accent] = EV[color] || EV.sky;
   const dur = h2 - h1 + (m2 - m1) / 60;
+  if (dur <= 0) return null;
   return abs(
     {
       flexDirection: 'column',
       left: day(d) + 5,
       top: y(h1, m1) + 2,
       width: COL - 10,
-      height: dur * ROW - 4,
+      height: Math.max(dur * ROW - 4, 28),
       backgroundColor: bg,
       color: fg,
       borderRadius: 10,
@@ -112,7 +137,53 @@ const block = (d, h1, m1, h2, m2, color, title) => {
   );
 };
 
-const card = () =>
+/** Convert planner start (minutes from 06:00) → clock h/m. */
+function clockParts(startMin) {
+  const mid = startMin + OG_DAY_ORIGIN;
+  return { h: Math.floor(mid / 60), m: mid % 60 };
+}
+
+function blocksFromEvents(events) {
+  const out = [];
+  for (const e of events) {
+    // day 1–5 → column 0–4
+    const col = e.day - 1;
+    if (col < 0 || col > 4) continue;
+    const a = clockParts(e.start);
+    const b = clockParts(e.start + e.dur);
+    const node = block(col, a.h, a.m, b.h, b.m, e.color, e.title);
+    if (node) out.push(node);
+  }
+  return out;
+}
+
+function blocksFromDemo() {
+  return DEMO_BLOCKS.map(([d, h1, m1, h2, m2, color, title]) =>
+    block(d, h1, m1, h2, m2, color, title),
+  ).filter(Boolean);
+}
+
+const nowLine = () => [
+  abs({
+    left: day(2),
+    width: COL,
+    top: y(12, 50),
+    height: 2.5,
+    backgroundColor: T.now,
+    boxShadow: '0 0 0 1.5px rgba(255,255,255,.85)',
+  }),
+  abs({
+    left: day(2) - 5,
+    top: y(12, 50) - 4.5,
+    width: 11,
+    height: 11,
+    borderRadius: 99,
+    backgroundColor: T.now,
+    boxShadow: '0 0 0 2.5px rgba(255,255,255,.85)',
+  }),
+];
+
+const card = ({ eventBlocks, showNow }) =>
   abs(
     {
       left: 538,
@@ -180,37 +251,11 @@ const card = () =>
     ...[1, 2, 3, 4].map((i) =>
       abs({ left: day(i), top: HEAD, bottom: 0, width: 1, backgroundColor: T.gridHour }),
     ),
-    block(0, 10, 0, 11, 30, 'sky', '팀 회의'),
-    block(0, 13, 0, 14, 0, 'green', '운동'),
-    block(1, 9, 30, 11, 0, 'coral', '스터디'),
-    block(1, 12, 0, 13, 0, 'amber', '점심 약속'),
-    block(2, 10, 30, 12, 0, 'violet', '디자인 리뷰'),
-    block(2, 13, 30, 15, 0, 'sky', '프로젝트'),
-    block(3, 9, 0, 10, 0, 'green', '운동'),
-    block(3, 11, 30, 13, 0, 'coral', '수업'),
-    block(4, 10, 0, 11, 0, 'amber', '멘토링'),
-    block(4, 12, 30, 14, 30, 'green', '작업 시간'),
-    // now line (red, white halo) across today's column
-    abs({
-      left: day(2),
-      width: COL,
-      top: y(12, 50),
-      height: 2.5,
-      backgroundColor: T.now,
-      boxShadow: '0 0 0 1.5px rgba(255,255,255,.85)',
-    }),
-    abs({
-      left: day(2) - 5,
-      top: y(12, 50) - 4.5,
-      width: 11,
-      height: 11,
-      borderRadius: 99,
-      backgroundColor: T.now,
-      boxShadow: '0 0 0 2.5px rgba(255,255,255,.85)',
-    }),
+    ...eventBlocks,
+    ...(showNow ? nowLine() : []),
   );
 
-const page = (title) =>
+const page = ({ title, subtitle, eventBlocks, showNow }) =>
   h(
     'div',
     {
@@ -283,12 +328,26 @@ const page = (title) =>
       h(
         'div',
         { marginTop: 22, fontSize: 30, fontWeight: 500, lineHeight: 1.45, color: T.muted, whiteSpace: 'pre-line' },
-        '실시간으로 함께 쓰는\n주간 시간표',
+        subtitle || '실시간으로 함께 쓰는\n주간 시간표',
       ),
       h('div', { marginTop: 30, fontSize: 22, fontWeight: 600, letterSpacing: 0.22, color: T.faint }, 'Weekly Planner'),
     ),
-    card(),
+    card({ eventBlocks, showNow }),
   );
+
+function parseOgRequest(req) {
+  const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+  const title = sanitizeOgImageTitle(url.searchParams.get('title'), '주간 계획표');
+  const owner = sanitizeOgOwner(url.searchParams.get('owner') || '');
+  const eventCount = Math.min(999, Math.max(0, Math.round(Number(url.searchParams.get('n')) || 0)));
+  const hasReal = url.searchParams.has('e');
+  const events = hasReal ? decodeOgEvents(url.searchParams.get('e')) : null;
+  const subtitle = ogImageSubtitle({ owner, eventCount }) || '';
+  const eventBlocks = hasReal ? blocksFromEvents(events) : blocksFromDemo();
+  // Demo card keeps the decorative now-line; real schedules stay honest.
+  const showNow = !hasReal;
+  return { title, subtitle, eventBlocks, showNow };
+}
 
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
@@ -303,16 +362,20 @@ export default async function handler(req, res) {
     return res.end('Method not allowed');
   }
 
-  let title = '주간 계획표';
+  let props = {
+    title: '주간 계획표',
+    subtitle: '',
+    eventBlocks: blocksFromDemo(),
+    showNow: true,
+  };
   try {
-    const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
-    title = sanitizeOgImageTitle(url.searchParams.get('title'), '주간 계획표');
+    props = parseOgRequest(req);
   } catch {
     /* keep default */
   }
 
   try {
-    const image = new ImageResponse(page(title), {
+    const image = new ImageResponse(page(props), {
       width: 1200,
       height: 630,
       fonts: await loadFonts(),

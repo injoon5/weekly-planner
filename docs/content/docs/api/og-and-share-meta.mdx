@@ -10,7 +10,12 @@ Shared helpers: `src/server/og-meta.js`.
 ## `/api/og` (`api/og.js`)
 
 - Runtime: Node
-- Query: `?title=...` sanitized/capped to 24 chars
+- Query:
+  - `title` — board name, sanitized/capped to 24 chars
+  - `owner` — short display name (never a raw email)
+  - `n` — total event count for the subtitle
+  - `e` — base64url payload of Mon–Fri events clipped to 09:00–15:00 (presence of `e` selects the real schedule; omit it for the demo grid)
+- Same card chrome as before (mark + title + week grid). Open shares swap the muted tagline for `{owner} · {n}개 일정` and paint real event blocks.
 - `@vercel/og` `ImageResponse` with Pretendard **`.woff`** fonts (Satori does not support woff2)
 - Fonts cached in module-level promise
 - Writes into Node `res` (returning the response object alone can hang on Vercel Node)
@@ -20,16 +25,16 @@ Shared helpers: `src/server/og-meta.js`.
 Crawler HTML for share links:
 
 1. Extract token
-2. Admin query share + board
-3. `resolveShareOgCard`
+2. Admin query share + board + `owner.settings` + `events`
+3. `resolveShareOgCard` / `buildOgImageUrl`
 4. `renderShareOgHtml` with absolute OG/Twitter tags
 
 ### Privacy
 
-| Share state | OG title / description |
+| Share state | OG title / description / image |
 | --- | --- |
-| Open + enabled | Board name allowed |
-| Password | Generic “password required” — **no board name** |
-| Disabled / missing | Generic defaults |
+| Open + enabled | Board name, owner label, real schedule snippet |
+| Password | Generic “password required” — **no board name, owner, or events** (demo grid) |
+| Disabled / missing | Generic defaults (demo grid) |
 
 Also: HTML escaping for all dynamic meta content; `SOCIAL_CRAWLER_RE` / `isSocialCrawler` for middleware.

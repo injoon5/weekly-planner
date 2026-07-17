@@ -4,6 +4,8 @@ import {
   DEFAULT_OG_DESCRIPTION,
   DEFAULT_OG_TITLE,
   DEFAULT_OG_IMAGE_TITLE,
+  buildOgImageUrl,
+  ownerLabelFrom,
   renderShareOgHtml,
   resolveShareOgCard,
 } from '../src/server/og-meta.js';
@@ -33,12 +35,17 @@ async function lookupShareCard(token) {
     const { shares } = await db.query({
       shares: {
         $: { where: { token } },
-        board: {},
+        board: {
+          owner: { settings: {} },
+          events: {},
+        },
       },
     });
     const share = shares?.[0] || null;
     const board = share?.board || null;
-    return resolveShareOgCard(share, board);
+    const owner = ownerLabelFrom(board?.owner);
+    const events = Array.isArray(board?.events) ? board.events : [];
+    return resolveShareOgCard(share, board, { owner, events });
   } catch (err) {
     console.error('share-meta lookup failed', err);
     return fallback;
@@ -71,10 +78,17 @@ export default async function handler(req, res) {
         title: DEFAULT_OG_TITLE,
         description: DEFAULT_OG_DESCRIPTION,
         imageTitle: DEFAULT_OG_IMAGE_TITLE,
+        owner: '',
+        eventCount: 0,
+        events: [],
+        useRealSchedule: false,
       };
 
   const pageUrl = token ? `${origin}/s/${encodeURIComponent(token)}` : `${origin}/`;
-  const imageUrl = `${origin}/api/og?title=${encodeURIComponent(card.imageTitle)}`;
+  const imageUrl = buildOgImageUrl(origin, card);
+  const imageAlt = card.owner
+    ? `${card.imageTitle} · ${card.owner}의 주간 시간표 미리보기`
+    : '주간 계획표 주간 시간표 미리보기';
 
   return html(
     res,
@@ -84,6 +98,7 @@ export default async function handler(req, res) {
       description: card.description,
       url: pageUrl,
       imageUrl,
+      imageAlt,
     }),
   );
 }
