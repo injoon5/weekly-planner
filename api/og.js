@@ -367,14 +367,14 @@ const lockedScheduleBody = (eventBlocks) => {
     },
     abs({ left: 0, top: 0, bottom: 0, width: 1, backgroundColor: T.line }),
     ...scheduleBody(eventBlocks, false),
-    // Soft frosted wash — schedule peeks through without reading as sharp content.
+    // Soft brand-tinted frost — readable as a veil, not a hard white sheet.
     abs({
       left: 0,
       top: 0,
       width: bodyW,
       height: bodyH,
       backgroundImage:
-        'linear-gradient(160deg, rgba(255,255,255,0.55) 0%, rgba(246,246,247,0.68) 42%, rgba(255,255,255,0.78) 100%)',
+        'linear-gradient(150deg, rgba(233,109,79,0.10) 0%, rgba(255,255,255,0.62) 38%, rgba(78,158,219,0.12) 100%)',
     }),
     abs({
       left: 0,
@@ -382,7 +382,7 @@ const lockedScheduleBody = (eventBlocks) => {
       width: bodyW,
       height: bodyH,
       backgroundImage:
-        'radial-gradient(ellipse at 62% 34%, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 58%)',
+        'radial-gradient(ellipse at 55% 36%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.18) 45%, rgba(255,255,255,0) 72%)',
     }),
   );
 };
@@ -394,9 +394,9 @@ const lockedScheduleBody = (eventBlocks) => {
  */
 const LOCK_SIZE = 108;
 const lockedOverlay = () => {
-  // Into 수 from the 화|수 seam (~38% of the 수 column).
-  const cx = day(2) + COL * 0.38;
-  const cy = y(11) + ROW * 0.32;
+  // Just past the 화|수 seam into 수 — between the two, closer to 수.
+  const cx = day(2) + COL * 0.16;
+  const cy = y(11) + ROW * 0.42;
   return [
     abs(
       {
