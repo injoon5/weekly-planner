@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Toast } from '@base-ui/react/toast';
 import { X } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
-import { useAppUpdate } from '../hooks/useAppUpdate.js';
+import { useAppUpdate } from '../hooks/useAppUpdate.jsx';
 import { colors } from '../styles/tokens.stylex.js';
 import { ui } from '../styles/ui.js';
 
