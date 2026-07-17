@@ -11,11 +11,13 @@ import {
 import * as stylex from '@stylexjs/stylex';
 import { db } from './db/instant.js';
 import { Toaster } from './components/ui/Toaster.jsx';
+import { Landing } from './components/Landing.jsx';
+import { Planner } from './components/Planner.jsx';
 import { reset } from './styles/ui.js';
 
-const Landing = lazyRouteComponent(() => import('./components/Landing.jsx'), 'Landing');
+// Secondary routes stay lazy; `/` (Landing + Planner) is eager so cold loads
+// do not hit defaultPendingComponent and blank the shell after auth.
 const Login = lazyRouteComponent(() => import('./components/Login.jsx'), 'Login');
-const Planner = lazyRouteComponent(() => import('./components/Planner.jsx'), 'Planner');
 const SharedPlanner = lazyRouteComponent(
   () => import('./components/SharedPlanner.jsx'),
   'SharedPlanner',
@@ -72,6 +74,13 @@ const indexRoute = createRoute({
   },
 });
 
+// Marketing page always — signed-in users see open-planner CTAs instead of guest/login.
+const homeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/home',
+  component: Landing,
+});
+
 const shareRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/s/$token',
@@ -89,7 +98,13 @@ const accountRoute = createRoute({
   component: Account,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, loginRoute, shareRoute, accountRoute]);
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  homeRoute,
+  loginRoute,
+  shareRoute,
+  accountRoute,
+]);
 
 const router = createRouter({
   routeTree,
@@ -97,7 +112,8 @@ const router = createRouter({
     auth: undefined,
   },
   defaultPreload: 'intent',
-  defaultPendingComponent: () => <BootScreen>불러오는 중…</BootScreen>,
+  // Avoid blanking the whole app shell while secondary lazy routes load.
+  defaultPendingComponent: undefined,
 });
 
 function InnerApp() {

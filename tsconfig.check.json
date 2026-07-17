@@ -17,6 +17,7 @@
     "src/board/prefs.js",
     "src/board/print-prefs.js",
     "src/board/workspace-bootstrap.js",
+    "src/board/workspace-loading.js",
     "src/db/transaction.js",
     "src/grid/drag.js",
     "src/grid/event-packing.js",

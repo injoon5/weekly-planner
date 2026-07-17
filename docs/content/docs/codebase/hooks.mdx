@@ -7,7 +7,7 @@ description: Feature hooks and what each one owns.
 
 | Hook | Owns |
 | --- | --- |
-| `useWorkspace` | Accessible boards, active board, roles, bootstrap |
+| `useWorkspace` | Accessible boards, active board, roles, bootstrap. Full-page boot only when the board list is empty; detail/prefs hydrate under a kept-alive shell (`surfacePending`). |
 | `useBoardLifecycle` | Owner board CRUD + import/export |
 | `usePlannerRuntime` | Shared composition for Planner + SharedPlanner |
 | `useEventMutations` | Event CRUD API |

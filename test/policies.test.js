@@ -6,9 +6,15 @@ import {
   normalizeMemberRole,
   normalizeShareMode,
   normalizeShareRole,
+  BOARD_ROLE,
   SHARE_MODE,
   SHARE_ROLE,
 } from '../src/sharing/roles.js';
+import {
+  roleForBoard,
+  roleKnown,
+  shouldShowViewerBanner,
+} from '../src/sharing/member-policy.js';
 import { commitTransaction } from '../src/db/transaction.js';
 import { workspaceBootstrapPlan } from '../src/board/workspace-bootstrap.js';
 
@@ -40,6 +46,47 @@ describe('member role policy', () => {
     expect(normalizeMemberRole('owner')).toBe('viewer');
     expect(isEditorRole('editor')).toBe(true);
     expect(isEditorRole('viewer')).toBe(false);
+  });
+
+  it('roleForBoard defaults to viewer until owner/editors resolve', () => {
+    expect(roleForBoard(null, 'u1')).toBe(BOARD_ROLE.VIEWER);
+    expect(roleForBoard({ id: 'b1' }, 'u1')).toBe(BOARD_ROLE.VIEWER);
+    expect(roleForBoard({ id: 'b1', owner: { id: 'u1' } }, 'u1')).toBe(BOARD_ROLE.OWNER);
+    expect(
+      roleForBoard({ id: 'b1', owner: { id: 'u0' }, editors: [{ id: 'u1' }] }, 'u1'),
+    ).toBe(BOARD_ROLE.EDITOR);
+  });
+
+  it('roleKnown stays false before owner/editors hydrate so owners never flash viewer UI', () => {
+    expect(roleKnown(null, 'u1')).toBe(false);
+    expect(roleKnown({ id: 'b1' }, 'u1')).toBe(false);
+    // List row: owner linked, self → known owner
+    expect(roleKnown({ id: 'b1', owner: { id: 'u1' } }, 'u1')).toBe(true);
+    // List row: someone else's board, editors not queried yet → unknown
+    expect(roleKnown({ id: 'b1', owner: { id: 'u0' } }, 'u1')).toBe(false);
+    // Detail: editors array present (even empty) → known
+    expect(roleKnown({ id: 'b1', owner: { id: 'u0' }, editors: [] }, 'u1')).toBe(true);
+    expect(
+      roleKnown(
+        { id: 'b1', owner: { id: 'u0' }, members: [{ user: { id: 'u1' } }] },
+        'u1',
+      ),
+    ).toBe(true);
+  });
+
+  it('shouldShowViewerBanner only when role is resolved as viewer', () => {
+    expect(shouldShowViewerBanner({ id: 'b1' }, 'u1')).toBe(false);
+    expect(shouldShowViewerBanner({ id: 'b1', owner: { id: 'u1' } }, 'u1')).toBe(false);
+    expect(shouldShowViewerBanner({ id: 'b1', owner: { id: 'u0' } }, 'u1')).toBe(false);
+    expect(
+      shouldShowViewerBanner({ id: 'b1', owner: { id: 'u0' }, editors: [] }, 'u1'),
+    ).toBe(true);
+    expect(
+      shouldShowViewerBanner(
+        { id: 'b1', owner: { id: 'u0' }, editors: [{ id: 'u1' }] },
+        'u1',
+      ),
+    ).toBe(false);
   });
 });
 

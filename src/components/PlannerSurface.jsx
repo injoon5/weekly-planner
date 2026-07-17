@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
+import * as stylex from '@stylexjs/stylex';
 import { handleGridGesture } from '../grid/grid-gesture.js';
+import { planner } from '../styles/planner.js';
 import { BoardCanvas } from './BoardCanvas.jsx';
 import { Editor } from './Editor.jsx';
 
@@ -15,6 +17,7 @@ export function PlannerSurface({
   presence,
   readOnly,
   swapping = false,
+  surfacePending = false,
   updateEvent,
   nowMin,
   nowDay,
@@ -24,6 +27,14 @@ export function PlannerSurface({
     () => views.visibleEvents(events),
     [views, events],
   );
+
+  if (surfacePending) {
+    return (
+      <div {...stylex.props(planner.surfacePending)} aria-busy="true">
+        불러오는 중…
+      </div>
+    );
+  }
 
   return (
     <>

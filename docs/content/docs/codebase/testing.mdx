@@ -12,7 +12,8 @@ Run: `npm test` (or `npm run check`).
 | File | Focus |
 | --- | --- |
 | `models.test.js` | Event/board normalization, coverage, packing, todos derivation |
-| `policies.test.js` | Bootstrap policy, role normalization, `commitTransaction` |
+| `policies.test.js` | Bootstrap policy, role normalization, `roleKnown` / viewer banner, `commitTransaction` |
+| `workspace-loading.test.js` | Cold vs warm boot gates; surface pending while detail hydrates |
 | `shared-board.test.js` | Share access state machine |
 | `drag.test.js` | Long-press, scroll cancel, rAF coalescing, edge scroll |
 | `grid-layout.test.js` | Geometry, header sync, pack/merge drag view |

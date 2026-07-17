@@ -66,10 +66,48 @@ export function ownerIdOf(board) {
 /**
  * Effective role of a user on a board.
  * Write truth = boards.editors link (members.role is display cache).
+ * Defaults to viewer when links are missing — pair with `roleKnown` before
+ * showing viewer-only UI so owners/editors never flash the banner mid-hydrate.
  */
 export function roleForBoard(board, userId) {
   if (!board || !userId) return BOARD_ROLE.VIEWER;
   if (ownerIdOf(board) === userId) return BOARD_ROLE.OWNER;
   if (linkedIds(board?.editors).includes(userId)) return BOARD_ROLE.EDITOR;
   return BOARD_ROLE.VIEWER;
+}
+
+/**
+ * Whether board relation links are hydrated enough to trust `roleForBoard`.
+ * List queries often include `owner` but omit `editors`; until editors (or a
+ * matching member row) are present, a non-owner may still be an editor.
+ *
+ * @param {{
+ *   owner?: unknown,
+ *   editors?: unknown,
+ *   members?: unknown[],
+ * } | null | undefined} board
+ * @param {string | null | undefined} userId
+ */
+export function roleKnown(board, userId) {
+  if (!board || !userId) return false;
+  if (ownerIdOf(board) === userId) return true;
+  // Detail query includes editors: {} → array (possibly empty).
+  if (Array.isArray(board.editors)) return true;
+  if (Array.isArray(board.members) && findMemberForUser(board.members, userId)) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Viewer-only chrome (e.g. 보기 전용 banner) — only when role is resolved.
+ * @param {{
+ *   owner?: unknown,
+ *   editors?: unknown,
+ *   members?: unknown[],
+ * } | null | undefined} board
+ * @param {string | null | undefined} userId
+ */
+export function shouldShowViewerBanner(board, userId) {
+  return roleKnown(board, userId) && roleForBoard(board, userId) === BOARD_ROLE.VIEWER;
 }

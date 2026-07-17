@@ -12,11 +12,27 @@ File: `src/router.jsx`
 | Path | Behavior |
 | --- | --- |
 | `/` | If signed in → `Planner`. If signed out → `Landing`. |
+| `/home` | Always `Landing` (marketing). Signed-in CTAs open the planner; signed-out keep guest/login. |
 | `/login` | Magic-code login. Authenticated users redirect to `/`. |
 | `/s/$token` | Public shared planner. No auth guard. |
 | `/account` | [Account page](/docs/features/account). Signed-out visitors redirect to `/login`. |
 
 Root layout shows a boot screen while Instant auth is loading, or an error screen if auth fails.
+
+## Eager vs lazy routes
+
+`Landing` and `Planner` are **static imports** on `/` so a signed-in cold load does not hit another full-page pending screen after auth. `Login`, `Account`, and `SharedPlanner` stay `lazyRouteComponent`. `defaultPendingComponent` is unset so secondary lazy routes do not blank the whole app shell.
+
+## Boot sequence (signed-in `/`)
+
+Avoid stacking three full-page “불러오는 중…” gates. Intended order:
+
+1. **Auth** — `RootLayout` boots only while `auth.isLoading`.
+2. **Planner chrome** — once the workspace **board list** has rows, keep the header mounted (list board drives the shell while detail hydrates).
+3. **Surface** — `PlannerSurface` shows a local pending state until the active board detail arrives. Prefs may fill in after paint; they must not unmount chrome.
+4. **Viewer banner** — `shouldShowViewerBanner` / `roleKnown` gate the 보기 전용 bar until owner/editors links are resolved (no owner flash).
+
+Helpers: `src/board/workspace-loading.js`, `roleKnown` in `src/sharing/member-policy.js`.
 
 ## Auth context
 
@@ -29,7 +45,7 @@ Guards re-run when auth changes because the router is invalidated. Shared links 
 
 ## Landing vs login
 
-- **Landing** — marketing preview, guest sign-in (`db.auth.signInAsGuest()`), theme toggle (local only), link to `/login`.
+- **Landing** (`/` when signed out, always on `/home`) — marketing preview, guest sign-in (`db.auth.signInAsGuest()`), theme toggle (local only). Signed-out: link to `/login`. Signed-in: “시간표 열기” → `/`.
 - **Login** — email → 6-digit code via `useMagicCodeAuth`.
 
 ## PWA and SPA fallback
