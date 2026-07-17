@@ -18,7 +18,7 @@ function ColorLabelInput({ color, label, onCommit }) {
 
   return (
     <input
-      {...stylex.props(ui.input, ui.inputSm, menus.drowInput)}
+      {...stylex.props(ui.input, ui.inputSm, menus.drowInput, menus.colorLabelInput)}
       value={draft}
       maxLength={20}
       aria-label={`${color} 이름`}
@@ -71,7 +71,9 @@ export function ViewControls({ views }) {
                 onCommit={views.setColorLabel}
               />
             ) : (
-              <span {...stylex.props(menus.miLabel)}>{views.colorLabel(c)}</span>
+              <span {...stylex.props(menus.miLabel, menus.colorLabelText)}>
+                {views.colorLabel(c)}
+              </span>
             )}
           </div>
         );

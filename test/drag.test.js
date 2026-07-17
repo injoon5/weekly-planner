@@ -3,6 +3,7 @@ import {
   beginPointerGesture,
   draftFromGesture,
   edgeScrollDelta,
+  reducePendingPointerMove,
   shouldCancelTouchForScroll,
   shouldCancelTouchHold,
 } from '../src/drag.js';
@@ -255,5 +256,25 @@ describe('beginPointerGesture scroll lock', () => {
 
     vi.useRealTimers();
     vi.unstubAllGlobals();
+  });
+});
+
+describe('reducePendingPointerMove', () => {
+  it('activates mouse after small movement', () => {
+    expect(
+      reducePendingPointerMove({ isTouch: false }, { dx: 5, dy: 0, dist: 5 }),
+    ).toEqual({ type: 'activate' });
+  });
+
+  it('cancels touch when scroll intent is clear', () => {
+    expect(
+      reducePendingPointerMove({ isTouch: true }, { dx: 0, dy: 20, dist: 20 }),
+    ).toEqual({ type: 'finish', result: { type: 'noop' } });
+  });
+
+  it('cancels the long-press timer when hold slop is exceeded', () => {
+    expect(
+      reducePendingPointerMove({ isTouch: true }, { dx: 6, dy: 6, dist: 9 }),
+    ).toEqual({ type: 'cancel-timer' });
   });
 });

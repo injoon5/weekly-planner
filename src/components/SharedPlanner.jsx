@@ -46,7 +46,7 @@ export function SharedPlanner() {
   if (shared.error) {
     return <div {...stylex.props(planner.boot)}>오류: {shared.error.message}</div>;
   }
-  if (shared.notFound || shared.disabled) {
+  if (shared.state === 'notFound' || shared.state === 'disabled') {
     return (
       <div {...stylex.props(planner.boot)}>
         <div {...stylex.props(planner.bootStack)}>
@@ -59,7 +59,7 @@ export function SharedPlanner() {
     );
   }
 
-  if (shared.needsPassword) {
+  if (shared.state === 'passwordRequired' || shared.state === 'unlockFailed') {
     return (
       <div {...stylex.props(authStyles.root)}>
         <form

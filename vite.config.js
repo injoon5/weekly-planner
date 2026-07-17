@@ -116,5 +116,27 @@ export default defineConfig({
     outDir: 'dist',
     target: 'es2022',
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        // Keep React intact; split the rest so route chunks stay lean and
+        // vendor updates don't bust the whole app cache.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+          // Match Instant before a naive `/react/` check — `@instantdb/react`
+          // would otherwise land in the React chunk.
+          if (id.includes('@instantdb')) return 'instant';
+          if (id.includes('@tanstack')) return 'router';
+          if (id.includes('@base-ui')) return 'base-ui';
+          if (id.includes('lucide-react')) return 'icons';
+          if (id.includes('@stylexjs')) return 'stylex';
+          if (
+            /node_modules[/\\](react|react-dom|scheduler)[/\\]/.test(id)
+          ) {
+            return 'react';
+          }
+          return 'vendor';
+        },
+      },
+    },
   },
 });

@@ -6,6 +6,8 @@ import { useShareActions } from '../hooks/useShareActions.js';
 import { UiSelect } from './ui/UiSelect.jsx';
 import { menus } from '../styles/menus.js';
 import { ui } from '../styles/ui.js';
+import { linkedId } from '../links.js';
+import { isOk } from '../command-result.js';
 import { sharePath } from '../share.js';
 import { toast } from './ui/Toaster.jsx';
 
@@ -102,8 +104,8 @@ function InviteSection({ busy, refreshToken, onInvite, run }) {
         disabled={busy || !email.trim()}
         onClick={() =>
           void run(async () => {
-            const ok = await onInvite({ email: email.trim(), role, refreshToken });
-            if (ok) setEmail('');
+            const result = await onInvite({ email: email.trim(), role, refreshToken });
+            if (isOk(result)) setEmail('');
           })
         }
       >
@@ -124,7 +126,7 @@ function MembersSection({ members, isOwner, onUpdateRole, onRemoveMember }) {
       <Separator {...stylex.props(menus.mdiv)} />
       <div {...stylex.props(menus.mcap, menus.mcapStrong)}>멤버</div>
       {members.map((member) => {
-        const userId = member.user?.id || member.user;
+        const userId = linkedId(member.user);
         const label =
           member.email || member.user?.email || userId?.slice?.(0, 8) || '멤버';
         return (
@@ -262,16 +264,16 @@ function SharePanelContent({
                   // Password mode waits for the input below; open applies now.
                   if (nextMode === 'open' && share.mode !== 'open') {
                     void run(async () => {
-                      const ok = await onUpdateShare({ mode: 'open' });
-                      if (!ok) setMode('password');
+                      const result = await onUpdateShare({ mode: 'open' });
+                      if (!isOk(result)) setMode('password');
                     });
                   }
                 }}
                 onRoleChange={(nextRole) => {
                   setRole(nextRole);
                   void run(async () => {
-                    const ok = await onUpdateShare({ role: nextRole });
-                    if (!ok) setRole(share.role === 'editor' ? 'editor' : 'viewer');
+                    const result = await onUpdateShare({ role: nextRole });
+                    if (!isOk(result)) setRole(share.role === 'editor' ? 'editor' : 'viewer');
                   });
                 }}
               />
@@ -283,8 +285,8 @@ function SharePanelContent({
                     disabled={busy || !password}
                     onClick={() =>
                       run(async () => {
-                        const ok = await onUpdateShare({ mode: 'password', password });
-                        if (ok) setPassword('');
+                        const result = await onUpdateShare({ mode: 'password', password });
+                        if (isOk(result)) setPassword('');
                       })
                     }
                   >

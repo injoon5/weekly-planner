@@ -176,4 +176,34 @@ describe('grid event views', () => {
     expect(track.style.width).toBe('560px');
     expect(track.style.transform).toBe('translate3d(-120px, 0, 0)');
   });
+
+  it('does not mutate scroll offsets while syncing (iOS rubber-band safe)', () => {
+    const pane = {
+      scrollLeft: -24,
+      scrollWidth: 900,
+      clientWidth: 360,
+    };
+    const body = { offsetWidth: 700 };
+    const gut = { offsetWidth: 46 };
+    const track = { style: {} };
+
+    syncHeadTrack(pane, body, gut, track, []);
+
+    expect(pane.scrollLeft).toBe(-24);
+    expect(track.style.transform).toBe('translate3d(-0px, 0, 0)');
+  });
+
+  it('clamps header transform when scroll overshoots the far edge', () => {
+    const pane = {
+      scrollLeft: 620,
+      scrollWidth: 900,
+      clientWidth: 360,
+    };
+    const track = { style: {} };
+
+    syncHeadTrack(pane, { offsetWidth: 700 }, { offsetWidth: 46 }, track, []);
+
+    expect(pane.scrollLeft).toBe(620);
+    expect(track.style.transform).toBe('translate3d(-540px, 0, 0)');
+  });
 });

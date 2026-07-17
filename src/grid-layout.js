@@ -1,5 +1,5 @@
 import { NEXT_DAY_START_SLOT, SLOTS, SLOT_MIN } from './config.js';
-import { pack } from './models.js';
+import { packOverlappingEvents } from './event-packing.js';
 import { layout } from './tokens.stylex.js';
 
 const GRID_BODY_HEIGHT_PROPERTY = '--grid-body-height';
@@ -30,7 +30,7 @@ export function packView(view, drag) {
     const list = view.filter(
       (e) => e.day === d && !(drag && drag.kind === 'ev' && drag.id === e.id),
     );
-    for (const [k, v] of pack(list)) m.set(k, v);
+    for (const [k, v] of packOverlappingEvents(list)) m.set(k, v);
   }
   return m;
 }
@@ -77,7 +77,11 @@ export function nowLineStyle(nowMin, visualCol, dayCount = 7) {
 export function syncHeadTrack(pane, body, gut, track, dayColEls) {
   if (!pane || !body || !track) return;
 
-  clampPaneScroll(pane);
+  // Never write scrollLeft/Top from the scroll path. On iOS Safari, rubber-band
+  // overscroll + JS clamping fights every frame and the grid "vibrates".
+  // Clamp only the value we feed the sticky header transform.
+  const maxLeft = Math.max(0, pane.scrollWidth - pane.clientWidth);
+  const scrollLeft = Math.min(Math.max(0, pane.scrollLeft), maxLeft);
 
   const cols = dayColEls?.filter(Boolean) ?? [];
   let dayWidth = 0;
@@ -90,10 +94,13 @@ export function syncHeadTrack(pane, body, gut, track, dayColEls) {
   }
 
   if (dayWidth > 0) track.style.width = `${dayWidth}px`;
-  track.style.transform = `translate3d(-${pane.scrollLeft}px, 0, 0)`;
+  track.style.transform = `translate3d(-${scrollLeft}px, 0, 0)`;
 }
 
-/** Keep scroll inside real content bounds (no rubber-band into empty gutter). */
+/**
+ * Clamp scroll offsets to content bounds. Prefer CSS overscroll-behavior for
+ * live scrolling — calling this from a scroll listener vibrates on iOS Safari.
+ */
 export function clampPaneScroll(pane) {
   if (!pane) return;
   const maxLeft = Math.max(0, pane.scrollWidth - pane.clientWidth);

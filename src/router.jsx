@@ -5,16 +5,21 @@ import {
   createRootRouteWithContext,
   createRoute,
   createRouter,
+  lazyRouteComponent,
   redirect,
 } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { db } from './db.js';
-import { Landing } from './components/Landing.jsx';
-import { Login } from './components/Login.jsx';
-import { Planner } from './components/Planner.jsx';
-import { SharedPlanner } from './components/SharedPlanner.jsx';
+import { db } from './instant.js';
 import { Toaster } from './components/ui/Toaster.jsx';
 import { reset } from './styles/ui.js';
+
+const Landing = lazyRouteComponent(() => import('./components/Landing.jsx'), 'Landing');
+const Login = lazyRouteComponent(() => import('./components/Login.jsx'), 'Login');
+const Planner = lazyRouteComponent(() => import('./components/Planner.jsx'), 'Planner');
+const SharedPlanner = lazyRouteComponent(
+  () => import('./components/SharedPlanner.jsx'),
+  'SharedPlanner',
+);
 
 function toRouterAuth(auth) {
   return {
@@ -24,14 +29,18 @@ function toRouterAuth(auth) {
   };
 }
 
+function BootScreen({ children }) {
+  return <div {...stylex.props(reset.boot)}>{children}</div>;
+}
+
 function RootLayout() {
   const { auth } = rootRoute.useRouteContext();
 
   if (auth.isLoading) {
-    return <div {...stylex.props(reset.boot)}>불러오는 중…</div>;
+    return <BootScreen>불러오는 중…</BootScreen>;
   }
   if (auth.error) {
-    return <div {...stylex.props(reset.boot)}>오류: {auth.error.message}</div>;
+    return <BootScreen>오류: {auth.error.message}</BootScreen>;
   }
   return <Outlet />;
 }
@@ -48,9 +57,7 @@ const loginRoute = createRoute({
       throw redirect({ to: '/' });
     }
   },
-  component: function LoginPage() {
-    return <Login />;
-  },
+  component: Login,
 });
 
 const indexRoute = createRoute({
@@ -67,9 +74,7 @@ const indexRoute = createRoute({
 const shareRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/s/$token',
-  component: function SharePage() {
-    return <SharedPlanner />;
-  },
+  component: SharedPlanner,
 });
 
 const routeTree = rootRoute.addChildren([indexRoute, loginRoute, shareRoute]);
@@ -80,6 +85,7 @@ const router = createRouter({
     auth: undefined,
   },
   defaultPreload: 'intent',
+  defaultPendingComponent: () => <BootScreen>불러오는 중…</BootScreen>,
 });
 
 function InnerApp() {

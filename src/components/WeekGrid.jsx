@@ -7,11 +7,8 @@ import {
   SLOTS,
   SLOT_MIN,
 } from '../config.js';
-import {
-  beginPointerGesture,
-  locatePointer,
-  measureGridGeometry,
-} from '../drag.js';
+import { beginPointerGesture } from '../drag.js';
+import { classifyGridPointerDown } from '../grid-gesture.js';
 import {
   chipStyle,
   geoX,
@@ -24,92 +21,11 @@ import {
   slotTop,
   syncHeadTrack,
 } from '../grid-layout.js';
-import { pickLeastUsedColor } from '../models.js';
-import { clamp, fmt } from '../time.js';
+import { fmt } from '../time.js';
 import { compactLayout, layout } from '../tokens.stylex.js';
 import { grid } from '../styles/grid.js';
 import { planner } from '../styles/planner.js';
-
-function Block({
-  ev,
-  isDrag,
-  isSel,
-  p,
-  showMemos,
-  printShowMemos,
-  colorLabel,
-  onKeyDown,
-  readOnly,
-  dayCount,
-  visualDay,
-}) {
-  const [hov, setHov] = useState(false);
-  const x = geoX(visualDay, p.col, p.cols, dayCount);
-  const isXs = ev.dur <= SLOT_MIN;
-  const isTall = ev.dur >= SLOT_MIN * 3;
-  const isXl = ev.dur >= SLOT_MIN * 4;
-  const showHandles = !readOnly && (hov || isDrag);
-  const label = colorLabel ? colorLabel(ev.color) : '';
-
-  return (
-    <div
-      {...stylex.props(grid.blk, isSel && grid.blkSel, isDrag && grid.blkLift, isXs && grid.blkXs)}
-      style={{
-        top: slotTop(ev.start),
-        height: slotHeight(ev.dur),
-        left: x.left,
-        width: x.width,
-      }}
-      data-ev={ev.id}
-      data-color={ev.color || 'graphite'}
-      role="button"
-      tabIndex={0}
-      aria-label={
-        (ev.title || '일정') +
-        (label ? ', ' + label : '') +
-        ', ' +
-        DAYS_KO[ev.day] +
-        '요일 ' +
-        fmt(ev.start) +
-        '부터 ' +
-        fmt(ev.start + ev.dur) +
-        '까지'
-      }
-      onPointerEnter={() => setHov(true)}
-      onPointerLeave={() => setHov(false)}
-      onKeyDown={onKeyDown}
-    >
-      {/* No handles on 30-min blocks: the (invisible) hit zones would swallow
-          nearly the whole block on touch, breaking long-press move. */}
-      {!isXs && (
-        <div data-hh="t" {...stylex.props(grid.hh, grid.hhTop, showHandles && grid.hhVisible)} />
-      )}
-      <div {...stylex.props(grid.bt, isTall && grid.btTall)}>{ev.title || '일정'}</div>
-      {ev.dur >= SLOT_MIN * 2 && (
-        <div {...stylex.props(grid.bm)}>
-          {fmt(ev.start)} – {fmt(ev.start + ev.dur)}
-        </div>
-      )}
-      {ev.dur >= SLOT_MIN * 2 &&
-        ev.memo &&
-        (showMemos || printShowMemos) && (
-          <div
-            {...stylex.props(
-              grid.bn,
-              isXl && grid.bnXl,
-              !showMemos && grid.bnScreenHidden,
-              !printShowMemos && grid.bnPrintHidden,
-            )}
-          >
-            {ev.memo}
-          </div>
-        )}
-      {!isXs && (
-        <div data-hh="b" {...stylex.props(grid.hh, grid.hhBot, showHandles && grid.hhVisible)} />
-      )}
-    </div>
-  );
-}
+import { GridEventBlock } from './GridEventBlock.jsx';
 
 export function WeekGrid({
   boardId,
@@ -201,44 +117,20 @@ export function WeekGrid({
 
   const onPointerDown = (e) => {
     if (readOnly || gestureBlocked || gestureRef.current || e.button > 0) return;
-    const blkEl = e.target.closest('[data-ev]');
-    let mode;
-    let payload;
-
-    if (blkEl) {
-      const ev = eventsRef.current.find((x) => x.id === blkEl.dataset.ev);
-      if (!ev) return;
-      mode =
-        e.target.dataset.hh === 't' || e.target.closest('[data-hh="t"]')
-          ? 'resize-top'
-          : e.target.dataset.hh === 'b' || e.target.closest('[data-hh="b"]')
-            ? 'resize-bot'
-            : 'move';
-      payload = { ev: { ...ev } };
-    } else {
-      const col = e.target.closest('[data-day]');
-      if (!col) return;
-      const { bodyRect, gutWidth } = measureGridGeometry(
-        bodyRef.current,
-        gutRef.current,
-      );
-      const { slotF } = locatePointer(
-        { x: e.clientX, y: e.clientY },
-        bodyRect,
-        gutWidth,
-        days,
-      );
-      mode = 'create';
-      payload = {
-        day: +col.dataset.day,
-        anchor: clamp(Math.floor(slotF), 0, SLOTS - 1),
-        color: pickLeastUsedColor(eventsRef.current),
-      };
-    }
+    const classified = classifyGridPointerDown({
+      target: e.target,
+      clientX: e.clientX,
+      clientY: e.clientY,
+      events: eventsRef.current,
+      days,
+      bodyEl: bodyRef.current,
+      gutEl: gutRef.current,
+    });
+    if (!classified) return;
 
     gestureRef.current = beginPointerGesture(e, {
-      mode,
-      payload,
+      mode: classified.mode,
+      payload: classified.payload,
       bodyEl: bodyRef.current,
       gutEl: gutRef.current,
       hrowEl: headClipRef.current,
@@ -357,7 +249,7 @@ export function WeekGrid({
               const isSel =
                 editing && !editing.closing && editing.mode === 'edit' && editing.id === ev.id;
               return (
-                <Block
+                <GridEventBlock
                   key={ev.id}
                   ev={ev}
                   isDrag={isDrag}
