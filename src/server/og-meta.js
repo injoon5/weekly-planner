@@ -15,8 +15,8 @@ export const SOCIAL_CRAWLER_RE =
 export const OG_DAY_ORIGIN = 360;
 export const OG_WIN_START = 180; // 09:00 as minutes-from-06:00
 export const OG_WIN_END = 540; // 15:00
-export const OG_MAX_EVENTS = 12;
-export const OG_EVENT_TITLE_MAX = 16;
+export const OG_MAX_EVENTS = 30;
+export const OG_EVENT_TITLE_MAX = 40;
 export const OG_OWNER_MAX = 20;
 
 const PALETTE = new Set(['coral', 'amber', 'green', 'teal', 'sky', 'violet', 'pink', 'graphite']);

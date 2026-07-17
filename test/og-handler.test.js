@@ -121,6 +121,23 @@ describe('/api/og handler', () => {
       const longOwner =
         '이건진짜로엄청나게긴소유자이름이라서말줄임표가보여야합니다';
 
+      const colors = ['sky', 'coral', 'amber', 'green', 'violet', 'teal', 'pink', 'graphite'];
+      // Dense Mon–Fri grid: every hour 09:00–14:00, 1h blocks, very long titles.
+      const fullGrid = [];
+      for (let d = 1; d <= 5; d++) {
+        for (let hour = 0; hour < 6; hour++) {
+          const start = 180 + hour * 60; // 09:00 …
+          fullGrid.push({
+            day: d,
+            start,
+            dur: 60,
+            color: colors[(d + hour) % colors.length],
+            title: `매우긴일정제목이라카드안에서잘려야하는예시${d}${hour}추가설명텍스트입니다`,
+          });
+        }
+      }
+      const fullE = encodeOgEvents(fullGrid);
+
       const cases = [
         ['01-default.png', '/api/og'],
         ['02-titled-demo.png', `/api/og?title=${encodeURIComponent('팀 위클리')}`],
@@ -139,6 +156,10 @@ describe('/api/og handler', () => {
         [
           '06-password-locked.png',
           `/api/og?title=${encodeURIComponent('주간 계획표')}&locked=1`,
+        ],
+        [
+          '07-full-grid-long-cards.png',
+          `/api/og?title=${encodeURIComponent('풀 그리드')}&owner=${encodeURIComponent('인준')}&n=${fullGrid.length}&e=${fullE}`,
         ],
       ];
 
@@ -159,11 +180,12 @@ describe('/api/og handler', () => {
           '04-open-empty-schedule.png — open share, empty board (no demo fallback)',
           '05-long-title-owner.png — long title/owner truncation (ellipsis)',
           '06-password-locked.png — password share: blurred demo grid + lock',
+          '07-full-grid-long-cards.png — dense 1h grid with very long event titles',
           '',
           `Generated from ${root}`,
         ].join('\n'),
       );
     },
-    60_000,
+    90_000,
   );
 });
