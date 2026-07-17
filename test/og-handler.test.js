@@ -138,6 +138,26 @@ describe('/api/og handler', () => {
       }
       const fullE = encodeOgEvents(fullGrid);
 
+      // Mix of 30-min (title only) + longer blocks with times.
+      const halfHour = encodeOgEvents([
+        { day: 1, start: 180, dur: 30, color: 'sky', title: '스탠드업' },
+        { day: 1, start: 240, dur: 30, color: 'coral', title: '매우긴삼십분일정제목예시입니다' },
+        { day: 1, start: 300, dur: 60, color: 'green', title: '한시간 작업' },
+        { day: 2, start: 210, dur: 30, color: 'amber', title: '콜' },
+        { day: 2, start: 270, dur: 30, color: 'violet', title: '짧은 미팅' },
+        { day: 2, start: 360, dur: 90, color: 'teal', title: '긴 리뷰 세션' },
+        { day: 3, start: 180, dur: 30, color: 'pink', title: '체크인' },
+        { day: 3, start: 240, dur: 30, color: 'graphite', title: '메일 확인하기' },
+        { day: 3, start: 300, dur: 30, color: 'sky', title: '티타임' },
+        { day: 3, start: 420, dur: 60, color: 'coral', title: '운동' },
+        { day: 4, start: 180, dur: 30, color: 'green', title: '매우긴제목이라잘리는삼십분카드' },
+        { day: 4, start: 240, dur: 30, color: 'amber', title: '1:1' },
+        { day: 4, start: 330, dur: 90, color: 'violet', title: '디자인 리뷰' },
+        { day: 5, start: 210, dur: 30, color: 'pink', title: '브리핑' },
+        { day: 5, start: 270, dur: 30, color: 'teal', title: '빠른 동기화 미팅' },
+        { day: 5, start: 360, dur: 120, color: 'sky', title: '집중 작업' },
+      ]);
+
       const cases = [
         ['01-default.png', '/api/og'],
         ['02-titled-demo.png', `/api/og?title=${encodeURIComponent('팀 위클리')}`],
@@ -161,6 +181,10 @@ describe('/api/og handler', () => {
           '07-full-grid-long-cards.png',
           `/api/og?title=${encodeURIComponent('풀 그리드')}&owner=${encodeURIComponent('인준')}&n=${fullGrid.length}&e=${fullE}`,
         ],
+        [
+          '08-half-hour-title-only.png',
+          `/api/og?title=${encodeURIComponent('30분 일정')}&owner=${encodeURIComponent('인준')}&n=16&e=${halfHour}`,
+        ],
       ];
 
       for (const [name, path] of cases) {
@@ -181,11 +205,12 @@ describe('/api/og handler', () => {
           '05-long-title-owner.png — long title/owner truncation (ellipsis)',
           '06-password-locked.png — password share: blurred demo grid + lock',
           '07-full-grid-long-cards.png — dense 1h grid with very long event titles',
+          '08-half-hour-title-only.png — 30-min cards show title only (no time)',
           '',
           `Generated from ${root}`,
         ].join('\n'),
       );
     },
-    90_000,
+    120_000,
   );
 });

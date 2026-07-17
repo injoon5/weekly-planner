@@ -125,6 +125,39 @@ const block = (d, h1, m1, h2, m2, color, title) => {
   // ~7 Korean glyphs fit the mini column at 18px; truncate ourselves so we
   // never rely on Satori's U+2026 text-overflow glyph.
   const label = fitLabel(title, 7);
+  // 30-min slots are too short for title + time — title only, optically centered.
+  const short = dur <= 0.5;
+  const kids = [
+    abs({ left: 4, top: 4, bottom: 4, width: 5, borderRadius: 99, backgroundColor: `${accent}1)` }),
+    h(
+      'div',
+      {
+        fontSize: short ? 16 : 18,
+        fontWeight: 600,
+        letterSpacing: -0.07,
+        lineHeight: 1.2,
+        whiteSpace: 'nowrap',
+        fontFeatureSettings: '"liga" 0, "clig" 0',
+      },
+      label,
+    ),
+  ];
+  if (!short) {
+    kids.push(
+      h(
+        'div',
+        {
+          marginTop: 2,
+          fontSize: 14,
+          fontWeight: 500,
+          opacity: 0.72,
+          letterSpacing: 0,
+          whiteSpace: 'nowrap',
+        },
+        `${h1}:${String(m1).padStart(2, '0')}–${h2}:${String(m2).padStart(2, '0')}`,
+      ),
+    );
+  }
   return abs(
     {
       flexDirection: 'column',
@@ -138,34 +171,11 @@ const block = (d, h1, m1, h2, m2, color, title) => {
       borderWidth: 1.5,
       borderStyle: 'solid',
       borderColor: `${accent}0.22)`,
-      padding: '7px 10px 7px 17px',
+      padding: short ? '4px 10px 4px 17px' : '7px 10px 7px 17px',
+      justifyContent: short ? 'center' : 'flex-start',
       overflow: 'hidden',
     },
-    abs({ left: 4, top: 4, bottom: 4, width: 5, borderRadius: 99, backgroundColor: `${accent}1)` }),
-    h(
-      'div',
-      {
-        fontSize: 18,
-        fontWeight: 600,
-        letterSpacing: -0.07,
-        lineHeight: 1.25,
-        whiteSpace: 'nowrap',
-        fontFeatureSettings: '"liga" 0, "clig" 0',
-      },
-      label,
-    ),
-    h(
-      'div',
-      {
-        marginTop: 2,
-        fontSize: 14,
-        fontWeight: 500,
-        opacity: 0.72,
-        letterSpacing: 0,
-        whiteSpace: 'nowrap',
-      },
-      `${h1}:${String(m1).padStart(2, '0')}–${h2}:${String(m2).padStart(2, '0')}`,
-    ),
+    ...kids,
   );
 };
 
