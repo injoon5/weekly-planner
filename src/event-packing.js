@@ -28,6 +28,3 @@ export function packOverlappingEvents(evs) {
   flush();
   return out;
 }
-
-/** @deprecated Prefer packOverlappingEvents */
-export const pack = packOverlappingEvents;

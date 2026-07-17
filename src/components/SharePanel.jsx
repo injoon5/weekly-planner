@@ -3,6 +3,7 @@ import { Separator } from '@base-ui/react/separator';
 import * as stylex from '@stylexjs/stylex';
 import { Copy, KeyRound, Link2, Link2Off, LogOut, RefreshCw, UserPlus, X } from 'lucide-react';
 import { useShareActions } from '../hooks/useShareActions.js';
+import { enabledShareOf } from '../share-policy.js';
 import { UiSelect } from './ui/UiSelect.jsx';
 import { menus } from '../styles/menus.js';
 import { ui } from '../styles/ui.js';
@@ -173,10 +174,12 @@ export function SharePanel({
   myMembershipId,
 }) {
   const actions = useShareActions({ board, isOwner, toast });
-  const share = (board?.shares || []).find((item) => item.enabled) || null;
+  const share = enabledShareOf(board);
 
   return (
     <SharePanelContent
+      // Remount when the live share row changes so local mode/role/password
+      // drafts reset to the fresh row instead of carrying stale state over.
       key={`${share?.id || 'new'}:${share?.mode || 'open'}:${share?.role || 'viewer'}`}
       board={board}
       share={share}
@@ -184,15 +187,7 @@ export function SharePanel({
       user={user}
       refreshToken={refreshToken}
       myMembershipId={myMembershipId}
-      onEnableShare={actions.enableShare}
-      onUpdateShare={actions.updateShare}
-      onDisableShare={actions.disableShare}
-      onRotateShare={actions.rotateShare}
-      onCopyLink={actions.copyShareLink}
-      onInvite={actions.inviteMember}
-      onUpdateRole={actions.updateMemberRole}
-      onRemoveMember={actions.removeMember}
-      onLeave={actions.leaveBoard}
+      actions={actions}
     />
   );
 }
@@ -204,15 +199,7 @@ function SharePanelContent({
   user,
   refreshToken,
   myMembershipId,
-  onEnableShare,
-  onUpdateShare,
-  onDisableShare,
-  onRotateShare,
-  onCopyLink,
-  onInvite,
-  onUpdateRole,
-  onRemoveMember,
-  onLeave,
+  actions,
 }) {
   const [mode, setMode] = useState(share?.mode === 'password' ? 'password' : 'open');
   const [role, setRole] = useState(share?.role === 'editor' ? 'editor' : 'viewer');
@@ -246,7 +233,7 @@ function SharePanelContent({
             title="클릭해서 전체 링크 복사"
             aria-label={`공유 링크 ${sharePath(share.token)}, 클릭해서 복사`}
             disabled={busy}
-            onClick={() => run(onCopyLink)}
+            onClick={() => run(actions.copyShareLink)}
           >
             {sharePath(share.token)}
           </button>
@@ -264,7 +251,7 @@ function SharePanelContent({
                   // Password mode waits for the input below; open applies now.
                   if (nextMode === 'open' && share.mode !== 'open') {
                     void run(async () => {
-                      const result = await onUpdateShare({ mode: 'open' });
+                      const result = await actions.updateShare({ mode: 'open' });
                       if (!isOk(result)) setMode('password');
                     });
                   }
@@ -272,7 +259,7 @@ function SharePanelContent({
                 onRoleChange={(nextRole) => {
                   setRole(nextRole);
                   void run(async () => {
-                    const result = await onUpdateShare({ role: nextRole });
+                    const result = await actions.updateShare({ role: nextRole });
                     if (!isOk(result)) setRole(share.role === 'editor' ? 'editor' : 'viewer');
                   });
                 }}
@@ -285,7 +272,7 @@ function SharePanelContent({
                     disabled={busy || !password}
                     onClick={() =>
                       run(async () => {
-                        const result = await onUpdateShare({ mode: 'password', password });
+                        const result = await actions.updateShare({ mode: 'password', password });
                         if (isOk(result)) setPassword('');
                       })
                     }
@@ -305,7 +292,7 @@ function SharePanelContent({
             type="button"
             {...stylex.props(menus.mi)}
             disabled={busy}
-            onClick={() => run(onCopyLink)}
+            onClick={() => run(actions.copyShareLink)}
           >
             <span {...stylex.props(menus.miIconWrap)}>
               <Copy size={14} strokeWidth={1.75} />
@@ -319,7 +306,7 @@ function SharePanelContent({
                 {...stylex.props(menus.mi)}
                 disabled={busy || share.mode === 'password'}
                 title={share.mode === 'password' ? '비밀번호 공유는 다시 설정하세요' : undefined}
-                onClick={() => run(onRotateShare)}
+                onClick={() => run(actions.rotateShare)}
               >
                 <span {...stylex.props(menus.miIconWrap)}>
                   <RefreshCw size={14} strokeWidth={1.75} />
@@ -330,7 +317,7 @@ function SharePanelContent({
                 type="button"
                 {...stylex.props(menus.mi, menus.miRed)}
                 disabled={busy}
-                onClick={() => run(onDisableShare)}
+                onClick={() => run(actions.disableShare)}
               >
                 <span {...stylex.props(menus.miIconWrap)}>
                   <Link2Off size={14} strokeWidth={1.75} />
@@ -359,7 +346,7 @@ function SharePanelContent({
               disabled={busy || (mode === 'password' && !password)}
               onClick={() =>
                 run(async () => {
-                  await onEnableShare({ mode, role, password });
+                  await actions.enableShare({ mode, role, password });
                   setPassword('');
                 })
               }
@@ -377,7 +364,7 @@ function SharePanelContent({
         <InviteSection
           busy={busy}
           refreshToken={refreshToken}
-          onInvite={onInvite}
+          onInvite={actions.inviteMember}
           run={run}
         />
       )}
@@ -385,8 +372,8 @@ function SharePanelContent({
       <MembersSection
         members={members}
         isOwner={isOwner}
-        onUpdateRole={onUpdateRole}
-        onRemoveMember={onRemoveMember}
+        onUpdateRole={actions.updateMemberRole}
+        onRemoveMember={actions.removeMember}
       />
 
       {!isOwner && myMembershipId && (
@@ -395,7 +382,7 @@ function SharePanelContent({
           <button
             type="button"
             {...stylex.props(menus.mi, menus.miRed)}
-            onClick={() => void onLeave(myMembershipId, user?.id)}
+            onClick={() => void actions.leaveBoard(myMembershipId, user?.id)}
           >
             <span {...stylex.props(menus.miIconWrap)}>
               <LogOut size={14} strokeWidth={1.75} />

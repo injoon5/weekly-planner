@@ -30,7 +30,6 @@ import { GridEventBlock } from './GridEventBlock.jsx';
 export function WeekGrid({
   boardId,
   events,
-  todayDow,
   nowMin,
   nowDay,
   editing,
@@ -168,7 +167,7 @@ export function WeekGrid({
                     grid.dko,
                     d === 0 && grid.dkoSun,
                     d === 6 && grid.dkoSat,
-                    d === todayDow && grid.dkoToday,
+                    d === nowDay && grid.dkoToday,
                   )}
                 >
                   {DAYS_KO[d]}

@@ -88,6 +88,7 @@ export function PrintDialog({ open, onOpenChange, draft, onPatch, onPrint }) {
             label="메모 표시"
             checked={draft.showMemos}
             onChange={(v) => onPatch({ showMemos: v })}
+            xstyle={print.switchRow}
           />
 
           <SwitchRow

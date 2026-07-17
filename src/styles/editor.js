@@ -261,6 +261,13 @@ export const editor = stylex.create({
   daybOn: {
     backgroundColor: colors.ink,
     color: colors.onInk,
+    // Keep the filled ink fill on hover (dim like the primary button) instead
+    // of letting dayb's generic :hover swap in the faint `hov` background,
+    // which would leave the onInk text unreadable on a near-transparent circle.
+    ':hover': {
+      backgroundColor: colors.ink,
+      opacity: 0.92,
+    },
   },
 
   timerow: {

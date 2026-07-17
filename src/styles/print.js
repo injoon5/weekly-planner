@@ -18,11 +18,14 @@ export const print = stylex.create({
     color: colors.faint,
   },
 
-  // Switch row keeps its full-row tap target and hover, but shifts left so the
-  // label sits on the title rail and the toggle lands on the dialog's right
-  // edge; the hover rectangle then bleeds to an even, small inset.
+  // Switch row keeps its full-row tap target and hover, but stretches out ±9px
+  // so the label sits on the title rail and the toggle lands on the dialog's
+  // right edge — flush with the date/time inputs below it. `menus.mi` pins
+  // width:100%, so the box also needs the extra 18px to reach that right edge
+  // instead of only sliding left.
   switchRow: {
     marginInline: '-9px',
+    width: 'calc(100% + 18px)',
     borderRadius: '8px',
   },
 

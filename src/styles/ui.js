@@ -128,4 +128,15 @@ export const ui = stylex.create({
     borderRadius: '8px',
     fontVariantNumeric: 'tabular-nums',
   },
+
+  /** Swipe affordance for bottom drawers — mirrors the to-dos panel grip. */
+  drawerGrip: {
+    display: 'block',
+    width: '34px',
+    height: '4px',
+    borderRadius: '99px',
+    backgroundColor: colors.edgeH,
+    margin: '-4px auto 10px',
+    flexShrink: 0,
+  },
 });

@@ -67,8 +67,6 @@ describe('date and grid normalization', () => {
     expect(nowOnGrid(earlyMonday)).toEqual({
       nowMin: 1410,
       nowDay: 0,
-      // todayDow matches the planner day so grid highlight ≡ todos weekday
-      todayDow: 0,
     });
   });
 

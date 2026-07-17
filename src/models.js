@@ -94,9 +94,6 @@ export function buildTodayTodos(events, weekday, checkedBy) {
     }));
 }
 
-/** @deprecated Prefer `packOverlappingEvents` from event-packing.js */
-export { pack } from './event-packing.js';
-
 export function pickLeastUsedColor(events) {
   const cnt = Object.fromEntries(PALETTE.map(c => [c, 0]));
   for (const e of events) {

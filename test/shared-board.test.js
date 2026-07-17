@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   deriveShareAccessState,
   openShareSecret,
-  sharedNotFound,
 } from '../src/share-access.js';
+
+const sharedNotFound = (args) => deriveShareAccessState(args).state === 'notFound';
 
 describe('shared board guest access', () => {
   it('issues an open-link secret before share metadata arrives', () => {

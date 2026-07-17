@@ -109,7 +109,7 @@ export function Planner() {
   if (!board) return <div {...stylex.props(planner.boot)}>시간표를 준비하는 중…</div>;
 
   return (
-    <div {...stylex.props(planner.app)}>
+    <div {...stylex.props(planner.app)} data-app-shell="planner">
       {myRole === 'viewer' && !isOwner && (
         <div {...stylex.props(planner.banner)}>
           <span {...stylex.props(planner.bannerStrong)}>보기 전용</span>
@@ -249,7 +249,6 @@ export function Planner() {
         readOnly={runtime.readOnly}
         swapping={swapping}
         updateEvent={runtime.eventsApi.updateEvent}
-        todayDow={runtime.clock.todayDow}
         nowMin={runtime.clock.nowMin}
         nowDay={runtime.clock.nowDay}
         printShowMemos={runtime.print.prefs.showMemos}

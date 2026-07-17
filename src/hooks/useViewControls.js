@@ -150,6 +150,7 @@ export function useViewControls({
     compact,
     showMemos,
     days,
+    canRenameColors: Boolean(canRenameColors),
     toggleColor,
     setHideWeekend: (v) => applyPrefs({ hideWeekend: v }),
     setCompact: (v) => applyPrefs({ compact: v }),

@@ -104,7 +104,7 @@ export function SharedPlanner() {
   const readOnly = shared.readOnly;
 
   return (
-    <div {...stylex.props(planner.app)}>
+    <div {...stylex.props(planner.app)} data-app-shell="planner">
       <div {...stylex.props(planner.banner)}>
         <span {...stylex.props(planner.bannerStrong)}>
           {readOnly ? '보기 전용' : '공유 편집'}
@@ -130,7 +130,6 @@ export function SharedPlanner() {
         presence={runtime.presence}
         readOnly={readOnly}
         updateEvent={runtime.eventsApi.updateEvent}
-        todayDow={runtime.clock.todayDow}
         nowMin={runtime.clock.nowMin}
         nowDay={runtime.clock.nowDay}
         printShowMemos={runtime.print.prefs.showMemos}

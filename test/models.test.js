@@ -7,11 +7,11 @@ import {
   eventFields,
   nextBoardName,
   nextBoardSortOrder,
-  pack,
   pickLeastUsedColor,
   repeatWeeksOf,
   weekdayFromPlannerDate,
 } from '../src/models.js';
+import { packOverlappingEvents } from '../src/event-packing.js';
 
 describe('model normalization', () => {
   it('normalizes loose event input into app invariants', () => {
@@ -97,7 +97,7 @@ describe('board date coverage', () => {
 
 describe('event packing and board helpers', () => {
   it('packs overlapping events into reusable columns', () => {
-    const packed = pack([
+    const packed = packOverlappingEvents([
       { id: 'a', start: 0, dur: 60 },
       { id: 'b', start: 30, dur: 60 },
       { id: 'c', start: 60, dur: 60 },
