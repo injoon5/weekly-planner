@@ -1,10 +1,13 @@
 import { useEffect } from 'react';
 import * as stylex from '@stylexjs/stylex';
+import { isOptimisticBoardId } from '../board/optimistic-board.js';
+import { EMPTY_PRESENCE } from '../hooks/usePlannerRuntime.js';
 import { planner } from '../styles/planner.js';
 import { PlannerProvider } from '../planner/PlannerProvider.jsx';
 import { usePlannerContext } from '../planner/usePlannerContext.js';
 import { AccountMenu } from './AccountMenu.jsx';
 import { BoardNav } from './BoardNav.jsx';
+import { BoardPresenceBridge } from './BoardPresenceBridge.jsx';
 import { MoreMenu } from './MoreMenu.jsx';
 import { PlannerHeader } from './PlannerHeader.jsx';
 import { PlannerSurface } from './PlannerSurface.jsx';
@@ -45,21 +48,20 @@ function PlannerShell() {
     isLoading,
     surfacePending,
     error,
-    ready,
     theme,
     toggleTheme,
     runtime,
     transfer,
     swapping,
+    isOptimistic,
   } = usePlannerContext();
 
-  // Cold empty workspace / no board yet — keep a light chrome shell and pending
-  // in the surface only (guest create + signed-in cold load). Never full-page.
-  const waitingForBoard = isLoading || (!ready && !boards.length) || !board;
-  if (error || waitingForBoard) {
+  // Soft shell only while Instant list is still loading with nothing to paint.
+  // Optimistic seed provides `board` so guest create skips this gate.
+  if (error || isLoading || !board) {
     const message = error
       ? `오류: ${error.message}`
-      : isLoading || (!ready && !boards.length)
+      : isLoading
         ? '불러오는 중…'
         : '시간표를 준비하는 중…';
     return (
@@ -84,7 +86,9 @@ function PlannerShell() {
     );
   }
 
-  return (
+  const livePresence = Boolean(board.id) && !isOptimisticBoardId(board.id);
+
+  const view = (presence) => (
     <div {...stylex.props(planner.app)} data-app-shell="planner">
       {showViewerBanner && (
         <div {...stylex.props(planner.banner)}>
@@ -96,7 +100,7 @@ function PlannerShell() {
       <PlannerHeader
         board={board}
         printPrefs={runtime.print.prefs}
-        presence={runtime.presence}
+        presence={presence}
         views={runtime.views}
         theme={theme}
         onToggleTheme={toggleTheme}
@@ -104,7 +108,7 @@ function PlannerShell() {
         navigation={
           <BoardNav
             user={user}
-            boards={boards}
+            boards={isOptimistic ? [board] : boards}
             board={board}
             events={events}
             isOwner={isOwner}
@@ -113,7 +117,9 @@ function PlannerShell() {
         }
         leadingActions={<AccountMenu user={user} />}
         todosAction={<TodosAction user={user} events={events} />}
-        afterViewActions={<ShareAction board={board} user={user} isOwner={isOwner} />}
+        afterViewActions={
+          isOptimistic ? null : <ShareAction board={board} user={user} isOwner={isOwner} />
+        }
         moreMenuItems={
           <MoreMenu
             onExport={transfer.doExport}
@@ -127,8 +133,8 @@ function PlannerShell() {
         events={events}
         session={runtime.session}
         views={runtime.views}
-        presence={runtime.presence}
-        readOnly={runtime.readOnly}
+        presence={presence}
+        readOnly={runtime.readOnly || isOptimistic}
         swapping={swapping}
         surfacePending={surfacePending}
         updateEvent={runtime.eventsApi.updateEvent}
@@ -145,5 +151,20 @@ function PlannerShell() {
         onChange={transfer.onImportFile}
       />
     </div>
+  );
+
+  if (!livePresence) return view(EMPTY_PRESENCE);
+
+  const { user: presenceUser, role, guestLabel, settings } = runtime.presenceArgs;
+  return (
+    <BoardPresenceBridge
+      boardId={board.id}
+      user={presenceUser}
+      role={role}
+      guestLabel={guestLabel}
+      settings={settings}
+    >
+      {view}
+    </BoardPresenceBridge>
   );
 }

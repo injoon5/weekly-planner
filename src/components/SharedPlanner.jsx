@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { Link, useParams } from '@tanstack/react-router';
-import { usePlannerRuntime } from '../hooks/usePlannerRuntime.js';
+import { EMPTY_PRESENCE, usePlannerRuntime } from '../hooks/usePlannerRuntime.js';
 import { useSharedBoard } from '../hooks/useSharedBoard.js';
 import { useTheme } from '../hooks/useTheme.js';
 import { planner } from '../styles/planner.js';
 import { ui } from '../styles/ui.js';
 import { auth as authStyles } from '../styles/auth.js';
+import { BoardPresenceBridge } from './BoardPresenceBridge.jsx';
 import { PrintDialog } from './PrintDialog.jsx';
 import { PlannerHeader } from './PlannerHeader.jsx';
 import { PlannerSurface } from './PlannerSurface.jsx';
@@ -132,7 +133,7 @@ export function SharedPlanner() {
   const board = shared.board;
   const readOnly = shared.readOnly;
 
-  return (
+  const view = (presence) => (
     <div {...stylex.props(planner.app)} data-app-shell="planner">
       <div {...stylex.props(planner.banner)}>
         <span {...stylex.props(planner.bannerStrong)}>
@@ -144,7 +145,7 @@ export function SharedPlanner() {
       <PlannerHeader
         board={board}
         printPrefs={runtime.print.prefs}
-        presence={runtime.presence}
+        presence={presence}
         views={runtime.views}
         theme={theme}
         onToggleTheme={toggleTheme}
@@ -156,7 +157,7 @@ export function SharedPlanner() {
         events={shared.events}
         session={runtime.session}
         views={runtime.views}
-        presence={runtime.presence}
+        presence={presence}
         readOnly={readOnly}
         updateEvent={runtime.eventsApi.updateEvent}
         printShowMemos={runtime.print.prefs.showMemos}
@@ -164,5 +165,20 @@ export function SharedPlanner() {
 
       <PrintDialog {...runtime.print.dialog} />
     </div>
+  );
+
+  if (!board.id) return view(EMPTY_PRESENCE);
+
+  const { user, role, guestLabel, settings } = runtime.presenceArgs;
+  return (
+    <BoardPresenceBridge
+      boardId={board.id}
+      user={user}
+      role={role}
+      guestLabel={guestLabel}
+      settings={settings}
+    >
+      {view}
+    </BoardPresenceBridge>
   );
 }

@@ -34,7 +34,7 @@ Avoid stacking blank full-page “불러오는 중…” gates. Intended order:
 
 Helpers: `src/board/workspace-loading.js`, `roleKnown` in `src/sharing/member-policy.js`.
 
-Guest sign-in keeps the landing CTA spinner until auth resolves, then the planner soft shell (not a second full-page boot).
+Guest sign-in keeps the landing CTA spinner until auth resolves, then the planner paints an optimistic board shell (empty grid) while `ensureWorkspace` seeds — presence joins only once a real board id exists. Todo badge subscription is unchanged.
 
 ## Auth context
 

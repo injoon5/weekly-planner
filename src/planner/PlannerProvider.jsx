@@ -30,7 +30,9 @@ export function PlannerProvider({ children }) {
     setActiveId: workspace.setActiveId,
     isOwner: workspace.isOwner,
   });
-  const swapping = useBoardSwap(workspace.board?.id);
+  const swapping = useBoardSwap(
+    workspace.isOptimistic ? null : workspace.board?.id,
+  );
 
   useEffect(() => {
     if (!workspace.bootNote) return;
