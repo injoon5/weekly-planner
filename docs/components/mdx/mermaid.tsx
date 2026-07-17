@@ -1,17 +1,17 @@
 'use client';
 
-import { use, useEffect, useId, useState } from 'react';
+import { use, useId, useSyncExternalStore } from 'react';
 import { useTheme } from 'next-themes';
 
-export function Mermaid({ chart }: { chart: string }) {
-  const [mounted, setMounted] = useState(false);
+const emptySubscribe = () => () => {};
 
-  // Render only after hydration so the diagram matches the resolved theme.
-  // The mount flag is the standard hydration guard from the Fumadocs recipe.
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
-  }, []);
+export function Mermaid({ chart }: { chart: string }) {
+  // Client-only: skip SSR/hydration flash by waiting for the browser snapshot.
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
 
   if (!mounted) return;
   return <MermaidContent chart={chart} />;

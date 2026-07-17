@@ -11,6 +11,13 @@ import {
   patchBoardTx,
 } from '../db/tx/boards.js';
 
+async function commit(transaction, message) {
+  return await commitTransaction((tx) => db.transact(tx), transaction, {
+    message,
+    onError: toast,
+  });
+}
+
 /** Owner board CRUD. JSON export/import lives in useBoardTransfer.js. */
 export function useBoardLifecycle({
   user,
@@ -21,12 +28,6 @@ export function useBoardLifecycle({
   closeMenu,
   isOwner = true,
 }) {
-  const commit = async (transaction, message) =>
-    await commitTransaction((tx) => db.transact(tx), transaction, {
-      message,
-      onError: toast,
-    });
-
   const addBoard = async () => {
     if (!isOwner || !user) return;
     const sortOrder = nextBoardSortOrder(boards);

@@ -57,7 +57,10 @@ export function WeekGrid({
   const dayColRefs = useRef([]);
   const gestureRef = useRef(null);
   const eventsRef = useRef(events);
-  eventsRef.current = events;
+
+  useEffect(() => {
+    eventsRef.current = events;
+  }, [events]);
 
   const [drag, setDrag] = useState(null);
 
@@ -71,7 +74,11 @@ export function WeekGrid({
   }, [days]);
 
   const dayCount = days.length;
-  dayColRefs.current.length = dayCount;
+
+  useEffect(() => {
+    dayColRefs.current.length = dayCount;
+  }, [dayCount]);
+
   const colTemplate = `${layout.gutW} repeat(${dayCount}, minmax(${layout.colMin}, 1fr))`;
   const headColTemplate = `${layout.gutW} minmax(0, 1fr)`;
   const dayColTemplate = `repeat(${dayCount}, minmax(${layout.colMin}, 1fr))`;
@@ -193,12 +200,17 @@ export function WeekGrid({
             {...stylex.props(grid.body, compact && compactLayout)}
             ref={bodyRef}
             style={bodyStyle}
+            role="grid"
+            aria-readonly={readOnly || undefined}
             onPointerDown={onPointerDown}
-            onClick={(e) => {
-              if (!readOnly) return;
-              const blk = e.target.closest('[data-ev]');
-              if (blk) onOpenEdit(blk.dataset.ev);
-            }}
+            onClick={
+              readOnly
+                ? (e) => {
+                    const blk = e.target.closest('[data-ev]');
+                    if (blk) onOpenEdit(blk.dataset.ev);
+                  }
+                : undefined
+            }
             onContextMenu={(e) => {
               if (gestureRef.current) e.preventDefault();
             }}

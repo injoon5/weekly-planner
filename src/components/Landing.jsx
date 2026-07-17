@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import {
@@ -26,17 +26,15 @@ import { toast } from './ui/Toaster.jsx';
 function useLocalTheme() {
   const [theme, setTheme] = useState(readBootTheme);
   const toggle = useCallback(() => {
-    setTheme((prev) => {
-      const next = prev === 'dark' ? 'light' : 'dark';
-      applyDocumentTheme(next);
-      try {
-        localStorage.setItem('weekly-planner.theme', next);
-      } catch {
-        // Private mode / storage disabled — theme still applies for this session.
-      }
-      return next;
-    });
-  }, []);
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    applyDocumentTheme(next);
+    try {
+      localStorage.setItem('weekly-planner.theme', next);
+    } catch {
+      // Private mode / storage disabled — theme still applies for this session.
+    }
+  }, [theme]);
   return { theme, toggle };
 }
 
@@ -137,9 +135,9 @@ function PlannerPreview() {
                 style={{ top: `${(h - 9) * 60 * PXPM}px` }}
               />
             ))}
-            {PREVIEW_BLOCKS.filter((b) => b.day === col).map((b, i) => (
+            {PREVIEW_BLOCKS.filter((b) => b.day === col).map((b) => (
               <div
-                key={i}
+                key={`${b.day}-${b.start}-${b.title}`}
                 data-color={b.color}
                 {...stylex.props(landing.pBlock)}
                 style={{ top: `${b.start * PXPM}px`, height: `${b.dur * PXPM}px` }}
@@ -231,7 +229,6 @@ export function Landing() {
   const { theme, toggle } = useLocalTheme();
   const { peers } = useLandingPresence();
   const [scrolled, setScrolled] = useState(false);
-  const stagger = useRef(0);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -241,10 +238,10 @@ export function Landing() {
   }, []);
 
   // Incrementing delay per hero element for the entrance stagger.
-  stagger.current = 0;
+  let staggerMs = 0;
   const riseIn = () => {
-    const delay = stagger.current;
-    stagger.current += 70;
+    const delay = staggerMs;
+    staggerMs += 70;
     return { ...stylex.props(landing.rise), style: { animationDelay: `${delay}ms` } };
   };
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Separator } from '@base-ui/react/separator';
 import * as stylex from '@stylexjs/stylex';
 import { Copy, Eraser, Trash2 } from 'lucide-react';
@@ -15,19 +15,13 @@ const REPEAT_OPTS = [
   { value: 4, label: '4주마다' },
 ];
 
-/** Commit name/dates on blur (or Enter), not on every keystroke. */
+/** Commit name/dates on blur (or Enter), not on every keystroke.
+ *  Parent remounts via `key={board.id}` when the active board changes. */
 export function BoardMenu({ board, solo, canEditMeta = true, onCommit, onDup, onClear, onDelete }) {
   const [name, setName] = useState(board.name || '');
   const [from, setFrom] = useState(board.from || '');
   const [to, setTo] = useState(board.to || '');
   const [repeat, setRepeat] = useState(board.repeatEvery || 0);
-
-  useEffect(() => {
-    setName(board.name || '');
-    setFrom(board.from || '');
-    setTo(board.to || '');
-    setRepeat(board.repeatEvery || 0);
-  }, [board.id, board.name, board.from, board.to, board.repeatEvery]);
 
   const flush = (patch) => {
     if (!canEditMeta) return;

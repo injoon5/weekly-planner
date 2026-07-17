@@ -9,15 +9,15 @@ import {
 } from '../db/tx/events.js';
 import { commitTransaction } from '../db/transaction.js';
 
+async function transact(tx, message) {
+  return await commitTransaction((transaction) => db.transact(transaction), tx, {
+    message,
+    onError: toast,
+  });
+}
+
 /** Event CRUD only — shared by workspace + share shells. */
 export function useEventMutations({ board, canEdit = true, ruleParams = null }) {
-  const transact = async (tx, message) => {
-    return await commitTransaction((transaction) => db.transact(transaction), tx, {
-      message,
-      onError: toast,
-    });
-  };
-
   const updateEvent = async (eid, patch) => {
     if (!canEdit) return false;
     const tx = patchEventTx(eid, patch, ruleParams);

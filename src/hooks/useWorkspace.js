@@ -31,7 +31,7 @@ export function useWorkspace() {
 
   const boards = useMemo(
     () =>
-      [...(workspace.data?.boards || [])].sort(
+      (workspace.data?.boards || []).toSorted(
         (a, b) =>
           (a.sortOrder ?? 0) - (b.sortOrder ?? 0) ||
           (a.createdAt ?? 0) - (b.createdAt ?? 0),
@@ -44,8 +44,13 @@ export function useWorkspace() {
   const [ready, setReady] = useState(false);
   const [bootNote, setBootNote] = useState(null);
 
-  const activeBoardId =
-    boards.find((candidate) => candidate.id === activeId)?.id || boards[0]?.id || null;
+  // Prefer the user's selection; otherwise open the schedule that covers today.
+  const activeBoardId = useMemo(() => {
+    if (!boards.length) return null;
+    if (activeId && boards.some((b) => b.id === activeId)) return activeId;
+    const today = isoDate();
+    return (boards.find((b) => boardCoversDate(b, today)) || boards[0]).id;
+  }, [boards, activeId]);
   const detail = db.useQuery(
     activeBoardId
       ? {
@@ -99,19 +104,6 @@ export function useWorkspace() {
   });
 
   useEffect(() => {
-    if (!boards.length) {
-      setActiveId(null);
-      return;
-    }
-    if (boards.some((b) => b.id === activeId)) return;
-    // No selection yet (or it vanished): open the schedule whose period
-    // covers today, falling back to the first board.
-    const today = isoDate();
-    const current = boards.find((b) => boardCoversDate(b, today)) || boards[0];
-    setActiveId(current.id);
-  }, [boards, activeId]);
-
-  useEffect(() => {
     if (workspace.isLoading || !user) return;
     let cancelled = false;
     (async () => {
@@ -132,7 +124,7 @@ export function useWorkspace() {
     return () => {
       cancelled = true;
     };
-  }, [workspace.isLoading, user?.id, boards.length, settings?.id]);
+  }, [workspace.isLoading, user, user?.id, boards.length, settings, settings?.id]);
 
   return {
     user,
@@ -145,7 +137,7 @@ export function useWorkspace() {
     canEdit,
     isOwner,
     showViewerBanner,
-    activeId,
+    activeId: activeBoardId,
     setActiveId,
     // Full-page boot only for a cold empty workspace — never for detail/prefs.
     isLoading: isWorkspaceColdBoot({

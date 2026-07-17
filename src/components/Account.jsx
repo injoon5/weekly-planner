@@ -34,12 +34,12 @@ const THEME_OPTS = [
 /** Entrance stagger per card (ms). */
 const STAGGER = 45;
 
+const DATE_FMT = new Intl.DateTimeFormat('ko', { dateStyle: 'medium', timeStyle: 'short' });
+
 function fmtStamp(ms) {
   if (!ms) return null;
   try {
-    return new Intl.DateTimeFormat('ko', { dateStyle: 'medium', timeStyle: 'short' }).format(
-      new Date(ms),
-    );
+    return DATE_FMT.format(new Date(ms));
   } catch {
     return null;
   }
@@ -204,7 +204,7 @@ function TokensCard({ index, refreshToken }) {
   const { data } = db.useQuery({ apiTokens: {} });
   const tokens = useMemo(
     () =>
-      [...(data?.apiTokens || [])].sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0)),
+      (data?.apiTokens || []).toSorted((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0)),
     [data],
   );
 
@@ -213,12 +213,13 @@ function TokensCard({ index, refreshToken }) {
   // { id, token } — the only time a secret is ever visible.
   const [revealed, setRevealed] = useState(null);
 
-  const run = async (fn) => {
+  const withBusy = async (work) => {
     setBusy(true);
     try {
-      await fn();
+      return await work();
     } catch (err) {
       toast(err instanceof Error ? err.message : '요청을 처리하지 못했어요');
+      return null;
     } finally {
       setBusy(false);
     }
@@ -264,13 +265,16 @@ function TokensCard({ index, refreshToken }) {
             {...stylex.props(account.tokenBtn)}
             disabled={busy}
             title="기존 값은 즉시 무효화돼요"
-            onClick={() =>
-              void run(async () => {
-                const out = await tokensRequest(refreshToken, { body: { rotate: t.id } });
+            onClick={() => {
+              void (async () => {
+                const out = await withBusy(() =>
+                  tokensRequest(refreshToken, { body: { rotate: t.id } }),
+                );
+                if (!out) return;
                 setRevealed({ id: t.id, token: out.token });
                 toast('토큰을 새로 만들었어요');
-              })
-            }
+              })();
+            }}
           >
             <RefreshCw size={13} strokeWidth={1.75} />
             새로 고침
@@ -280,13 +284,16 @@ function TokensCard({ index, refreshToken }) {
             disabled={busy}
             title="길게 눌러 삭제"
             aria-label={`${t.name || '토큰'} 길게 눌러 삭제`}
-            onConfirm={() =>
-              void run(async () => {
-                await tokensRequest(refreshToken, { method: 'DELETE', body: { id: t.id } });
+            onConfirm={() => {
+              void (async () => {
+                const ok = await withBusy(() =>
+                  tokensRequest(refreshToken, { method: 'DELETE', body: { id: t.id } }),
+                );
+                if (ok === null) return;
                 setRevealed((prev) => (prev?.id === t.id ? null : prev));
                 toast('토큰을 삭제했어요');
-              })
-            }
+              })();
+            }}
           >
             <Trash2 size={13} strokeWidth={1.75} />
           </HoldToConfirm>
@@ -324,14 +331,17 @@ function TokensCard({ index, refreshToken }) {
         {...stylex.props(account.createRow)}
         onSubmit={(e) => {
           e.preventDefault();
-          void run(async () => {
-            const out = await tokensRequest(refreshToken, {
-              body: { name: newName.trim() },
-            });
+          void (async () => {
+            const out = await withBusy(() =>
+              tokensRequest(refreshToken, {
+                body: { name: newName.trim() },
+              }),
+            );
+            if (!out) return;
             setRevealed({ id: out.id, token: out.token });
             setNewName('');
             toast('토큰을 만들었어요');
-          });
+          })();
         }}
       >
         <input

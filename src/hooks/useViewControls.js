@@ -133,9 +133,11 @@ export function useViewControls({
     );
   };
 
+  const hiddenColorSet = useMemo(() => new Set(hiddenColors), [hiddenColors]);
+
   const visibleEvents = useCallback(
-    (events) => events.filter((e) => !hiddenColors.includes(e.color)),
-    [hiddenColors],
+    (events) => events.filter((e) => !hiddenColorSet.has(e.color)),
+    [hiddenColorSet],
   );
 
   const days = useMemo(() => {

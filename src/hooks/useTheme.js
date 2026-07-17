@@ -15,7 +15,10 @@ import { persistThemeTx } from '../db/tx/theme.js';
 export function useTheme(settings) {
   const [theme, setTheme] = useState(readBootTheme);
   const themeRef = useRef(theme);
-  themeRef.current = theme;
+
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
 
   useEffect(() => {
     applyDocumentTheme(theme);

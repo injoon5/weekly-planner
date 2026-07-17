@@ -18,5 +18,8 @@ export function linkedId(value) {
  * @returns {string[]}
  */
 export function linkedIds(values) {
-  return (values || []).map(linkedId).filter(Boolean);
+  return (values || []).flatMap((value) => {
+    const id = linkedId(value);
+    return id ? [id] : [];
+  });
 }

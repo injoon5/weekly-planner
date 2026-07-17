@@ -55,7 +55,7 @@ export function UpgradeDialog({ open, onOpenChange }) {
             </div>
 
             {!sentEmail ? (
-              <div {...stylex.props(auth.step, auth.stepEnter)} key="email">
+              <div key="email" {...stylex.props(auth.step, auth.stepEnter)}>
                 <p {...stylex.props(auth.copy)} style={{ marginTop: 0 }}>
                   이메일을 연결하면 지금까지 만든 시간표를 그대로 유지하면서 어느 기기에서나 로그인할
                   수 있어요.
@@ -87,7 +87,7 @@ export function UpgradeDialog({ open, onOpenChange }) {
                 </form>
               </div>
             ) : (
-              <div {...stylex.props(auth.step, auth.stepEnter)} key="code">
+              <div key="code" {...stylex.props(auth.step, auth.stepEnter)}>
                 <p {...stylex.props(auth.copy)} style={{ marginTop: 0 }}>
                   <strong>{sentEmail}</strong>으로 보낸 6자리 코드를 입력하세요.
                 </p>

@@ -1,6 +1,7 @@
 /** Device-local prefs for the print header (name / date / time fields). */
 
-export const PRINT_PREFS_KEY = 'weekly-planner.print';
+export const PRINT_PREFS_KEY = 'weekly-planner.print:v1';
+const LEGACY_PRINT_PREFS_KEY = 'weekly-planner.print';
 
 export function defaultPrintPrefs() {
   return {
@@ -25,13 +26,17 @@ export function normalizePrintPrefs(value) {
   };
 }
 
-export function readPrintPrefs() {
+function readStored(key) {
   try {
-    const raw = localStorage.getItem(PRINT_PREFS_KEY);
-    return raw ? normalizePrintPrefs(JSON.parse(raw)) : defaultPrintPrefs();
+    const raw = localStorage.getItem(key);
+    return raw ? normalizePrintPrefs(JSON.parse(raw)) : null;
   } catch {
-    return defaultPrintPrefs();
+    return null;
   }
+}
+
+export function readPrintPrefs() {
+  return readStored(PRINT_PREFS_KEY) || readStored(LEGACY_PRINT_PREFS_KEY) || defaultPrintPrefs();
 }
 
 export function resolvePrintPrefs(board) {

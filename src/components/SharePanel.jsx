@@ -102,12 +102,14 @@ function InviteSection({ busy, refreshToken, onInvite, run }) {
         type="button"
         {...stylex.props(menus.mi)}
         disabled={busy || !email.trim()}
-        onClick={() =>
-          void run(async () => {
-            const result = await onInvite({ email: email.trim(), role, refreshToken });
+        onClick={() => {
+          void (async () => {
+            const result = await run(() =>
+              onInvite({ email: email.trim(), role, refreshToken }),
+            );
             if (isOk(result)) setEmail('');
-          })
-        }
+          })();
+        }}
       >
         <span {...stylex.props(menus.miIconWrap)}>
           <UserPlus size={14} strokeWidth={1.75} />
@@ -207,10 +209,10 @@ function SharePanelContent({
 
   const members = board?.members || [];
 
-  const run = async (fn) => {
+  const withBusy = async (work) => {
     setBusy(true);
     try {
-      await fn();
+      return await work();
     } finally {
       setBusy(false);
     }
@@ -232,7 +234,7 @@ function SharePanelContent({
             title="클릭해서 전체 링크 복사"
             aria-label={`공유 링크 ${sharePath(share.token)}, 클릭해서 복사`}
             disabled={busy}
-            onClick={() => run(actions.copyShareLink)}
+            onClick={() => void withBusy(actions.copyShareLink)}
           >
             {sharePath(share.token)}
           </button>
@@ -249,18 +251,18 @@ function SharePanelContent({
                   setMode(nextMode);
                   // Password mode waits for the input below; open applies now.
                   if (nextMode === 'open' && share.mode !== 'open') {
-                    void run(async () => {
-                      const result = await actions.updateShare({ mode: 'open' });
+                    void (async () => {
+                      const result = await withBusy(() => actions.updateShare({ mode: 'open' }));
                       if (!isOk(result)) setMode('password');
-                    });
+                    })();
                   }
                 }}
                 onRoleChange={(nextRole) => {
                   setRole(nextRole);
-                  void run(async () => {
-                    const result = await actions.updateShare({ role: nextRole });
+                  void (async () => {
+                    const result = await withBusy(() => actions.updateShare({ role: nextRole }));
                     if (!isOk(result)) setRole(share.role === 'editor' ? 'editor' : 'viewer');
-                  });
+                  })();
                 }}
               />
               {mode === 'password' && (
@@ -269,12 +271,14 @@ function SharePanelContent({
                     type="button"
                     {...stylex.props(menus.mi)}
                     disabled={busy || !password}
-                    onClick={() =>
-                      run(async () => {
-                        const result = await actions.updateShare({ mode: 'password', password });
+                    onClick={() => {
+                      void (async () => {
+                        const result = await withBusy(() =>
+                          actions.updateShare({ mode: 'password', password }),
+                        );
                         if (isOk(result)) setPassword('');
-                      })
-                    }
+                      })();
+                    }}
                   >
                     <span {...stylex.props(menus.miIconWrap)}>
                       <KeyRound size={14} strokeWidth={1.75} />
@@ -291,7 +295,7 @@ function SharePanelContent({
             type="button"
             {...stylex.props(menus.mi)}
             disabled={busy}
-            onClick={() => run(actions.copyShareLink)}
+            onClick={() => void withBusy(actions.copyShareLink)}
           >
             <span {...stylex.props(menus.miIconWrap)}>
               <Copy size={14} strokeWidth={1.75} />
@@ -305,7 +309,7 @@ function SharePanelContent({
                 {...stylex.props(menus.mi)}
                 disabled={busy || share.mode === 'password'}
                 title={share.mode === 'password' ? '비밀번호 공유는 다시 설정하세요' : undefined}
-                onClick={() => run(actions.rotateShare)}
+                onClick={() => void withBusy(actions.rotateShare)}
               >
                 <span {...stylex.props(menus.miIconWrap)}>
                   <RefreshCw size={14} strokeWidth={1.75} />
@@ -316,7 +320,7 @@ function SharePanelContent({
                 type="button"
                 {...stylex.props(menus.mi, menus.miRed)}
                 disabled={busy}
-                onClick={() => run(actions.disableShare)}
+                onClick={() => void withBusy(actions.disableShare)}
               >
                 <span {...stylex.props(menus.miIconWrap)}>
                   <Link2Off size={14} strokeWidth={1.75} />
@@ -343,12 +347,12 @@ function SharePanelContent({
               type="button"
               {...stylex.props(menus.mi)}
               disabled={busy || (mode === 'password' && !password)}
-              onClick={() =>
-                run(async () => {
-                  await actions.enableShare({ mode, role, password });
+              onClick={() => {
+                void (async () => {
+                  await withBusy(() => actions.enableShare({ mode, role, password }));
                   setPassword('');
-                })
-              }
+                })();
+              }}
             >
               <span {...stylex.props(menus.miIconWrap)}>
                 <Link2 size={14} strokeWidth={1.75} />
@@ -364,7 +368,7 @@ function SharePanelContent({
           busy={busy}
           refreshToken={refreshToken}
           onInvite={actions.inviteMember}
-          run={run}
+          run={withBusy}
         />
       )}
 

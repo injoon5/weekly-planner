@@ -28,7 +28,7 @@ export function Login() {
         </div>
 
         {!sentEmail ? (
-          <div {...stylex.props(auth.step, auth.stepEnter)} key="email">
+          <div key="email" {...stylex.props(auth.step, auth.stepEnter)}>
             <h1 {...stylex.props(auth.title)}>주간 계획표</h1>
             <p {...stylex.props(auth.copy)}>
               이메일로 로그인 코드를 보내드려요. 계정이 없으면 자동으로 만들어집니다.
@@ -60,7 +60,7 @@ export function Login() {
             </form>
           </div>
         ) : (
-          <div {...stylex.props(auth.step, auth.stepEnter)} key="code">
+          <div key="code" {...stylex.props(auth.step, auth.stepEnter)}>
             <h1 {...stylex.props(auth.title)}>코드 입력</h1>
             <p {...stylex.props(auth.copy)}>
               <strong>{sentEmail}</strong>으로 보낸 6자리 코드를 입력하세요.
