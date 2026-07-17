@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { useNavigate } from '@tanstack/react-router';
-import { MoreHorizontal, CircleUserRound, Share2, UserPlus, ListChecks } from 'lucide-react';
+import { CircleUserRound, Share2, UserPlus, ListChecks } from 'lucide-react';
 import { db } from '../instant.js';
 import { findMemberForUser } from '../member-policy.js';
 import { useBoardLifecycle } from '../hooks/useBoardLifecycle.js';
@@ -228,19 +228,11 @@ export function Planner() {
             </MenuPopover>
           )
         }
-        afterThemeActions={
-          <MenuPopover
-            trigger={
-              <button {...stylex.props(planner.ibtn)} type="button" aria-label="더보기">
-                <MoreHorizontal size={15} strokeWidth={1.75} />
-              </button>
-            }
-          >
-            <MoreMenu
-              onExport={lifecycle.doExport}
-              onImport={isOwner ? lifecycle.askImport : null}
-            />
-          </MenuPopover>
+        moreMenuItems={
+          <MoreMenu
+            onExport={lifecycle.doExport}
+            onImport={isOwner ? lifecycle.askImport : null}
+          />
         }
       />
 

@@ -1,6 +1,8 @@
+import { Separator } from '@base-ui/react/separator';
 import * as stylex from '@stylexjs/stylex';
-import { Eye, Moon, Printer, Sun } from 'lucide-react';
+import { Moon, MoreHorizontal, Printer, Sun } from 'lucide-react';
 import { fmtRange, fmtRepeat } from '../time.js';
+import { menus } from '../styles/menus.js';
 import { planner } from '../styles/planner.js';
 import { PresenceAvatars } from './PresenceAvatars.jsx';
 import { PrintMeta } from './PrintMeta.jsx';
@@ -20,7 +22,7 @@ export function PlannerHeader({
   leadingActions,
   todosAction,
   afterViewActions,
-  afterThemeActions,
+  moreMenuItems,
 }) {
   return (
     <header {...stylex.props(planner.top)}>
@@ -44,17 +46,6 @@ export function PlannerHeader({
         {leadingActions}
         {todosAction}
 
-        <MenuPopover
-          width={264}
-          trigger={
-            <button {...stylex.props(planner.ibtn)} type="button" aria-label="보기 설정">
-              <Eye size={15} strokeWidth={1.75} />
-            </button>
-          }
-        >
-          <ViewControls views={views} />
-        </MenuPopover>
-
         {afterViewActions}
 
         <button
@@ -70,7 +61,19 @@ export function PlannerHeader({
           />
         </button>
 
-        {afterThemeActions}
+        {/* View controls + extra actions share one ⋯ menu. */}
+        <MenuPopover
+          width={264}
+          trigger={
+            <button {...stylex.props(planner.ibtn)} type="button" aria-label="더보기">
+              <MoreHorizontal size={15} strokeWidth={1.75} />
+            </button>
+          }
+        >
+          <ViewControls views={views} />
+          {moreMenuItems && <Separator {...stylex.props(menus.mdiv)} />}
+          {moreMenuItems}
+        </MenuPopover>
 
         <button
           {...stylex.props(planner.btn, planner.btnPlain)}

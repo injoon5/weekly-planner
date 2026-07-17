@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Trash2,
   UserPlus,
+  X,
 } from 'lucide-react';
 import { db, id } from '../instant.js';
 import { commitTransaction } from '../transaction.js';
@@ -18,6 +19,7 @@ import { PEER_COLORS, peerColor } from '../hooks/useBoardPresence.js';
 import { account } from '../styles/account.js';
 import { planner } from '../styles/planner.js';
 import { ui } from '../styles/ui.js';
+import { HoldToConfirm } from './HoldToConfirm.jsx';
 import { toast } from './ui/Toaster.jsx';
 import { UiSelect } from './ui/UiSelect.jsx';
 import { UpgradeDialog } from './UpgradeDialog.jsx';
@@ -26,6 +28,9 @@ const THEME_OPTS = [
   { value: 'light', label: '라이트' },
   { value: 'dark', label: '다크' },
 ];
+
+/** Entrance stagger per card (ms). */
+const STAGGER = 45;
 
 function fmtStamp(ms) {
   if (!ms) return null;
@@ -62,26 +67,47 @@ async function tokensRequest(refreshToken, { method = 'POST', body } = {}) {
   return payload;
 }
 
-function ProfileCard({ user, settings, saveSettings }) {
+function Card({ index = 0, children }) {
+  return (
+    <section {...stylex.props(account.card)} style={{ animationDelay: `${index * STAGGER}ms` }}>
+      {children}
+    </section>
+  );
+}
+
+function ProfileCard({ index, user, settings, saveSettings }) {
   const [name, setName] = useState(settings?.displayName || '');
   const savedName = settings?.displayName || '';
   const dirty = name.trim() !== savedName;
+
+  const emailName = user.email ? user.email.split('@')[0] : '손님';
   const autoColor = peerColor(user?.email || '');
   const activeColor = PEER_COLORS.includes(settings?.presenceColor)
     ? settings.presenceColor
     : null;
 
-  return (
-    <section {...stylex.props(account.card)}>
-      <h2 {...stylex.props(account.cardTitle)}>프로필</h2>
-      <p {...stylex.props(account.cardHint)}>
-        이름과 색은 함께 보는 사람들에게 커서와 아바타로 표시돼요.
-      </p>
+  // Preview follows the draft, so the avatar reacts while typing.
+  const previewName = name.trim() || savedName || emailName;
+  const previewColor = activeColor || autoColor;
 
-      <div {...stylex.props(account.row)}>
-        <span {...stylex.props(account.rowLabel)}>이메일</span>
-        <span {...stylex.props(account.rowValue)}>{user.email || '게스트 계정'}</span>
+  return (
+    <Card index={index}>
+      <div {...stylex.props(account.profileHead)}>
+        <span
+          {...stylex.props(account.avatar)}
+          aria-hidden="true"
+          style={{ backgroundColor: previewColor }}
+        >
+          {previewName.slice(0, 1).toUpperCase()}
+        </span>
+        <div {...stylex.props(account.profileMeta)}>
+          <h2 {...stylex.props(account.profileName)}>{previewName}</h2>
+          <span {...stylex.props(account.profileEmail)}>{user.email || '게스트 계정'}</span>
+        </div>
       </div>
+      <p {...stylex.props(account.cardHint)}>
+        이름과 색은 함께 보는 사람들에게 아바타와 커서로 표시돼요.
+      </p>
 
       <form
         {...stylex.props(account.row)}
@@ -97,26 +123,41 @@ function ProfileCard({ user, settings, saveSettings }) {
           <input
             id="account-name"
             {...stylex.props(ui.input, ui.inputSm)}
-            placeholder={user.email ? user.email.split('@')[0] : '손님'}
+            placeholder={emailName}
             maxLength={24}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
-          <button type="submit" {...stylex.props(ui.btn, ui.btnPlain)} disabled={!dirty}>
+          <button
+            type="submit"
+            {...stylex.props(ui.btn, ui.btnPlain, account.rowBtn)}
+            disabled={!dirty}
+          >
             저장
           </button>
         </div>
       </form>
 
       <div {...stylex.props(account.row)}>
-        <span {...stylex.props(account.rowLabel)}>내 색</span>
-        <div {...stylex.props(account.swatches)}>
+        <span {...stylex.props(account.rowLabel)} id="account-color-label">
+          내 색
+        </span>
+        <div
+          {...stylex.props(account.swatches)}
+          role="group"
+          aria-labelledby="account-color-label"
+        >
           <button
             type="button"
             {...stylex.props(account.swatch, account.swatchAuto, !activeColor && account.swatchOn)}
-            title={`자동 (${autoColor})`}
+            aria-pressed={!activeColor}
+            title="이메일에서 자동으로 정해진 색"
             onClick={() => void saveSettings({ presenceColor: null }, '색을 바꿨어요')}
           >
+            <span
+              {...stylex.props(account.swatchAutoDot)}
+              style={{ backgroundColor: autoColor }}
+            />
             자동
           </button>
           {PEER_COLORS.map((c) => (
@@ -125,19 +166,20 @@ function ProfileCard({ user, settings, saveSettings }) {
               type="button"
               {...stylex.props(account.swatch, activeColor === c && account.swatchOn)}
               style={{ backgroundColor: c }}
+              aria-pressed={activeColor === c}
               aria-label={`아바타 색 ${c}`}
               onClick={() => void saveSettings({ presenceColor: c }, '색을 바꿨어요')}
             />
           ))}
         </div>
       </div>
-    </section>
+    </Card>
   );
 }
 
-function ThemeCard({ theme, persistTheme }) {
+function ThemeCard({ index, theme, persistTheme }) {
   return (
-    <section {...stylex.props(account.card)}>
+    <Card index={index}>
       <h2 {...stylex.props(account.cardTitle)}>화면</h2>
       <p {...stylex.props(account.cardHint)}>테마는 이 계정의 모든 기기에 적용돼요.</p>
       <div {...stylex.props(account.row)}>
@@ -147,15 +189,16 @@ function ThemeCard({ theme, persistTheme }) {
             ariaLabel="테마"
             items={THEME_OPTS}
             value={theme === 'dark' ? 'dark' : 'light'}
+            xstyle={account.themeSelect}
             onValueChange={(next) => void persistTheme(next)}
           />
         </div>
       </div>
-    </section>
+    </Card>
   );
 }
 
-function TokensCard({ refreshToken }) {
+function TokensCard({ index, refreshToken }) {
   const { data } = db.useQuery({ apiTokens: {} });
   const tokens = useMemo(
     () =>
@@ -180,31 +223,36 @@ function TokensCard({ refreshToken }) {
   };
 
   return (
-    <section {...stylex.props(account.card)}>
+    <Card index={index}>
       <h2 {...stylex.props(account.cardTitle)}>API 토큰</h2>
       <p {...stylex.props(account.cardHint)}>
         REST API(<code>/api/v1</code>)에 <code>Authorization: Bearer</code> 헤더로 사용해요. 토큰은
         만들 때 한 번만 표시되고, 언제든 새로 고치거나 삭제할 수 있어요.
       </p>
 
-      {tokens.length === 0 && <div {...stylex.props(account.empty)}>아직 토큰이 없어요</div>}
+      {tokens.length === 0 && (
+        <div {...stylex.props(account.empty)}>
+          아직 토큰이 없어요 — 아래에서 이름을 정하고 첫 토큰을 만들어 보세요.
+        </div>
+      )}
 
       {tokens.map((t) => (
         <div key={t.id} {...stylex.props(account.tokenRow)}>
-          <span {...stylex.props(planner.ibtn)} aria-hidden="true" style={{ pointerEvents: 'none' }}>
+          <span {...stylex.props(account.keyIcon)} aria-hidden="true">
             <KeyRound size={14} strokeWidth={1.75} />
           </span>
           <div {...stylex.props(account.tokenMeta)}>
             <span {...stylex.props(account.tokenName)}>{t.name || '이름 없는 토큰'}</span>
             <span {...stylex.props(account.tokenSub)}>
-              {t.prefix}…{fmtStamp(t.lastUsedAt) ? ` · 마지막 사용 ${fmtStamp(t.lastUsedAt)}` : ' · 사용 전'}
+              {t.prefix}…
+              {fmtStamp(t.lastUsedAt) ? ` · 마지막 사용 ${fmtStamp(t.lastUsedAt)}` : ' · 사용 전'}
             </span>
           </div>
           <button
             type="button"
             {...stylex.props(account.tokenBtn)}
             disabled={busy}
-            title="토큰 새로 고침 — 기존 값은 즉시 무효화돼요"
+            title="기존 값은 즉시 무효화돼요"
             onClick={() =>
               void run(async () => {
                 const out = await tokensRequest(refreshToken, { body: { rotate: t.id } });
@@ -216,38 +264,48 @@ function TokensCard({ refreshToken }) {
             <RefreshCw size={13} strokeWidth={1.75} />
             새로 고침
           </button>
-          <button
-            type="button"
+          <HoldToConfirm
             {...stylex.props(account.tokenBtn, account.tokenBtnDanger)}
             disabled={busy}
-            title="토큰 삭제"
-            onClick={() =>
+            title="길게 눌러 삭제"
+            aria-label={`${t.name || '토큰'} 길게 눌러 삭제`}
+            onConfirm={() =>
               void run(async () => {
                 await tokensRequest(refreshToken, { method: 'DELETE', body: { id: t.id } });
-                if (revealed?.id === t.id) setRevealed(null);
+                setRevealed((prev) => (prev?.id === t.id ? null : prev));
                 toast('토큰을 삭제했어요');
               })
             }
           >
             <Trash2 size={13} strokeWidth={1.75} />
-          </button>
+          </HoldToConfirm>
         </div>
       ))}
 
       {revealed && (
-        <div {...stylex.props(account.secret)}>
-          {revealed.token}
-          <div {...stylex.props(account.secretHint)}>
-            지금 복사하세요 — 다시 표시되지 않아요.
+        <div {...stylex.props(account.secret)} role="status">
+          <code {...stylex.props(account.secretCode)}>{revealed.token}</code>
+          <div {...stylex.props(account.secretFoot)}>
+            <span {...stylex.props(account.secretHint)}>
+              지금 복사하세요 — 다시 표시되지 않아요.
+            </span>
+            <button
+              type="button"
+              {...stylex.props(account.tokenBtn)}
+              onClick={() => void copyText(revealed.token)}
+            >
+              <Copy size={13} strokeWidth={1.75} />
+              복사
+            </button>
+            <button
+              type="button"
+              {...stylex.props(account.tokenBtn)}
+              aria-label="토큰 표시 닫기"
+              onClick={() => setRevealed(null)}
+            >
+              <X size={13} strokeWidth={1.75} />
+            </button>
           </div>
-          <button
-            type="button"
-            {...stylex.props(account.tokenBtn)}
-            onClick={() => void copyText(revealed.token)}
-          >
-            <Copy size={13} strokeWidth={1.75} />
-            복사
-          </button>
         </div>
       )}
 
@@ -268,16 +326,21 @@ function TokensCard({ refreshToken }) {
         <input
           {...stylex.props(ui.input, ui.inputSm)}
           placeholder="토큰 이름 (예: 자동화 스크립트)"
+          aria-label="새 토큰 이름"
           maxLength={40}
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
         />
-        <button type="submit" {...stylex.props(ui.btn, ui.btnPrimary)} disabled={busy}>
+        <button
+          type="submit"
+          {...stylex.props(ui.btn, ui.btnPrimary, account.rowBtn)}
+          disabled={busy}
+        >
           <Plus size={14} strokeWidth={2} />
           만들기
         </button>
       </form>
-    </section>
+    </Card>
   );
 }
 
@@ -326,11 +389,11 @@ export function Account() {
           <h1 {...stylex.props(account.title)}>계정 설정</h1>
         </div>
 
-        <ProfileCard user={user} settings={settings} saveSettings={saveSettings} />
-        <ThemeCard theme={theme} persistTheme={persistTheme} />
+        <ProfileCard index={0} user={user} settings={settings} saveSettings={saveSettings} />
+        <ThemeCard index={1} theme={theme} persistTheme={persistTheme} />
 
         {isGuest ? (
-          <section {...stylex.props(account.card)}>
+          <Card index={2}>
             <h2 {...stylex.props(account.cardTitle)}>API 토큰</h2>
             <p {...stylex.props(account.cardHint)}>
               게스트 모드에서는 API 토큰을 만들 수 없어요. 계정을 만들면 데이터가 저장되고 REST
@@ -344,29 +407,29 @@ export function Account() {
               <UserPlus size={14} strokeWidth={1.75} />
               계정 만들기
             </button>
-          </section>
+          </Card>
         ) : (
-          <TokensCard refreshToken={user.refresh_token} />
+          <TokensCard index={2} refreshToken={user.refresh_token} />
         )}
 
-        <section {...stylex.props(account.card)}>
+        <Card index={3}>
           <div {...stylex.props(account.dangerZone)}>
             <div>
               <h2 {...stylex.props(account.cardTitle)}>로그아웃</h2>
-              <p {...stylex.props(account.cardHint)} style={{ margin: 0 }}>
+              <p {...stylex.props(account.cardHint, account.cardHintTight)}>
                 이 기기에서 로그아웃해요.
               </p>
             </div>
             <button
               type="button"
-              {...stylex.props(ui.btn, ui.btnPlain)}
+              {...stylex.props(ui.btn, ui.btnPlain, account.rowBtn)}
               onClick={() => void db.auth.signOut()}
             >
               <LogOut size={14} strokeWidth={1.75} />
               로그아웃
             </button>
           </div>
-        </section>
+        </Card>
       </div>
 
       <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
