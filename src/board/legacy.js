@@ -1,6 +1,6 @@
-import { LEGACY_KEY, LEGACY_KEY1 } from './config.js';
+import { LEGACY_KEY, LEGACY_KEY1 } from '../lib/config.js';
 import { boardFields, eventFields } from './models.js';
-import { dt } from './time.js';
+import { dt } from '../lib/time.js';
 
 export function readJson(key) {
   try {

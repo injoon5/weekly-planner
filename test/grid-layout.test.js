@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { NEXT_DAY_START_SLOT, SLOTS, SLOT_MIN } from '../src/config.js';
+import { NEXT_DAY_START_SLOT, SLOTS, SLOT_MIN } from '../src/lib/config.js';
 
-vi.mock('../src/tokens.stylex.js', () => ({
+vi.mock('../src/styles/tokens.stylex.js', () => ({
   layout: {
     gutW: '54px',
     slotH: '28px',
@@ -22,8 +22,8 @@ import {
   slotHeight,
   slotTop,
   syncHeadTrack,
-} from '../src/grid-layout.js';
-import { layout } from '../src/tokens.stylex.js';
+} from '../src/grid/grid-layout.js';
+import { layout } from '../src/styles/tokens.stylex.js';
 
 describe('grid geometry', () => {
   it('builds deterministic column geometry', () => {

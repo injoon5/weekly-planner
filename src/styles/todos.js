@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { colors } from '../tokens.stylex.js';
+import { colors } from './tokens.stylex.js';
 
 const MOBILE = '@media screen and (max-width: 560px)';
 // Strong ease-out (Emil): starts fast, settles soft. Used for row entrances.

@@ -9,7 +9,7 @@ import {
   redirect,
 } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { db } from './instant.js';
+import { db } from './db/instant.js';
 import { Toaster } from './components/ui/Toaster.jsx';
 import { reset } from './styles/ui.js';
 

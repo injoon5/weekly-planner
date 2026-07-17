@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { colors, layout } from '../tokens.stylex.js';
+import { colors, layout } from './tokens.stylex.js';
 
 // Strong ease-out (starts fast → responsive entrances). Matches the auth card.
 const EASE_OUT = 'cubic-bezier(.23,1,.32,1)';

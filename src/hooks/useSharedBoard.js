@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
-import { db } from '../instant.js';
-import { fromInstantEvents } from '../models.js';
-import { deriveShareAccessState } from '../share-access.js';
+import { db } from '../db/instant.js';
+import { fromInstantEvents } from '../board/models.js';
+import { deriveShareAccessState } from '../sharing/share-access.js';
 import {
   hashSharePassword,
   readShareUnlock,
   writeShareUnlock,
-} from '../share.js';
+} from '../sharing/share.js';
 
 /**
  * Public share route: metadata by token, board via ruleParams.secret.

@@ -1,6 +1,6 @@
 import { Toast } from '@base-ui/react/toast';
 import * as stylex from '@stylexjs/stylex';
-import { colors } from '../../tokens.stylex.js';
+import { colors } from '../../styles/tokens.stylex.js';
 
 const s = stylex.create({
   pill: {

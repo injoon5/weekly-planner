@@ -1,7 +1,33 @@
-import { SLOTS } from './config.js';
+import { SLOTS } from '../lib/config.js';
 import { locatePointer, measureGridGeometry } from './drag.js';
-import { pickLeastUsedColor } from './models.js';
-import { clamp } from './time.js';
+import { pickLeastUsedColor } from '../board/models.js';
+import { clamp } from '../lib/time.js';
+
+/**
+ * Apply a grid gesture result to the editor session / event store.
+ * Shared by the workspace and shared-link planner shells.
+ *
+ * @param {{ type: string, draft?: object, id?: string, patch?: object }} result
+ * @param {{ readOnly: boolean, session: any, updateEvent: (id: string, patch: object) => void }} deps
+ */
+export function handleGridGesture(result, { readOnly, session, updateEvent }) {
+  if (readOnly) return;
+  switch (result.type) {
+    case 'open-create':
+      session.openCreate(result.draft);
+      break;
+    case 'open-edit':
+      session.openEdit(result.id);
+      break;
+    case 'patch':
+      updateEvent(result.id, result.patch);
+      break;
+    case 'noop':
+      break;
+    default:
+      throw new Error(`Unknown grid gesture: ${result.type}`);
+  }
+}
 
 /**
  * Classify a pointerdown on the week grid into a gesture mode + payload.

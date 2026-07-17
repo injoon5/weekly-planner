@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex';
-import { THEME_KEY } from './config.js';
+import { THEME_KEY } from '../lib/config.js';
 import { darkTheme } from './themes.js';
-import { reset } from './styles/ui.js';
+import { reset } from '../styles/ui.js';
 
 export function readBootTheme() {
   const stored = localStorage.getItem(THEME_KEY);

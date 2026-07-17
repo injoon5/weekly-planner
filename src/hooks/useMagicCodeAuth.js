@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { db } from '../instant.js';
+import { db } from '../db/instant.js';
 
 /**
  * Shared magic-code email auth flow for Login + UpgradeDialog.

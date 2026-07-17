@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { fmtRange } from '../time.js';
+import { fmtRange } from '../lib/time.js';
 import { planner } from '../styles/planner.js';
 
 function MetaField({ label, value, blank }) {

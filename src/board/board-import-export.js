@@ -1,7 +1,7 @@
 import { normBoards } from './legacy.js';
 import { nextBoardSortOrder } from './models.js';
-import { defaultBoardRange, pad } from './time.js';
-import { boardTx } from './tx/boards.js';
+import { defaultBoardRange, pad } from '../lib/time.js';
+import { boardTx } from '../db/tx/boards.js';
 
 /** Build the JSON export payload from Instant board rows. */
 export function buildExportPayload(exportBoards) {

@@ -14,7 +14,7 @@ import {
   plannerDate,
   snapDur,
   snapMin,
-} from '../src/time.js';
+} from '../src/lib/time.js';
 
 describe('time formatting', () => {
   it('formats grid-relative minutes across midnight', () => {

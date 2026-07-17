@@ -10,7 +10,7 @@ import {
   renderShareOgHtml,
   resolveShareOgCard,
   sanitizeOgImageTitle,
-} from '../src/og-meta.js';
+} from '../src/server/og-meta.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 

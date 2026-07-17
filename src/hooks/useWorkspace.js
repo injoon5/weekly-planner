@@ -1,26 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { db } from '../instant.js';
-import { linkedId, linkedIds } from '../links.js';
-import { boardCoversDate, fromInstantEvents } from '../models.js';
-import { BOARD_ROLE } from '../roles.js';
-import { isoDate } from '../time.js';
-import { ensureWorkspace } from '../workspace-ensure.js';
-
-function ownerIdOf(board) {
-  return linkedId(board?.owner);
-}
-
-function editorIdsOf(board) {
-  return linkedIds(board?.editors);
-}
-
-/** Write truth = boards.editors link (members.role is display cache). */
-function roleForBoard(board, userId) {
-  if (!board || !userId) return BOARD_ROLE.VIEWER;
-  if (ownerIdOf(board) === userId) return BOARD_ROLE.OWNER;
-  if (editorIdsOf(board).includes(userId)) return BOARD_ROLE.EDITOR;
-  return BOARD_ROLE.VIEWER;
-}
+import { db } from '../db/instant.js';
+import { roleForBoard } from '../sharing/member-policy.js';
+import { boardCoversDate, fromInstantEvents } from '../board/models.js';
+import { BOARD_ROLE } from '../sharing/roles.js';
+import { isoDate } from '../lib/time.js';
+import { ensureWorkspace } from '../board/workspace-ensure.js';
 
 /**
  * Instant query + active board + one-shot workspace bootstrap.
@@ -151,5 +135,3 @@ export function useWorkspace() {
     clearBootNote: () => setBootNote(null),
   };
 }
-
-export { ownerIdOf, roleForBoard };

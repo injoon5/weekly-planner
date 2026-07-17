@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { nowOnGrid } from '../time.js';
+import { nowOnGrid } from '../lib/time.js';
 
 export function usePlannerClock(intervalMs = 30000) {
   const [now, setNow] = useState(() => Date.now());

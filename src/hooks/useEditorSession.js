@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { eventFields } from '../models.js';
+import { eventFields } from '../board/models.js';
 
 // Must outlast the dialog's CSS exit transition (base-ui.css: .18s / .22s sheet).
 const CLOSE_MS = 260;

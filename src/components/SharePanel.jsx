@@ -3,13 +3,13 @@ import { Separator } from '@base-ui/react/separator';
 import * as stylex from '@stylexjs/stylex';
 import { Copy, KeyRound, Link2, Link2Off, LogOut, RefreshCw, UserPlus, X } from 'lucide-react';
 import { useShareActions } from '../hooks/useShareActions.js';
-import { enabledShareOf } from '../share-policy.js';
+import { enabledShareOf } from '../sharing/share-policy.js';
 import { UiSelect } from './ui/UiSelect.jsx';
 import { menus } from '../styles/menus.js';
 import { ui } from '../styles/ui.js';
-import { linkedId } from '../links.js';
-import { isOk } from '../command-result.js';
-import { sharePath } from '../share.js';
+import { linkedId } from '../lib/links.js';
+import { isOk } from '../lib/command-result.js';
+import { sharePath } from '../sharing/share.js';
 import { toast } from './ui/Toaster.jsx';
 
 const MODE_OPTS = [

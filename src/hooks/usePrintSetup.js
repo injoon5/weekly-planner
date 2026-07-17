@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import {
   prepareHeadTracksForPrint,
   restoreHeadTracksAfterPrint,
-} from '../grid-layout.js';
+} from '../grid/grid-layout.js';
 import {
   normalizePrintPrefs,
   resolvePrintPrefs,
   writePrintPrefs,
-} from '../print-prefs.js';
+} from '../board/print-prefs.js';
 
 export function usePrintSetup(board) {
   const [isOpen, setIsOpen] = useState(false);

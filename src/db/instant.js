@@ -1,5 +1,5 @@
 import { init, id } from '@instantdb/react';
-import { APP_ID } from './config.js';
+import { APP_ID } from '../lib/config.js';
 import schema from './schema.js';
 
 // Instant persists recent query subscriptions to IndexedDB and syncs when

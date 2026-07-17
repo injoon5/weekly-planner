@@ -6,7 +6,7 @@ import {
   reducePendingPointerMove,
   shouldCancelTouchForScroll,
   shouldCancelTouchHold,
-} from '../src/drag.js';
+} from '../src/grid/drag.js';
 
 describe('edgeScrollDelta', () => {
   const paneRect = { left: 0, top: 0, right: 400, bottom: 600 };

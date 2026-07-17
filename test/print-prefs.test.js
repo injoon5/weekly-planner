@@ -7,7 +7,7 @@ import {
   readPrintPrefs,
   resolvePrintPrefs,
   writePrintPrefs,
-} from '../src/print-prefs.js';
+} from '../src/board/print-prefs.js';
 
 function createStorage(initialValue = null) {
   let value = initialValue;

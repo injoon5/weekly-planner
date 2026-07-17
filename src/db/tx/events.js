@@ -1,5 +1,5 @@
 import { db, id, withRuleParams } from '../instant.js';
-import { eventFields } from '../models.js';
+import { eventFields } from '../../board/models.js';
 
 export function createEventTx(boardId, fields, ruleParams) {
   const eid = id();

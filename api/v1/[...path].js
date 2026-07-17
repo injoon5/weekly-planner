@@ -4,9 +4,9 @@ import {
   generateApiToken,
   hashApiToken,
   parseBearer,
-} from '../../src/api-tokens.js';
-import { linkedId, linkedIds } from '../../src/links.js';
-import { eventFields, nextBoardSortOrder } from '../../src/models.js';
+} from '../../src/server/api-tokens.js';
+import { linkedId, linkedIds } from '../../src/lib/links.js';
+import { eventFields, nextBoardSortOrder } from '../../src/board/models.js';
 import {
   RestValidationError,
   createRateLimiter,
@@ -14,8 +14,8 @@ import {
   matchRestRoute,
   restBoardFields,
   restSegments,
-} from '../../src/rest.js';
-import schema from '../../src/schema.js';
+} from '../../src/server/rest.js';
+import schema from '../../src/db/schema.js';
 
 const APP_ID = process.env.INSTANT_APP_ID || process.env.VITE_INSTANT_APP_ID;
 const ADMIN_TOKEN = process.env.INSTANT_ADMIN_TOKEN;

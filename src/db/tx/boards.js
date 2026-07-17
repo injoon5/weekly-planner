@@ -1,6 +1,6 @@
 import { db, id } from '../instant.js';
-import { serializeColorLabels } from '../prefs.js';
-import { defaultBoardRange } from '../time.js';
+import { serializeColorLabels } from '../../board/prefs.js';
+import { defaultBoardRange } from '../../lib/time.js';
 import { createEventTx } from './events.js';
 
 export function boardTx(userId, board, sortOrder) {

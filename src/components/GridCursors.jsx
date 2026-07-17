@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { contentPointFromPane, gridCursorSpaceId } from '../grid-cursors.js';
+import { contentPointFromPane, gridCursorSpaceId } from '../grid/grid-cursors.js';
 
 function CursorGlyph({ color }) {
   const size = 35;

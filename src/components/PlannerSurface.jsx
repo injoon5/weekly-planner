@@ -1,26 +1,7 @@
 import { useMemo } from 'react';
+import { handleGridGesture } from '../grid/grid-gesture.js';
 import { BoardCanvas } from './BoardCanvas.jsx';
 import { Editor } from './Editor.jsx';
-
-/** Shared gesture → editor/event wiring used by workspace + share shells. */
-export function handleGridGesture(result, { readOnly, session, updateEvent }) {
-  if (readOnly) return;
-  switch (result.type) {
-    case 'open-create':
-      session.openCreate(result.draft);
-      break;
-    case 'open-edit':
-      session.openEdit(result.id);
-      break;
-    case 'patch':
-      updateEvent(result.id, result.patch);
-      break;
-    case 'noop':
-      break;
-    default:
-      throw new Error(`Unknown grid gesture: ${result.type}`);
-  }
-}
 
 /**
  * Shared planner body: board canvas + editor.

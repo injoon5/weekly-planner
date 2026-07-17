@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { isOk } from '../command-result.js';
-import { COLOR_LABELS_KO, PALETTE } from '../config.js';
-import { db } from '../instant.js';
+import { isOk } from '../lib/command-result.js';
+import { COLOR_LABELS_KO, PALETTE } from '../lib/config.js';
+import { db } from '../db/instant.js';
 import {
   defaultViewPrefs,
   parseColorLabels,
   prefsFromDoc,
   serializeColorLabels,
   serializeHiddenColors,
-} from '../prefs.js';
-import { commitTransaction } from '../transaction.js';
-import { patchBoardTx } from '../tx/boards.js';
-import { upsertBoardPrefsTx } from '../tx/prefs.js';
+} from '../board/prefs.js';
+import { commitTransaction } from '../db/transaction.js';
+import { patchBoardTx } from '../db/tx/boards.js';
+import { upsertBoardPrefsTx } from '../db/tx/prefs.js';
 
 const guestKey = (boardKey) => `weekly-planner.view.${boardKey || 'guest'}`;
 

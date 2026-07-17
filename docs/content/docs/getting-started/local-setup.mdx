@@ -13,7 +13,7 @@ npm ci
 
 ## InstantDB
 
-1. App id lives in **`src/config.js`** (`APP_ID`). Mirror it in `.env` as `INSTANT_APP_ID`.
+1. App id lives in **`src/lib/config.js`** (`APP_ID`). Mirror it in `.env` as `INSTANT_APP_ID`.
 2. Admin token in `.env` from the [Instant dashboard](https://www.instantdb.com/dash).
 3. Optionally lock schema and permissions:
 
@@ -22,7 +22,7 @@ npm run push:schema
 npm run push:perms
 ```
 
-`instant.schema.ts` re-exports `src/schema.js` — **`src/schema.js` is the source of truth**.
+`instant.schema.ts` re-exports `src/db/schema.js` — **`src/db/schema.js` is the source of truth**.
 
 ## Scripts
 

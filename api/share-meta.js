@@ -1,12 +1,12 @@
 import { init } from '@instantdb/admin';
-import schema from '../src/schema.js';
+import schema from '../src/db/schema.js';
 import {
   DEFAULT_OG_DESCRIPTION,
   DEFAULT_OG_TITLE,
   DEFAULT_OG_IMAGE_TITLE,
   renderShareOgHtml,
   resolveShareOgCard,
-} from '../src/og-meta.js';
+} from '../src/server/og-meta.js';
 
 const APP_ID = process.env.INSTANT_APP_ID || process.env.VITE_INSTANT_APP_ID;
 const ADMIN_TOKEN = process.env.INSTANT_ADMIN_TOKEN;

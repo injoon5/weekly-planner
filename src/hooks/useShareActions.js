@@ -1,19 +1,19 @@
-import { fail, ok } from '../command-result.js';
-import { db } from '../instant.js';
-import { memberRoleTxs, removeMemberTxs } from '../member-policy.js';
+import { fail, ok } from '../lib/command-result.js';
+import { db } from '../db/instant.js';
+import { memberRoleTxs, removeMemberTxs } from '../sharing/member-policy.js';
 import {
   createShareTx,
   deleteShareTx,
   patchShareTx,
   replaceShareTxs,
-} from '../tx/shares.js';
+} from '../db/tx/shares.js';
 import {
   activeShareOf,
   buildShareSecrets,
   buildShareUpdate,
-} from '../share-policy.js';
-import { SHARE_MODE, normalizeShareRole } from '../roles.js';
-import { shareUrl } from '../share.js';
+} from '../sharing/share-policy.js';
+import { SHARE_MODE, normalizeShareRole } from '../sharing/roles.js';
+import { shareUrl } from '../sharing/share.js';
 
 async function copyUrl(url) {
   try {

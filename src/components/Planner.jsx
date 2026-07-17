@@ -1,28 +1,26 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import { useNavigate } from '@tanstack/react-router';
-import { CircleUserRound, Share2, UserPlus, ListChecks } from 'lucide-react';
-import { db } from '../instant.js';
-import { findMemberForUser } from '../member-policy.js';
-import { useBoardLifecycle } from '../hooks/useBoardLifecycle.js';
+import { useBoardSwap } from '../hooks/useBoardSwap.js';
+import { useBoardTransfer } from '../hooks/useBoardTransfer.js';
 import { usePlannerRuntime } from '../hooks/usePlannerRuntime.js';
 import { useTheme } from '../hooks/useTheme.js';
-import { useTodayTodos } from '../hooks/useTodayTodos.js';
 import { useWorkspace } from '../hooks/useWorkspace.js';
 import { planner } from '../styles/planner.js';
-import { todos as todoStyles } from '../styles/todos.js';
-import { TodoPanel } from './TodoPanel.jsx';
-import { BoardMenu } from './BoardMenu.jsx';
-import { BoardTabs } from './BoardTabs.jsx';
-import { MoreMenu, UserMenu } from './Menus.jsx';
-import { PrintDialog } from './PrintDialog.jsx';
+import { AccountMenu } from './AccountMenu.jsx';
+import { BoardNav } from './BoardNav.jsx';
+import { MoreMenu } from './MoreMenu.jsx';
 import { PlannerHeader } from './PlannerHeader.jsx';
 import { PlannerSurface } from './PlannerSurface.jsx';
-import { SharePanel } from './SharePanel.jsx';
-import { UpgradeDialog } from './UpgradeDialog.jsx';
-import { MenuPopover } from './ui/MenuPopover.jsx';
+import { PrintDialog } from './PrintDialog.jsx';
+import { ShareAction } from './ShareAction.jsx';
+import { TodosAction } from './TodosAction.jsx';
 import { toast } from './ui/Toaster.jsx';
 
+/**
+ * Signed-in workspace shell: loads the workspace, then wires header clusters
+ * (BoardNav / AccountMenu / TodosAction / ShareAction) around the shared
+ * planner surface. The shared-link shell lives in SharedPlanner.jsx.
+ */
 export function Planner() {
   const {
     user,
@@ -42,25 +40,7 @@ export function Planner() {
     clearBootNote,
   } = useWorkspace();
 
-  const auth = db.useAuth();
-  const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme(settings, toast);
-
-  // Board menu is anchored to the active tab inside BoardTabs, so it runs as a
-  // controlled popover instead of a trigger-based one.
-  const [boardMenuAnchor, setBoardMenuAnchor] = useState(null);
-  const closeBoardMenu = () => setBoardMenuAnchor(null);
-
-  const lifecycle = useBoardLifecycle({
-    user,
-    boards,
-    board,
-    events,
-    setActiveId,
-    closeMenu: closeBoardMenu,
-    toast,
-    isOwner,
-  });
   const runtime = usePlannerRuntime({
     board,
     events,
@@ -72,16 +52,8 @@ export function Planner() {
     canEdit,
     onError: toast,
   });
-
-  const [swapping, setSwapping] = useState(false);
-  const [swapBoardId, setSwapBoardId] = useState(board?.id);
-  const [upgradeOpen, setUpgradeOpen] = useState(false);
-
-  const isGuest = Boolean(auth.user?.isGuest);
-
-  const [todosOpen, setTodosOpen] = useState(false);
-  const todosApi = useTodayTodos(user, events, toast);
-  const remainingTodos = todosApi.todos.reduce((n, t) => n + (t.done ? 0 : 1), 0);
+  const transfer = useBoardTransfer({ user, boards, setActiveId, toast, isOwner });
+  const swapping = useBoardSwap(board?.id);
 
   useEffect(() => {
     if (!bootNote) return;
@@ -89,21 +61,6 @@ export function Planner() {
     clearBootNote();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot boot toast
   }, [bootNote]);
-
-  useEffect(() => {
-    if (!board?.id || board.id === swapBoardId) return;
-    setSwapping(true);
-    const t = setTimeout(() => {
-      setSwapBoardId(board.id);
-      setSwapping(false);
-    }, 140);
-    return () => clearTimeout(t);
-  }, [board?.id, swapBoardId]);
-
-  const myMembership = useMemo(
-    () => findMemberForUser(board?.members, user?.id),
-    [board, user],
-  );
 
   if (isLoading || (!ready && !boards.length)) {
     return <div {...stylex.props(planner.boot)}>불러오는 중…</div>;
@@ -129,109 +86,22 @@ export function Planner() {
         onToggleTheme={toggleTheme}
         onPrint={runtime.print.open}
         navigation={
-          <>
-            <BoardTabs
-              boards={boards}
-              activeId={board.id}
-              canAdd={isOwner}
-              onSelect={setActiveId}
-              onOpenActive={(e) => setBoardMenuAnchor(e.currentTarget)}
-              onAdd={lifecycle.addBoard}
-            />
-            <MenuPopover
-              open={Boolean(boardMenuAnchor)}
-              onOpenChange={(open) => {
-                if (!open) closeBoardMenu();
-              }}
-              anchor={boardMenuAnchor}
-              align="start"
-            >
-              <BoardMenu
-                board={board}
-                solo={boards.length < 2}
-                canEditMeta={isOwner}
-                onCommit={lifecycle.commitBoard}
-                onDup={lifecycle.duplicateBoard}
-                onClear={lifecycle.clearBoard}
-                onDelete={lifecycle.deleteBoard}
-              />
-            </MenuPopover>
-          </>
+          <BoardNav
+            user={user}
+            boards={boards}
+            board={board}
+            events={events}
+            isOwner={isOwner}
+            onSelect={setActiveId}
+          />
         }
-        leadingActions={
-          <>
-            {isGuest && (
-              <button
-                {...stylex.props(planner.btn, planner.btnPlain)}
-                type="button"
-                onClick={() => setUpgradeOpen(true)}
-              >
-                <UserPlus size={14} strokeWidth={1.75} />
-                <span {...stylex.props(planner.btnLabelHide)}>계정 만들기</span>
-              </button>
-            )}
-            <MenuPopover
-              trigger={
-                <button
-                  {...stylex.props(planner.ibtn)}
-                  type="button"
-                  title={user.email || (isGuest ? '게스트' : '계정')}
-                  aria-label="계정 메뉴"
-                >
-                  <CircleUserRound size={15} strokeWidth={1.75} />
-                </button>
-              }
-            >
-              <UserMenu
-                email={user.email}
-                isGuest={isGuest}
-                onUpgrade={() => setUpgradeOpen(true)}
-                onAccount={() => void navigate({ to: '/account' })}
-                onSignOut={() => db.auth.signOut()}
-              />
-            </MenuPopover>
-          </>
-        }
-        todosAction={
-          <button
-            {...stylex.props(planner.ibtn, todoStyles.trigger)}
-            type="button"
-            aria-label="오늘 할 일"
-            aria-expanded={todosOpen}
-            onClick={() => setTodosOpen(true)}
-          >
-            <ListChecks size={15} strokeWidth={1.75} />
-            {remainingTodos > 0 && (
-              <span {...stylex.props(todoStyles.badge)} aria-hidden="true">
-                {remainingTodos > 9 ? '9+' : remainingTodos}
-              </span>
-            )}
-          </button>
-        }
-        afterViewActions={
-          (isOwner || myMembership) && (
-            <MenuPopover
-              width={264}
-              trigger={
-                <button {...stylex.props(planner.ibtn)} type="button" aria-label="공유">
-                  <Share2 size={15} strokeWidth={1.75} />
-                </button>
-              }
-            >
-              <SharePanel
-                board={board}
-                isOwner={isOwner}
-                user={user}
-                refreshToken={auth.user?.refresh_token}
-                myMembershipId={myMembership?.id}
-              />
-            </MenuPopover>
-          )
-        }
+        leadingActions={<AccountMenu user={user} />}
+        todosAction={<TodosAction user={user} events={events} />}
+        afterViewActions={<ShareAction board={board} user={user} isOwner={isOwner} />}
         moreMenuItems={
           <MoreMenu
-            onExport={lifecycle.doExport}
-            onImport={isOwner ? lifecycle.askImport : null}
+            onExport={transfer.doExport}
+            onImport={isOwner ? transfer.askImport : null}
           />
         }
       />
@@ -250,18 +120,14 @@ export function Planner() {
         printShowMemos={runtime.print.prefs.showMemos}
       />
 
-      <TodoPanel open={todosOpen} onOpenChange={setTodosOpen} api={todosApi} />
-
       <PrintDialog {...runtime.print.dialog} />
-
-      <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
 
       <input
         type="file"
         accept=".json,application/json"
         style={{ display: 'none' }}
-        ref={lifecycle.fileRef}
-        onChange={lifecycle.onImportFile}
+        ref={transfer.fileRef}
+        onChange={transfer.onImportFile}
       />
     </div>
   );

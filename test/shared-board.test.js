@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   deriveShareAccessState,
   openShareSecret,
-} from '../src/share-access.js';
+} from '../src/sharing/share-access.js';
 
 const sharedNotFound = (args) => deriveShareAccessState(args).state === 'notFound';
 

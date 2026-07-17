@@ -9,13 +9,18 @@ description: Where to find components, hooks, transactions, and tests.
 | --- | --- |
 | Components | `src/components/` |
 | Hooks | `src/hooks/` |
-| Transactions | `src/tx/` + `transaction.js` |
-| Domain / pure | `models.js`, `drag.js`, `grid-*.js`, `share*.js`, `time.js`, … |
-| Styles | `src/styles/`, `tokens.stylex.js`, `themes.js` |
+| Data layer | `src/db/` — Instant client, schema, `transaction.js`, `tx/` |
+| Board domain | `src/board/` — models, import/export, workspace bootstrap |
+| Grid geometry | `src/grid/` — drag, gestures, layout, packing |
+| Sharing / roles | `src/sharing/` — share links, roles, member policy |
+| Theme | `src/theme/` |
+| Server-shared | `src/server/` — REST, API tokens, OG meta (used by `api/`, `middleware.js`) |
+| Generic helpers | `src/lib/` — time, config, links, command-result |
+| Styles | `src/styles/` (+ `tokens.stylex.js`) |
 | Tests | `test/*.test.js` |
-| Server | `api/`, `middleware.js` |
+| Server routes | `api/`, `middleware.js` |
 | Docs site | `docs/` (this Fumadocs app) |
 
 ## Notable naming note
 
-Older README text mentioned `src/db.js`. The Instant client is **`src/instant.js`**.
+Older README text mentioned `src/db.js`. The Instant client is **`src/db/instant.js`**.

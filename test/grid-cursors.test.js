@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contentPointFromPane, gridCursorSpaceId } from '../src/grid-cursors.js';
+import { contentPointFromPane, gridCursorSpaceId } from '../src/grid/grid-cursors.js';
 
 describe('contentPointFromPane', () => {
   it('maps viewport coordinates into scroll content space', () => {

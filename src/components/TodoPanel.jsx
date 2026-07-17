@@ -5,7 +5,7 @@ import { Drawer } from '@base-ui/react/drawer';
 import { ScrollArea } from '@base-ui/react/scroll-area';
 import * as stylex from '@stylexjs/stylex';
 import { CalendarClock, X } from 'lucide-react';
-import { DAYS_KO } from '../config.js';
+import { DAYS_KO } from '../lib/config.js';
 import { useMobileSheet } from '../hooks/useMobileSheet.js';
 import { todos as s } from '../styles/todos.js';
 
