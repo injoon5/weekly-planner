@@ -1,0 +1,36 @@
+---
+title: Routing & auth wiring
+description: TanStack Router routes, Instant auth context, and navigation guards.
+---
+
+# Routing & auth wiring
+
+File: `src/router.jsx`
+
+## Routes
+
+| Path | Behavior |
+| --- | --- |
+| `/` | If signed in → `Planner`. If signed out → `Landing`. |
+| `/login` | Magic-code login. Authenticated users redirect to `/`. |
+| `/s/$token` | Public shared planner. No auth guard. |
+
+Root layout shows a boot screen while Instant auth is loading, or an error screen if auth fails.
+
+## Auth context
+
+```tsx
+const auth = db.useAuth();
+// mapped into router context; router.invalidate() when loading/user changes
+```
+
+Guards re-run when auth changes because the router is invalidated. Shared links are **not** gated in the router — password gating lives in `useSharedBoard` / `share-access.js`.
+
+## Landing vs login
+
+- **Landing** — marketing preview, guest sign-in (`db.auth.signInAsGuest()`), theme toggle (local only), link to `/login`.
+- **Login** — email → 6-digit code via `useMagicCodeAuth`.
+
+## PWA and SPA fallback
+
+`vercel.json` rewrites non-API paths to `/index.html`. Do **not** enable `cleanUrls` — it breaks SPA fallback (guarded by `test/vercel-spa.test.js`). The service worker navigate fallback explicitly **denies** `/api/*`.

@@ -1,0 +1,4 @@
+{
+  "title": "Deploy",
+  "pages": ["index", "vercel", "instant-origins", "docs-site"]
+}

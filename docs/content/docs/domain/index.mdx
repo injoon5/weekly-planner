@@ -1,0 +1,25 @@
+---
+title: Domain model
+description: Boards, events, shares, members, and the rules that keep them consistent.
+---
+
+# Domain model
+
+Domain logic is mostly pure TypeScript/JavaScript modules so Vitest can cover it without Instant.
+
+## Core concepts
+
+- **Board** — named timetable with optional date range and weekly repeat cadence
+- **Event** — block on a weekday with start minutes from 06:00, duration, color, memo
+- **Settings** — per-user synced theme
+- **Share** — public link row with token + secrets + mode/role
+- **Member** — authenticated collaborator; editor authority is `boards.editors`
+- **Board prefs** — per-user view filters for a board
+- **Todo** — “checked off” marker for an event on a concrete planner date (not a free-form task)
+
+## Deep dives
+
+- [Schema](/docs/domain/schema) — Instant entities, links, rooms
+- [Permissions](/docs/domain/permissions) — Instant rules
+- [Models](/docs/domain/models) — normalization and derived helpers
+- [Roles & access](/docs/domain/roles-and-access) — owner / member / share guest paths

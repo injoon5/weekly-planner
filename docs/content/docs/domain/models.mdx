@@ -1,0 +1,49 @@
+---
+title: Models & normalization
+description: Pure helpers that normalize events, boards, dates, and derived todos.
+---
+
+# Models & normalization
+
+Source: `src/models.js` (+ `time.js`, `prefs.js`, `legacy.js`).
+
+## Event fields (`eventFields`)
+
+- `day` clamped to `0..6`
+- `start` snapped to 30-minute slots
+- `dur` at least 30 minutes, capped so the block cannot extend past the 24h grid window
+- title ≤ 80 chars; memo ≤ 300
+- unknown colors → `sky`
+
+## Board fields (`boardFields`)
+
+- name trimmed, ≤ 40 chars (fallback `시간표`)
+- `repeatEvery` via `repeatWeeksOf` → `0..8`
+
+## Board coverage (`boardCoversDate`)
+
+- One-off boards: bounded or open-ended ranges
+- Repeating boards: anchor at `from`; active window length is original `from→to` span capped to one repeat cycle
+- Repeating with no `from`: covers all dates
+
+## Time (`src/time.js`)
+
+Grid origin is **06:00** (`DAY_ORIGIN = 360` minutes).
+
+- `fmt(0)` → `06:00`
+- `fmt(1080)` → `00:00` (next calendar day on the grid)
+- `plannerDate()` assigns pre-06:00 wall times to the previous planner date
+- `nowOnGrid()` drives the now line, today highlight, and todo day key
+
+Config constants (`src/config.js`): `SLOTS = 48`, `SLOT_MIN = 30`, `DAY_MIN = 1440`, `NEXT_DAY_START_SLOT = 36`.
+
+## Derived helpers
+
+- `fromInstantEvents` — Instant rows → UI events
+- `buildTodayTodos` — weekday events + checked map → checklist
+- `pickLeastUsedColor` — default color for new events
+- `nextBoardSortOrder` / `nextBoardName` — tab creation
+
+## Prefs (`prefs.js`)
+
+Color labels JSON, hidden colors array, defaults: weekends visible, non-compact, memos visible.

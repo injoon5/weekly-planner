@@ -1,0 +1,25 @@
+---
+title: Todos
+description: Today checklist derived from schedule events, not free-form tasks.
+---
+
+# Todos
+
+## Model
+
+A `todos` row means: user checked off `eventId` on planner date `day` (`YYYY-MM-DD`).
+
+Not an independent task list — rows are derived from the active board’s events for today.
+
+## Hook (`useTodayTodos`)
+
+- Planner date uses the 06:00 boundary
+- Checks scoped to user + concrete date
+- Live updates when events change
+- Toggle deletes all checked rows for that event (guards duplicates)
+
+Tx: `checkTodoTx` / `uncheckTodoTx` in `src/tx/todos.js`.
+
+## UI (`TodoPanel`)
+
+Desktop: Base UI Dialog side rail. Mobile: Drawer. Progress rail + empty state.

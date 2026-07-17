@@ -1,0 +1,83 @@
+---
+title: Schema
+description: InstantDB entities, fields, links, and presence rooms.
+---
+
+# Schema
+
+Source: `src/schema.js` (re-exported by `instant.schema.ts`).
+
+## Entities
+
+### `$users`
+
+Instant auth users. Optional unique indexed `email`.
+
+Linked as owner of boards/settings/todos, member users, board editors, board prefs.
+
+### `boards`
+
+| Field | Notes |
+| --- | --- |
+| `name` | string |
+| `from` / `to` | optional date strings |
+| `repeatEvery` | optional number; weekly cadence anchored at `from`; `0`/absent = one-off |
+| `createdAt` | indexed number |
+| `sortOrder` | indexed number |
+| `colorLabels` | optional JSON string of color → label |
+
+Links: required owner (`boardOwner`), events, shares, members, editors (`boardEditors`), boardPrefs.
+
+### `events`
+
+| Field | Notes |
+| --- | --- |
+| `day` | indexed `0..6` |
+| `title` | string |
+| `start` | indexed minutes from 06:00 |
+| `dur` | duration minutes |
+| `color` | palette key |
+| `memo` | optional |
+| `createdAt` | indexed |
+
+Required board link (`eventBoard`), cascade on board delete. UI writes go through `eventFields()`.
+
+### `settings`
+
+Optional `theme`. One row per user (`settingsOwner`).
+
+### `shares`
+
+| Field | Notes |
+| --- | --- |
+| `token` | unique indexed public id |
+| `secret` | indexed read secret |
+| `editSecret` | optional; editor writes |
+| `mode` | `open` \| `password` |
+| `role` | `viewer` \| `editor` |
+| `enabled` | boolean |
+| `createdAt` | indexed |
+
+Required board (`shareBoard`). Viewer demotion **replaces** the row so stale `editSecret` cannot linger.
+
+### `members`
+
+`role` (indexed, display/cache), optional `email`, `createdAt`. Links to board + user. **Write authority** is `boards.editors`, not this string alone.
+
+### `boardPrefs`
+
+Per-user board view: `hiddenColors` (JSON), `hideWeekend`, `compact`, `showMemos`. Links to board + user.
+
+### `todos`
+
+| Field | Notes |
+| --- | --- |
+| `day` | indexed `YYYY-MM-DD` planner date |
+| `eventId` | indexed string |
+| `createdAt` | indexed |
+
+Presence of a row means that event is checked off for that date. Same weekly event is unchecked again on a future date.
+
+## Rooms
+
+`rooms.board.presence` — optional `name`, `color`, `role`. Used for avatars and cursors. Publish display names only, never raw email.

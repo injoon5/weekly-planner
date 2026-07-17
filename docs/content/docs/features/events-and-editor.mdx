@@ -1,0 +1,39 @@
+---
+title: Events & editor
+description: Draft-until-save editing, mutations, and read-only behavior.
+---
+
+# Events & editor
+
+## Mutations (`useEventMutations`)
+
+`updateEvent`, `removeEvent`, `createEvent`, `saveEvent` — all no-op / return false when read-only. Share editors pass `ruleParams`.
+
+Tx builders: `src/tx/events.js` — always normalize with `eventFields` on create/save; patches whitelist fields.
+
+## Draft-until-save (`useEditorSession`)
+
+| Action | Effect |
+| --- | --- |
+| `openCreate` / `openEdit` | Local draft only |
+| `save` | Persist create or update |
+| `cancel` / scrim / Escape | Discard; **never** orphans |
+| `deleteEvent` | Explicit delete only |
+
+Close animation uses `closing` + 260ms timeout; refs keep Strict Mode safe.
+
+## Editor UI (`Editor.jsx`)
+
+- Base UI radio swatches, `Sheet` (dialog desktop / drawer mobile), `UiSelect`, `HoldToConfirm` for delete
+- Draft normalized on every patch
+- Enter in inputs saves
+- Read-only: fields disabled, close only
+- Mounts closed then opens so enter transitions run
+
+## Gesture vs editor
+
+- Drag move/resize **patches immediately**
+- Blank-grid create opens the draft editor (unless the gesture pipeline commits a create — see grid docs)
+- Read-only: click opens editor for viewing
+
+`PlannerSurface` ignores gesture results when read-only.

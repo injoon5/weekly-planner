@@ -1,0 +1,32 @@
+---
+title: Presence
+description: Live avatars and peer cursors on the week grid.
+---
+
+# Presence
+
+## Room
+
+`db.room('board', boardId)` with presence fields `name`, `color`, `role`.
+
+`useBoardPresence`:
+
+- Boardless sessions park in per-tab idle rooms so hooks stay unconditional
+- Anonymous guests get stable session colors
+- Published name is shortened; never raw email
+
+## Avatars
+
+`PresenceAvatars` — overlapping stack with `+N` overflow.
+
+## Cursors
+
+`grid-cursors.js` — `contentPointFromPane`, `gridCursorSpaceId` (room-scoped key).
+
+`GridCursors`:
+
+- Publishes scroll-content coordinates (not viewport-only)
+- Ignores touch pointer moves
+- Republishes on pane scroll so peers stay aligned with cells
+- Clears on pointer leave
+- Transform + short transition + `willChange`

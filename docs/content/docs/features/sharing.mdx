@@ -1,0 +1,30 @@
+---
+title: Sharing
+description: Share links, password unlock, member invites, and SharePanel behavior.
+---
+
+# Sharing
+
+## Owner actions (`useShareActions`)
+
+`enableShare`, `updateShare`, `disableShare`, `rotateShare`, `copyShareLink`, member role/remove, `leaveBoard`, `inviteMember`.
+
+- Owner-only except `leaveBoard`
+- Invites POST `/api/invite` with Instant refresh token in `token` header
+- Rotating **password** shares is disallowed — set a new password instead
+- `replaceShareTxs` used when demoting editor→viewer so `editSecret` cannot survive
+
+## Guest loading (`useSharedBoard`)
+
+1. Query share metadata with `ruleParams.shareToken`
+2. Derive secret/state (`share-access.js`)
+3. Query board by share token with `ruleParams.secret`
+4. Password unlock hashes and stores secret in sessionStorage
+
+Open links use the token as secret. Nested board data is **not** loaded from the share row for guests before permissions allow the board query.
+
+## UI (`SharePanel`)
+
+Link settings, password/role, member list. Remounts when active share row changes so drafts reset. Password mode waits for explicit password; open-mode and role changes apply immediately (revert draft on failure).
+
+`SharedPlanner` shows password form / disabled / not-found / planner. Document title becomes board name when ready. No tabs or share panel.

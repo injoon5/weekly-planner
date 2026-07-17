@@ -1,0 +1,32 @@
+---
+title: Auth
+description: Magic-code login, guest sessions, and in-place email upgrade.
+---
+
+# Auth
+
+## Magic code
+
+Hook: `useMagicCodeAuth`.
+
+1. `db.auth.sendMagicCode({ email })`
+2. User enters 6 digits (`CodeInputs` / Base UI OTP)
+3. `db.auth.signInWithMagicCode({ email, code })`
+
+Edge cases:
+
+- Verify only when length is exactly 6
+- `submitting` ref blocks concurrent verifies
+- Failures clear the code and trigger shake animation
+
+Screens: `Login.jsx`, `UpgradeDialog.jsx`.
+
+## Guests
+
+Landing `GuestButton` → `db.auth.signInAsGuest()`. Errors toast via global `Toaster`.
+
+Guest users get a real Instant workspace. Upgrade dialog converts the guest to an email identity **in place** (Instant links the account; no local data migration).
+
+## Theme before auth
+
+Landing uses local theme state because Instant `settings` are unavailable. After sign-in, `useTheme` takes over synced settings.

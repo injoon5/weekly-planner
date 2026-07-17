@@ -1,0 +1,44 @@
+---
+title: Components
+description: Responsibilities of major UI components in the planner.
+---
+
+# Components
+
+## Shells
+
+| Component | Role |
+| --- | --- |
+| `Planner` | Authenticated shell: workspace, tabs, share, todos, print, surface |
+| `SharedPlanner` | Public share route: unlock states + surface |
+| `PlannerSurface` | Shared canvas + editor; gates gestures when read-only |
+| `PlannerHeader` | Title/range, presence, view menu, theme, print slots |
+
+## Grid
+
+| Component | Role |
+| --- | --- |
+| `BoardCanvas` | Thin wrapper around `WeekGrid` with presence props |
+| `WeekGrid` | Scrollable timetable, drag init, now line, cursors |
+| `GridEventBlock` | Accessible event chip + resize handles |
+| `GridCursors` | Peer cursors |
+
+## Dialogs / panels
+
+| Component | Role |
+| --- | --- |
+| `Editor` | Event draft sheet |
+| `SharePanel` | Links + members |
+| `TodoPanel` | Today checklist |
+| `PrintDialog` / `PrintMeta` | Print config + print header |
+| `UpgradeDialog` | Guest → email |
+| `BoardMenu` / `BoardTabs` | Board chrome |
+| `ViewControls` | Filters + color labels |
+| `Menus` (`MoreMenu`, `UserMenu`) | Import/export help + account |
+| `Landing` / `Login` / `CodeInputs` | Pre-auth |
+
+## UI primitives
+
+`Sheet`, `MenuPopover`, `UiSelect`, `SwitchRow`, `Toaster`/`toast`, `IconSwap`, `HoldToConfirm`, `PresenceAvatars`.
+
+`Sheet`: desktop Dialog, mobile Drawer (≤560px via `useMobileSheet`).

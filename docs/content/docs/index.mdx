@@ -1,0 +1,76 @@
+---
+title: Overview
+description: Weekly Planner is a realtime weekly timetable with magic-code auth, multi-board tabs, drag editing, sharing, and InstantDB sync.
+---
+
+# Overview
+
+**Weekly Planner** (주간 계획표) is a realtime weekly timetable. The product app is a Vite SPA; this Fumadocs site documents how that codebase works.
+
+## Stack
+
+| Layer | Choice |
+| --- | --- |
+| UI | React 19 + StyleX + Base UI + Lucide |
+| Routing | TanStack Router |
+| Data | InstantDB (`@instantdb/react` + admin SDK) |
+| Build | Vite 6 + PWA |
+| Hosting | Vercel (SPA + serverless `/api/*`) |
+
+## What it does
+
+- **Magic code login** — email a 6-digit code; Instant creates the account
+- **Guest mode** — try the app without email, then upgrade in place
+- **Realtime sync** — boards and events update live across devices
+- **Multi-board tabs** — rename, duplicate, clear, date ranges, repeat weeks
+- **Drag / resize / create** — mouse drag or touch long-press
+- **Draft-until-save editor** — cancel never leaves orphan events
+- **Share links** — open or password, viewer or editor
+- **Members** — invite registered users with viewer/editor roles
+- **Presence** — avatars + cursors on the grid
+- **Today todos** — checklist derived from today's schedule events
+- **Import / export JSON** — plus one-time migration from legacy localStorage
+- **Print + dark mode**
+
+## Routes (app)
+
+| Path | Access | Screen |
+| --- | --- | --- |
+| `/login` | signed out | Login |
+| `/` | everyone | Landing (signed out) or Planner (signed in) |
+| `/s/:token` | public link | Shared planner |
+
+## Repo layout
+
+```
+index.html
+vite.config.js
+src/
+  main.jsx              # createRoot + theme boot + PWA
+  router.jsx            # TanStack Router + Instant auth
+  instant.js            # Instant client
+  schema.js             # Instant schema (source of truth)
+  config.js             # APP_ID, grid constants, storage keys
+  components/           # UI
+  hooks/                # Feature hooks
+  tx/                   # Transaction builders
+  styles/               # StyleX modules + CSS bridges
+instant.schema.ts       # CLI re-export of src/schema.js
+instant.perms.ts        # Instant permissions
+api/                    # Vercel serverless routes
+middleware.js           # Crawler OG rewrite for /s/:token
+docs/                   # This Fumadocs site
+```
+
+## Mental model
+
+1. **Authenticated workspace** — user owns/joins boards; Instant auth + permissions.
+2. **Anonymous share guests** — access via `ruleParams.secret` on share links.
+3. **Planner day** — not midnight-based. The grid runs **06:00 → next-day 06:00** everywhere (labels, now line, today highlight, todos).
+
+## Next steps
+
+- [Getting started](/docs/getting-started) — run the app locally
+- [Architecture](/docs/architecture) — entry points and layering
+- [Domain model](/docs/domain) — schema and permissions
+- [Features](/docs/features) — product behavior deep-dives

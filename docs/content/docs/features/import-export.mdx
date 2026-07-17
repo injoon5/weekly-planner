@@ -1,0 +1,40 @@
+---
+title: Import / export
+description: JSON import/export format and legacy localStorage migration.
+---
+
+# Import / export
+
+## Export (`board-import-export.js`)
+
+Payload:
+
+```json
+{
+  "app": "weekly-planner",
+  "version": 2,
+  "exportedAt": "...",
+  "boards": [ /* normalized boards + events */ ]
+}
+```
+
+`exportFilename()` uses a Korean date-based name. `downloadJson` creates a Blob URL.
+
+## Import
+
+`parseImportText` → `buildImportTransactions` → Instant txs via `useBoardLifecycle`. Accepts:
+
+- Raw event array
+- Object with `boards`
+- Object with `events`
+
+Everything normalizes through `eventFields` / `boardFields`. Activates the first imported board.
+
+## Legacy migration (`legacy.js`)
+
+Keys: `weekly-planner.v2`, then `weekly-planner.v1`.
+
+- v2 boards migrate when present
+- v1 raw events become one board
+
+Runs inside `ensureWorkspace` only when the user has **zero** accessible boards. Boot toast when migrated.

@@ -1,0 +1,35 @@
+---
+title: OG & share-meta
+description: Dynamic Open Graph images and crawler-only HTML for shared planners.
+---
+
+# OG & share-meta
+
+Shared helpers: `src/og-meta.js`.
+
+## `/api/og` (`api/og.js`)
+
+- Runtime: Node
+- Query: `?title=...` sanitized/capped to 24 chars
+- `@vercel/og` `ImageResponse` with Pretendard **`.woff`** fonts (Satori does not support woff2)
+- Fonts cached in module-level promise
+- Writes into Node `res` (returning the response object alone can hang on Vercel Node)
+
+## `/api/share-meta` (`api/share-meta.js`)
+
+Crawler HTML for share links:
+
+1. Extract token
+2. Admin query share + board
+3. `resolveShareOgCard`
+4. `renderShareOgHtml` with absolute OG/Twitter tags
+
+### Privacy
+
+| Share state | OG title / description |
+| --- | --- |
+| Open + enabled | Board name allowed |
+| Password | Generic “password required” — **no board name** |
+| Disabled / missing | Generic defaults |
+
+Also: HTML escaping for all dynamic meta content; `SOCIAL_CRAWLER_RE` / `isSocialCrawler` for middleware.

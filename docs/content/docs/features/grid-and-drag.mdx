@@ -1,0 +1,37 @@
+---
+title: Grid & drag
+description: Week grid layout, packing, pointer gestures, and touch long-press.
+---
+
+# Grid & drag
+
+## Rendering
+
+`WeekGrid` → sticky synced header, scrollable body, day columns, gutter, event blocks, drag ghost, now line, cursors.
+
+`GridEventBlock` computes overlap geometry via `geoX`, shows resize handles when editable, keyboard Enter/Space/Delete.
+
+## Packing
+
+`event-packing.js` — sort by start (longer first on ties); column clusters for overlaps.
+
+`grid-layout.js` — CSS geometry, `mergeDragView` / `packView`, header sync (`syncHeadTrack` avoids mutating scroll offsets during scroll — iOS rubber-band), `scrollPaneToNow`, print CSS vars.
+
+## Gesture classification (`grid-gesture.js`)
+
+Pointer down → `move` | `resize-top` | `resize-bot` | `create` via `[data-ev]`, `[data-hh]`, `[data-day]`. New create color = least-used.
+
+## Drag adapter (`drag.js`)
+
+| Input | Activation |
+| --- | --- |
+| Mouse | move > 4px |
+| Touch | 300ms long-press; 8px slop; scroll intent cancels; second finger cancels |
+
+Active touch sets `touchAction = none`. Moves coalesce in rAF. Edge auto-scroll remeasures after scroll. **Every exit path must call `onResult`** or the grid stays blocked.
+
+Helpers: `shouldCancelTouchForScroll`, `draftFromGesture`, `resolvePendingTap`, `resolveActiveUp`, `edgeScrollDelta`, `beginPointerGesture`, …
+
+## Now line
+
+`usePlannerClock` refreshes `nowMin` / `nowDay` every 30s. Auto-scroll-to-now runs when the **board** changes, not every tick.

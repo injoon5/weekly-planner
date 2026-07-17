@@ -1,0 +1,15 @@
+{
+  "title": "Weekly Planner",
+  "pages": [
+    "index",
+    "---Guides---",
+    "getting-started",
+    "architecture",
+    "domain",
+    "features",
+    "---Reference---",
+    "api",
+    "codebase",
+    "deploy"
+  ]
+}

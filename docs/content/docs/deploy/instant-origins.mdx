@@ -1,0 +1,26 @@
+---
+title: Instant auth origins
+description: Register localhost, production, and Vercel preview origins with Instant.
+---
+
+# Instant auth origins
+
+Instant validates the browser `Origin` on auth requests. Preview URLs (`*.vercel.app`) must be registered.
+
+```bash
+# one-time: print a CLI token (do not commit)
+npx instant-cli@latest login -p
+
+INSTANT_CLI_AUTH_TOKEN=<token> npm run sync:auth-origins
+```
+
+Script: `scripts/sync-instant-auth-origins.mjs`.
+
+Registers:
+
+- Vercel project origin for `weekly-planner` (covers previews)
+- Website origins for production + `localhost:3000`
+
+Skips quietly if the token is absent; treats already-registered origins as success.
+
+CI: `.github/workflows/sync-instant-auth-origins.yml` on `main` when the script changes — needs `INSTANT_CLI_AUTH_TOKEN` secret.

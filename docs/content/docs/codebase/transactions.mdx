@@ -1,0 +1,32 @@
+---
+title: Transactions
+description: Instant transaction builders and the commitTransaction contract.
+---
+
+# Transactions
+
+## Commit helper
+
+`commitTransaction(transact, transaction, { onError })` → `ok()` or `fail(message, error)`.
+
+Pair with `command-result.js`: `ok`, `fail`, `isOk`.
+
+## Builders (`src/tx/`)
+
+| Module | Exports |
+| --- | --- |
+| `boards.js` | `boardTx`, `patchBoardTx`, `deleteBoardTx`, `deleteEventRowsTx` |
+| `events.js` | `createEventTx`, `patchEventTx`, `saveEventTx`, `deleteEventTx` (+ optional ruleParams) |
+| `prefs.js` | `upsertBoardPrefsTx` |
+| `shares.js` | `createShareTx`, `patchShareTx`, `deleteShareTx`, `replaceShareTxs` |
+| `theme.js` | `persistThemeTx` (null if no settings row) |
+| `todos.js` | `checkTodoTx`, `uncheckTodoTx` |
+
+## Invariants
+
+- `boardTx` creates board id + event txs and links owner
+- `repeatEvery` only written when truthy (schema rollout compatibility)
+- Patches whitelist fields
+- `colorLabels` object patches serialize to JSON string
+- Share editor mutations must include `ruleParams.secret`
+- `replaceShareTxs` deletes/recreates so `editSecret` cannot survive viewer demotion

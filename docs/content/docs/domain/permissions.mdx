@@ -1,0 +1,34 @@
+---
+title: Permissions
+description: Instant permission rules for boards, events, shares, members, and more.
+---
+
+# Permissions
+
+Source: `instant.perms.ts`.
+
+## Summary
+
+| Entity | View | Create | Update / delete |
+| --- | --- | --- | --- |
+| `boards` | owner, member, or enabled share secret | auth + owner is self | owner only |
+| `events` | same as board view | owner, editor, or edit secret | same |
+| `settings` | owner | owner | owner |
+| `shares` | board owner, or token lookup via `shareToken` | board owner | board owner |
+| `members` | board owner or self | board owner | owner; self can delete |
+| `boardPrefs` | self | auth + self | self |
+| `todos` | owner | auth + self | owner |
+
+## Bindings (boards)
+
+Typical bindings: `isOwner`, `isMember`, `isEditor`, `hasShareSecret`.
+
+## Share secrets
+
+- Field rules hide `secret` / `editSecret` from everyone except the board owner.
+- Public metadata lookup can find a share by `ruleParams.shareToken` without exposing secrets.
+- Event writes for share editors must pass `ruleParams.secret` matching `shares.editSecret`.
+
+## Why `/api/invite` exists
+
+Clients cannot safely look up arbitrary Instant users by email. Invites verify the caller’s refresh token with the admin SDK, confirm board ownership, resolve the target user, then create/update member + editor links using the same policy helpers as the client (`member-policy.js`).

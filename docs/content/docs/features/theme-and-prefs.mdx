@@ -1,0 +1,23 @@
+---
+title: Theme & prefs
+description: Synced theme, per-board view controls, and guest session prefs.
+---
+
+# Theme & prefs
+
+## Theme (`useTheme`)
+
+1. Local state from boot theme
+2. Apply to DOM + `weekly-planner.theme`
+3. Sync from Instant `settings`
+4. Force light during print
+5. Roll back local state if persistence fails (`persistThemeTx`)
+
+## View controls (`useViewControls`)
+
+| Control | Storage |
+| --- | --- |
+| Hidden colors, hide weekend, compact, show memos | Instant `boardPrefs` when signed in; sessionStorage on share guests |
+| Color labels | Board document (`colorLabels`); owner renames only |
+
+Weekend hiding maps visible days to Mon–Fri (`[1,2,3,4,5]`). `visibleEvents` filters by hidden colors.
