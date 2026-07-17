@@ -85,19 +85,24 @@ export default defineConfig({
       },
       workbox: {
         // App shell only — Instant owns its own IndexedDB offline cache + sync.
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,webp,woff2}'],
+        // Pretendard's dynamic-subset woff2 stay out of the precache (92 chunks,
+        // ~3MB) so the browser keeps fetching only the subsets a page needs;
+        // they're runtime-cached on demand below.
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,webp}'],
         navigateFallback: 'index.html',
         // /api/* are Vercel serverless routes (OG image, share-meta, invite).
         navigateFallbackDenylist: [/^\/api/],
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/.*/i,
+            // Self-hosted Pretendard subsets: cache each chunk the first time a
+            // page needs it, then serve offline. Same origin, so no CORS/opaque.
+            urlPattern: ({ url }) => url.pathname.startsWith('/fonts/'),
             handler: 'CacheFirst',
             options: {
-              cacheName: 'cdn-fonts',
+              cacheName: 'pretendard-fonts',
               expiration: {
-                maxEntries: 16,
+                maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 365,
               },
               cacheableResponse: { statuses: [0, 200] },
