@@ -34,6 +34,8 @@ function ColorLabelInput({ color, label, onCommit }) {
 export function ViewControls({ views }) {
   if (!views) return null;
 
+  const hidden = new Set(views.hiddenColors);
+
   return (
     <>
       <div {...stylex.props(menus.mcap, menus.mcapStrong, menus.mcapFirst)}>보기</div>
@@ -50,7 +52,7 @@ export function ViewControls({ views }) {
       <div {...stylex.props(menus.mcap, menus.mcapStrong)}>색상 필터 · 이름</div>
 
       {views.palette.map((c) => {
-        const on = !views.hiddenColors.includes(c);
+        const on = !hidden.has(c);
         return (
           <div key={c} {...stylex.props(menus.drow, menus.colorRow)}>
             <Toggle

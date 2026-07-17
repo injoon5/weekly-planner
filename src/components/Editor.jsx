@@ -8,7 +8,7 @@ import { eventFields } from '../board/models.js';
 import { fmtDur, fmtOpt } from '../lib/time.js';
 import { HoldToConfirm } from './HoldToConfirm.jsx';
 import { UiSelect } from './ui/UiSelect.jsx';
-import { Sheet } from './ui/Sheet.jsx';
+import { Sheet } from './ui/sheet.js';
 import { editor } from '../styles/editor.js';
 import { planner } from '../styles/planner.js';
 import { ui } from '../styles/ui.js';

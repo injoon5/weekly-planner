@@ -47,14 +47,15 @@ export function normBoards(json) {
     return [boardFields({ name: '가져온 시간표', events: json.map(eventFields) })];
   }
   if (json && Array.isArray(json.boards)) {
-    return json.boards
-      .filter(b => b && typeof b === 'object')
-      .map((b, i) =>
+    return json.boards.flatMap((b, i) => {
+      if (!b || typeof b !== 'object') return [];
+      return [
         boardFields(
           { ...b, from: dt(b.from), to: dt(b.to), events: b.events },
           '가져온 시간표 ' + (i + 1),
         ),
-      );
+      ];
+    });
   }
   if (json && Array.isArray(json.events)) {
     return [

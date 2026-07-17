@@ -42,6 +42,7 @@ export function BoardNav({ user, boards, board, events, isOwner, onSelect }) {
         align="start"
       >
         <BoardMenu
+          key={board.id}
           board={board}
           solo={boards.length < 2}
           canEditMeta={isOwner}

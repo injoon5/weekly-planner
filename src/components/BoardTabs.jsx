@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { Plus, ChevronDown } from 'lucide-react';
 import { planner } from '../styles/planner.js';
@@ -15,19 +15,19 @@ export function BoardTabs({ boards, activeId, canAdd, onSelect, onOpenActive, on
 
   // The scrollbar is hidden, so fade the clipped edge instead — otherwise
   // overflowing tabs on small screens just look cut off / missing.
-  const updateFade = () => {
+  const updateFade = useCallback(() => {
     const el = rowRef.current;
     if (!el) return;
     const left = el.scrollLeft > 2;
     const right = el.scrollLeft + el.clientWidth < el.scrollWidth - 2;
     setFade((f) => (f.left === left && f.right === right ? f : { left, right }));
-  };
+  }, []);
 
   // Pill coordinates live in the strip's content space, so they survive
   // scrolling untouched — only tab/size changes need a re-measure. Keeping
   // scrollIntoView out of the scroll path matters: snapping the active tab
   // back into view while the user swipes the strip would fight their scroll.
-  const measure = () => {
+  const measure = useCallback(() => {
     const row = rowRef.current;
     const btn = btnRefs.current.get(activeId);
     if (!row || !btn) return;
@@ -39,12 +39,12 @@ export function BoardTabs({ boards, activeId, canAdd, onSelect, onOpenActive, on
       ready: !first.current,
     });
     first.current = false;
-  };
+  }, [activeId]);
 
   useLayoutEffect(() => {
     measure();
     updateFade();
-  }, [activeId, boards]);
+  }, [activeId, boards, measure, updateFade]);
 
   useEffect(() => {
     const btn = btnRefs.current.get(activeId);
@@ -60,7 +60,7 @@ export function BoardTabs({ boards, activeId, canAdd, onSelect, onOpenActive, on
     });
     ro.observe(row);
     return () => ro.disconnect();
-  }, [activeId, boards]);
+  }, [activeId, boards, measure, updateFade]);
 
   // Plain vertical wheel scrolls the strip sideways (narrow desktop windows
   // have no other pointer affordance for it). Trackpads already send deltaX.

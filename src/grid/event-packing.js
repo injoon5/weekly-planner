@@ -1,7 +1,7 @@
 /** Column packing for overlapping events in one day. */
 export function packOverlappingEvents(evs) {
   const out = new Map();
-  const items = [...evs].sort((a, b) => a.start - b.start || b.dur - a.dur);
+  const items = evs.toSorted((a, b) => a.start - b.start || b.dur - a.dur);
   let cluster = [];
   let ends = [];
   let maxEnd = -1;

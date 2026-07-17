@@ -1,6 +1,6 @@
 import { RefreshCw } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
-import { useAppUpdate } from '../hooks/useAppUpdate.jsx';
+import { useAppUpdate } from '../hooks/useAppUpdate.js';
 import { colors } from '../styles/tokens.stylex.js';
 import { ui } from '../styles/ui.js';
 

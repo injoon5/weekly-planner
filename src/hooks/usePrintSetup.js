@@ -18,7 +18,7 @@ export function usePrintSetup(board) {
     const next = resolvePrintPrefs(board);
     setPrefs(next);
     setDraft(next);
-  }, [board?.id, board?.from, board?.to]);
+  }, [board, board?.id, board?.from, board?.to]);
 
   useEffect(() => {
     const onBeforePrint = () => prepareHeadTracksForPrint();

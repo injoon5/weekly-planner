@@ -5,6 +5,15 @@ import { menus } from '../styles/menus.js';
 const HOLD_MS = 900;
 const EASE_BACK = 'clip-path 180ms cubic-bezier(0.2, 0, 0, 1)';
 
+function isInside(e) {
+  const el = e.currentTarget;
+  if (!el?.getBoundingClientRect) return true;
+  const r = el.getBoundingClientRect();
+  const x = e.clientX;
+  const y = e.clientY;
+  return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+}
+
 /**
  * Press-and-hold confirm. Fill grows L→R; confirm only on release once full.
  */
@@ -23,7 +32,10 @@ export function HoldToConfirm({
   const armedRef = useRef(false);
   const holdingRef = useRef(false);
   const confirmRef = useRef(onConfirm);
-  confirmRef.current = onConfirm;
+
+  useEffect(() => {
+    confirmRef.current = onConfirm;
+  }, [onConfirm]);
 
   useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
 
@@ -39,15 +51,6 @@ export function HoldToConfirm({
     clearTick();
     setEasingOut(true);
     setProgress(0);
-  };
-
-  const isInside = (e) => {
-    const el = e.currentTarget;
-    if (!el?.getBoundingClientRect) return true;
-    const r = el.getBoundingClientRect();
-    const x = e.clientX;
-    const y = e.clientY;
-    return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
   };
 
   const releaseHold = (e) => {

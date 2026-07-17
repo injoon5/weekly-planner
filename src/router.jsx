@@ -13,7 +13,7 @@ import { db } from './db/instant.js';
 import { Toaster } from './components/ui/Toaster.jsx';
 import { Landing } from './components/Landing.jsx';
 import { Planner } from './components/Planner.jsx';
-import { AppUpdateProvider } from './hooks/useAppUpdate.jsx';
+import { AppUpdateProvider } from './hooks/AppUpdateProvider.jsx';
 import { reset } from './styles/ui.js';
 
 // Secondary routes stay lazy; `/` (Landing + Planner) is eager so cold loads

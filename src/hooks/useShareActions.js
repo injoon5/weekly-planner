@@ -30,16 +30,15 @@ function errorMessage(err, fallback) {
   return err instanceof Error && err.message ? err.message : fallback;
 }
 
+function failWith(message, error) {
+  if (error !== undefined) console.error(error);
+  toast(message);
+  return fail(message, error);
+}
+
 /** Share links + member invite/role — owner-only except leave. */
 export function useShareActions({ board, isOwner = true }) {
   const activeShare = () => activeShareOf(board);
-
-  const failWith = (message, error) => {
-    if (error !== undefined) console.error(error);
-    toast(message);
-    return fail(message, error);
-  };
-
   const enableShare = async ({ mode = 'open', role = 'viewer', password = '' } = {}) => {
     if (!isOwner || !board) return fail('소유자만 공유할 수 있어요');
     const existing = activeShare();

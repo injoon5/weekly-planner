@@ -11,6 +11,24 @@ import {
 } from '../board/board-import-export.js';
 import { commitTransaction } from '../db/transaction.js';
 
+async function doExport() {
+  let exportBoards;
+  try {
+    const result = await db.queryOnce({ boards: { events: {} } });
+    exportBoards = (result.data?.boards || []).toSorted(
+      (a, b) =>
+        (a.sortOrder ?? 0) - (b.sortOrder ?? 0) ||
+        (a.createdAt ?? 0) - (b.createdAt ?? 0),
+    );
+  } catch (error) {
+    console.error(error);
+    toast('내보낼 시간표를 불러오지 못했어요');
+    return;
+  }
+  downloadJson(buildExportPayload(exportBoards), exportFilename());
+  toast('JSON 파일로 내보냈어요');
+}
+
 /**
  * Workspace JSON export/import (the ⋯ menu actions). `fileRef` points at a
  * hidden file input the shell renders; `askImport` clicks it, `onImportFile`
@@ -18,24 +36,6 @@ import { commitTransaction } from '../db/transaction.js';
  */
 export function useBoardTransfer({ user, boards, setActiveId, isOwner = true }) {
   const fileRef = useRef(null);
-
-  const doExport = async () => {
-    let exportBoards;
-    try {
-      const result = await db.queryOnce({ boards: { events: {} } });
-      exportBoards = [...(result.data?.boards || [])].sort(
-        (a, b) =>
-          (a.sortOrder ?? 0) - (b.sortOrder ?? 0) ||
-          (a.createdAt ?? 0) - (b.createdAt ?? 0),
-      );
-    } catch (error) {
-      console.error(error);
-      toast('내보낼 시간표를 불러오지 못했어요');
-      return;
-    }
-    downloadJson(buildExportPayload(exportBoards), exportFilename());
-    toast('JSON 파일로 내보냈어요');
-  };
 
   const askImport = () => {
     if (!isOwner) return;

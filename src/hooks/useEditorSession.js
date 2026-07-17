@@ -16,8 +16,13 @@ export function useEditorSession({ events, eventsApi }) {
   const closeTimer = useRef(0);
   const isCommittingRef = useRef(false);
 
-  eventsRef.current = events;
-  editingRef.current = editing;
+  useEffect(() => {
+    eventsRef.current = events;
+  }, [events]);
+
+  useEffect(() => {
+    editingRef.current = editing;
+  }, [editing]);
 
   useEffect(() => () => clearTimeout(closeTimer.current), []);
 
