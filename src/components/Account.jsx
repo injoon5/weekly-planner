@@ -4,6 +4,7 @@ import { useNavigate } from '@tanstack/react-router';
 import {
   ArrowLeft,
   Copy,
+  ExternalLink,
   KeyRound,
   LogOut,
   Plus,
@@ -16,6 +17,7 @@ import { db, id } from '../db/instant.js';
 import { commitTransaction } from '../db/transaction.js';
 import { useTheme } from '../hooks/useTheme.js';
 import { PEER_COLORS, peerColor } from '../hooks/useBoardPresence.js';
+import { DOCS_URL } from '../lib/config.js';
 import { account } from '../styles/account.js';
 import { planner } from '../styles/planner.js';
 import { ui } from '../styles/ui.js';
@@ -227,7 +229,16 @@ function TokensCard({ index, refreshToken }) {
       <h2 {...stylex.props(account.cardTitle)}>API 토큰</h2>
       <p {...stylex.props(account.cardHint)}>
         REST API(<code>/api/v1</code>)에 <code>Authorization: Bearer</code> 헤더로 사용해요. 토큰은
-        만들 때 한 번만 표시되고, 언제든 새로 고치거나 삭제할 수 있어요.
+        만들 때 한 번만 표시되고, 언제든 새로 고치거나 삭제할 수 있어요.{' '}
+        <a
+          href={`${DOCS_URL}/docs/api/rest`}
+          target="_blank"
+          rel="noopener noreferrer"
+          {...stylex.props(account.docLink)}
+        >
+          API 문서
+          <ExternalLink size={11} strokeWidth={2} aria-hidden="true" />
+        </a>
       </p>
 
       {tokens.length === 0 && (

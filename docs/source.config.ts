@@ -1,5 +1,5 @@
 import { defineConfig, defineDocs } from 'fumadocs-mdx/config';
-import { remarkMdxMermaid } from 'fumadocs-core/mdx-plugins';
+import { remarkCodeTab, remarkMdxMermaid, remarkSteps } from 'fumadocs-core/mdx-plugins';
 import { metaSchema, pageSchema } from 'fumadocs-core/source/schema';
 
 // You can customize Zod schemas for frontmatter and `meta.json` here
@@ -20,6 +20,6 @@ export const docs = defineDocs({
 export default defineConfig({
   mdxOptions: {
     // ```mermaid fences render as <Mermaid /> (components/mdx/mermaid.tsx).
-    remarkPlugins: [remarkMdxMermaid],
+    remarkPlugins: [remarkMdxMermaid, remarkCodeTab, remarkSteps],
   },
 });

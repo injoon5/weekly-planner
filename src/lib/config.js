@@ -1,6 +1,9 @@
 /** Single app id for the browser. Instant CLI reads the same value from `.env`. */
 export const APP_ID = '957d09d1-44df-4541-8ebe-70ba7f1388c1';
 
+/** Public docs site (Fumadocs). */
+export const DOCS_URL = 'https://docs.plan.ij5.dev';
+
 export const THEME_KEY = 'weekly-planner.theme';
 export const LEGACY_KEY = 'weekly-planner.v2';
 export const LEGACY_KEY1 = 'weekly-planner.v1';

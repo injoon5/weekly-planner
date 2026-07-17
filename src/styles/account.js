@@ -80,6 +80,21 @@ export const account = stylex.create({
     marginBottom: 0,
   },
 
+  docLink: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '3px',
+    color: colors.sat,
+    fontWeight: 600,
+    textDecoration: 'none',
+    whiteSpace: 'nowrap',
+    [HOVER]: {
+      ':hover': {
+        textDecoration: 'underline',
+      },
+    },
+  },
+
   // Live identity preview: initial + color update as the user edits.
   profileHead: {
     display: 'flex',
