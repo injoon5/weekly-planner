@@ -75,27 +75,33 @@ export function nowLineStyle(nowMin, visualCol, dayCount = 7) {
 
 const HEAD_TRACK_SELECTOR = '[data-head-track]';
 
+/** @param {Element} el @returns {el is HTMLElement} */
+function isHeadTrackEl(el) {
+  if (typeof HTMLElement !== 'undefined') return el instanceof HTMLElement;
+  return 'style' in el;
+}
+
 /** Reset synced header vars so print shows every day label, not a scrolled slice. */
 /** @param {ParentNode} root */
 export function prepareHeadTracksForPrint(root = document) {
-  for (const track of root.querySelectorAll(HEAD_TRACK_SELECTOR)) {
-    if (!track.style) continue;
-    track.style.removeProperty('--head-day-width');
-    track.style.setProperty('--head-scroll-x', '0px');
-    track.style.width = '100%';
-    track.style.transform = 'none';
+  for (const el of root.querySelectorAll(HEAD_TRACK_SELECTOR)) {
+    if (!isHeadTrackEl(el)) continue;
+    el.style.removeProperty('--head-day-width');
+    el.style.setProperty('--head-scroll-x', '0px');
+    el.style.width = '100%';
+    el.style.transform = 'none';
   }
 }
 
 /** Drop print-only inline overrides; ResizeObserver sync restores screen layout. */
 /** @param {ParentNode} root */
 export function restoreHeadTracksAfterPrint(root = document) {
-  for (const track of root.querySelectorAll(HEAD_TRACK_SELECTOR)) {
-    if (!track.style) continue;
-    track.style.removeProperty('--head-day-width');
-    track.style.removeProperty('--head-scroll-x');
-    track.style.removeProperty('width');
-    track.style.removeProperty('transform');
+  for (const el of root.querySelectorAll(HEAD_TRACK_SELECTOR)) {
+    if (!isHeadTrackEl(el)) continue;
+    el.style.removeProperty('--head-day-width');
+    el.style.removeProperty('--head-scroll-x');
+    el.style.removeProperty('width');
+    el.style.removeProperty('transform');
   }
 }
 
