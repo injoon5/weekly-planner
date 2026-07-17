@@ -217,9 +217,8 @@ const lockIcon = (size = 108) => ({
   },
 });
 
-const gridChrome = (eventBlocks, showNow) => [
-  // day headers
-  ...['월', '화', '수', '목', '금'].map((d, i) =>
+const dayHeaders = () =>
+  ['월', '화', '수', '목', '금'].map((d, i) =>
     abs(
       {
         left: day(i),
@@ -248,12 +247,11 @@ const gridChrome = (eventBlocks, showNow) => [
           )
         : d,
     ),
-  ),
-  abs({ left: 0, right: 0, top: HEAD, height: 1, backgroundColor: T.line }),
-  abs({ left: GUT, top: 0, bottom: 0, width: 1, backgroundColor: T.line }),
-  // hour lines + gutter times
-  ...[9, 10, 11, 12, 13, 14, 15].flatMap((hr) => [
-    abs({ left: GUT, right: 0, top: y(hr), height: 1, backgroundColor: T.gridHour }),
+  );
+
+/** Time gutter labels — stay sharp even when the schedule body is locked. */
+const timeGutter = () =>
+  [9, 10, 11, 12, 13, 14, 15].map((hr) =>
     abs(
       {
         left: 0,
@@ -267,31 +265,47 @@ const gridChrome = (eventBlocks, showNow) => [
       },
       `${hr}:00`,
     ),
-  ]),
-  ...[1, 2, 3, 4].map((i) =>
-    abs({ left: day(i), top: HEAD, bottom: 0, width: 1, backgroundColor: T.gridHour }),
+  );
+
+/** Inner schedule body (grid lines + events). Blurred for password shares. */
+const scheduleBody = (eventBlocks, showNow) => [
+  ...[9, 10, 11, 12, 13, 14, 15].map((hr) =>
+    abs({ left: 0, right: 0, top: y(hr) - HEAD, height: 1, backgroundColor: T.gridHour }),
   ),
-  ...eventBlocks,
-  ...(showNow ? nowLine() : []),
+  ...[1, 2, 3, 4].map((i) =>
+    abs({ left: day(i) - GUT, top: 0, bottom: 0, width: 1, backgroundColor: T.gridHour }),
+  ),
+  // Reposition event/now blocks from card coords → body-local (origin at GUT, HEAD).
+  ...eventBlocks.map((node) => shiftAbs(node, -GUT, -HEAD)),
+  ...(showNow ? nowLine().map((node) => shiftAbs(node, -GUT, -HEAD)) : []),
 ];
 
+function shiftAbs(node, dx, dy) {
+  if (!node?.props?.style) return node;
+  const style = { ...node.props.style };
+  if (typeof style.left === 'number') style.left += dx;
+  if (typeof style.top === 'number') style.top += dy;
+  return { ...node, props: { ...node.props, style } };
+}
+
 const lockedOverlay = () => [
-  // Frosted wash so the demo grid stays hinted but unreadable.
+  // Frosted wash over the schedule body only (headers/gutter stay clear).
   abs({
-    left: 0,
-    top: 0,
-    width: '100%',
-    height: '100%',
+    left: GUT,
+    top: HEAD,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(246,246,247,0.42)',
   }),
-  abs({
-    left: 0,
-    top: 0,
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  abs(
+    {
+      left: GUT,
+      top: HEAD,
+      right: 0,
+      bottom: 0,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     h(
       'div',
       {
@@ -327,22 +341,35 @@ const card = ({ eventBlocks, showNow, locked }) =>
       boxShadow: '0 24px 48px rgba(20,20,26,.18)',
       overflow: 'hidden',
     },
-    ...(locked
-      ? [
-          abs(
-            {
-              left: 0,
-              top: 0,
-              width: '100%',
-              height: '100%',
-              // Thick blur on the default demo table for password shares.
-              filter: 'blur(28px)',
-            },
-            ...gridChrome(eventBlocks, showNow),
-          ),
-          ...lockedOverlay(),
-        ]
-      : gridChrome(eventBlocks, showNow)),
+    // Frame chrome — always sharp.
+    ...dayHeaders(),
+    abs({ left: 0, right: 0, top: HEAD, height: 1, backgroundColor: T.line }),
+    abs({ left: GUT, top: 0, bottom: 0, width: 1, backgroundColor: T.line }),
+    ...timeGutter(),
+    // Schedule body — blurred inside for password shares.
+    locked
+      ? abs(
+          {
+            left: GUT,
+            top: HEAD,
+            width: 5 * COL,
+            height: 640 - HEAD,
+            overflow: 'hidden',
+            filter: 'blur(28px)',
+          },
+          ...scheduleBody(eventBlocks, showNow),
+        )
+      : abs(
+          {
+            left: GUT,
+            top: HEAD,
+            width: 5 * COL,
+            height: 640 - HEAD,
+            overflow: 'hidden',
+          },
+          ...scheduleBody(eventBlocks, showNow),
+        ),
+    ...(locked ? lockedOverlay() : []),
   );
 
 const page = ({ title, subtitle, eventBlocks, showNow, locked }) =>
