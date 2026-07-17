@@ -37,6 +37,21 @@ export const planner = stylex.create({
     textAlign: 'center',
   },
 
+  // Soft detail hydrate: keep header/chrome; only the grid area waits.
+  surfacePending: {
+    flex: 1,
+    minHeight: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: colors.muted,
+    fontSize: '13px',
+    fontWeight: 550,
+    '@media print': {
+      display: 'none',
+    },
+  },
+
   top: {
     display: 'flex',
     alignItems: 'center',

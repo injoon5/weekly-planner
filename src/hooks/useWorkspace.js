@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { db } from '../db/instant.js';
-import { roleForBoard } from '../sharing/member-policy.js';
+import { roleForBoard, shouldShowViewerBanner } from '../sharing/member-policy.js';
 import { boardCoversDate, fromInstantEvents } from '../board/models.js';
+import {
+  isPlannerSurfacePending,
+  isWorkspaceColdBoot,
+} from '../board/workspace-loading.js';
 import { BOARD_ROLE } from '../sharing/roles.js';
 import { isoDate } from '../lib/time.js';
 import { ensureWorkspace } from '../board/workspace-ensure.js';
@@ -9,6 +13,12 @@ import { ensureWorkspace } from '../board/workspace-ensure.js';
 /**
  * Instant query + active board + one-shot workspace bootstrap.
  * Includes owned and member boards (via Instant view perms).
+ *
+ * Loading gates:
+ * - Cold boot (full-page) only while the board list is empty and still loading
+ *   or bootstrap has not finished.
+ * - Once a list row exists, keep the planner shell mounted; detail/prefs can
+ *   hydrate into the surface without tearing down the header.
  */
 export function useWorkspace() {
   const user = db.useUser();
@@ -66,16 +76,27 @@ export function useWorkspace() {
         }
       : null,
   );
-  const board = detail.data?.boards?.[0] || null;
+
+  const listBoard = boards.find((b) => b.id === activeBoardId) || null;
+  const detailRow = detail.data?.boards?.[0] || null;
+  // Instant can briefly keep the previous query result while the new where clause loads.
+  const detailBoard = detailRow?.id === activeBoardId ? detailRow : null;
+  // Prefer hydrated detail; fall back to the list row so chrome can paint early.
+  const board = detailBoard || listBoard;
   // Remap whenever the board row changes. Instant may keep the same `events`
   // array reference across patches; keying off `board` keeps titles/times fresh
   // for the grid and today's to-do list.
-  const events = useMemo(() => fromInstantEvents(board?.events), [board]);
+  const events = useMemo(() => fromInstantEvents(detailBoard?.events), [detailBoard]);
   const myRole = useMemo(() => roleForBoard(board, user?.id), [board, user?.id]);
   const canEdit = myRole === BOARD_ROLE.OWNER || myRole === BOARD_ROLE.EDITOR;
   const isOwner = myRole === BOARD_ROLE.OWNER;
+  const showViewerBanner = shouldShowViewerBanner(board, user?.id);
 
   const boardPrefs = prefsQuery.data?.boardPrefs?.[0] || null;
+  const surfacePending = isPlannerSurfacePending({
+    activeBoardId,
+    hasDetailBoard: Boolean(detailBoard),
+  });
 
   useEffect(() => {
     if (!boards.length) {
@@ -123,12 +144,16 @@ export function useWorkspace() {
     myRole,
     canEdit,
     isOwner,
+    showViewerBanner,
     activeId,
     setActiveId,
-    isLoading:
-      workspace.isLoading ||
-      Boolean(activeBoardId && detail.isLoading) ||
-      Boolean(activeBoardId && user?.id && prefsQuery.isLoading),
+    // Full-page boot only for a cold empty workspace — never for detail/prefs.
+    isLoading: isWorkspaceColdBoot({
+      workspaceLoading: workspace.isLoading,
+      ready,
+      boardCount: boards.length,
+    }),
+    surfacePending,
     error: workspace.error || detail.error || prefsQuery.error,
     ready,
     bootNote,

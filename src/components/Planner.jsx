@@ -32,8 +32,10 @@ export function Planner() {
     myRole,
     canEdit,
     isOwner,
+    showViewerBanner,
     setActiveId,
     isLoading,
+    surfacePending,
     error,
     ready,
     bootNote,
@@ -62,6 +64,7 @@ export function Planner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot boot toast
   }, [bootNote]);
 
+  // Cold empty workspace only — keep chrome once a list board exists.
   if (isLoading || (!ready && !boards.length)) {
     return <div {...stylex.props(planner.boot)}>불러오는 중…</div>;
   }
@@ -70,7 +73,7 @@ export function Planner() {
 
   return (
     <div {...stylex.props(planner.app)} data-app-shell="planner">
-      {myRole === 'viewer' && !isOwner && (
+      {showViewerBanner && (
         <div {...stylex.props(planner.banner)}>
           <span {...stylex.props(planner.bannerStrong)}>보기 전용</span>
           <span>이 시간표는 보기만 할 수 있어요</span>
@@ -114,6 +117,7 @@ export function Planner() {
         presence={runtime.presence}
         readOnly={runtime.readOnly}
         swapping={swapping}
+        surfacePending={surfacePending}
         updateEvent={runtime.eventsApi.updateEvent}
         nowMin={runtime.clock.nowMin}
         nowDay={runtime.clock.nowDay}
