@@ -251,21 +251,36 @@ const dayHeaders = () =>
         justifyContent: 'center',
         fontSize: 21,
         fontWeight: 600,
+        lineHeight: 1,
       },
       i === 2
         ? h(
             'div',
             {
               display: 'flex',
+              position: 'relative',
               width: 38,
               height: 38,
               borderRadius: 99,
               backgroundColor: T.ink,
-              color: '#fff',
-              alignItems: 'center',
-              justifyContent: 'center',
+              overflow: 'hidden',
             },
-            d,
+            abs(
+              {
+                left: 0,
+                right: 0,
+                // Optical center for Pretendard 수 in Satori (glyph sits high).
+                top: 10,
+                height: 18,
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+                fontSize: 17,
+                fontWeight: 600,
+                lineHeight: 1,
+              },
+              d,
+            ),
           )
         : d,
     ),
