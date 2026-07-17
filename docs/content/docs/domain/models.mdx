@@ -5,7 +5,7 @@ description: Pure helpers that normalize events, boards, dates, and derived todo
 
 # Models & normalization
 
-Source: `src/models.js` (+ `time.js`, `prefs.js`, `legacy.js`).
+Source: `src/board/models.js` (+ `time.js`, `prefs.js`, `legacy.js`).
 
 ## Event fields (`eventFields`)
 
@@ -26,7 +26,7 @@ Source: `src/models.js` (+ `time.js`, `prefs.js`, `legacy.js`).
 - Repeating boards: anchor at `from`; active window length is original `from→to` span capped to one repeat cycle
 - Repeating with no `from`: covers all dates
 
-## Time (`src/time.js`)
+## Time (`src/lib/time.js`)
 
 Grid origin is **06:00** (`DAY_ORIGIN = 360` minutes).
 
@@ -35,7 +35,7 @@ Grid origin is **06:00** (`DAY_ORIGIN = 360` minutes).
 - `plannerDate()` assigns pre-06:00 wall times to the previous planner date
 - `nowOnGrid()` drives the now line, today highlight, and todo day key
 
-Config constants (`src/config.js`): `SLOTS = 48`, `SLOT_MIN = 30`, `DAY_MIN = 1440`, `NEXT_DAY_START_SLOT = 36`.
+Config constants (`src/lib/config.js`): `SLOTS = 48`, `SLOT_MIN = 30`, `DAY_MIN = 1440`, `NEXT_DAY_START_SLOT = 36`.
 
 ## Derived helpers
 

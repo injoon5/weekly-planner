@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { colors } from '../tokens.stylex.js';
+import { colors } from './tokens.stylex.js';
 
 export const editor = stylex.create({
   // Dialog.Backdrop paint; fixed positioning + fade live in base-ui.css.

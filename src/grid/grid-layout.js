@@ -1,6 +1,6 @@
-import { NEXT_DAY_START_SLOT, SLOTS, SLOT_MIN } from './config.js';
+import { NEXT_DAY_START_SLOT, SLOTS, SLOT_MIN } from '../lib/config.js';
 import { packOverlappingEvents } from './event-packing.js';
-import { layout } from './tokens.stylex.js';
+import { layout } from '../styles/tokens.stylex.js';
 
 const GRID_BODY_HEIGHT_PROPERTY = '--grid-body-height';
 const GRID_HOUR_HEIGHT_PROPERTY = '--grid-hour-height';

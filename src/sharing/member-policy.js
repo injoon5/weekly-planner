@@ -1,5 +1,5 @@
-import { isEditorRole, normalizeMemberRole } from './roles.js';
-import { linkedId } from './links.js';
+import { BOARD_ROLE, isEditorRole, normalizeMemberRole } from './roles.js';
+import { linkedId, linkedIds } from '../lib/links.js';
 
 /**
  * Member role txs against any Instant `tx` namespace (client or admin).
@@ -56,4 +56,20 @@ export function removeMemberTxs(tx, { boardId, memberId, userId }) {
 export function findMemberForUser(members, userId) {
   if (!userId) return null;
   return (members || []).find((m) => linkedId(m.user) === userId) || null;
+}
+
+/** Owner id of a board row (link may arrive as a row object or bare id). */
+export function ownerIdOf(board) {
+  return linkedId(board?.owner);
+}
+
+/**
+ * Effective role of a user on a board.
+ * Write truth = boards.editors link (members.role is display cache).
+ */
+export function roleForBoard(board, userId) {
+  if (!board || !userId) return BOARD_ROLE.VIEWER;
+  if (ownerIdOf(board) === userId) return BOARD_ROLE.OWNER;
+  if (linkedIds(board?.editors).includes(userId)) return BOARD_ROLE.EDITOR;
+  return BOARD_ROLE.VIEWER;
 }

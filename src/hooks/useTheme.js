@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { isOk } from '../command-result.js';
-import { THEME_KEY } from '../config.js';
-import { db } from '../instant.js';
-import { applyDocumentTheme, readBootTheme } from '../theme-dom.js';
-import { commitTransaction } from '../transaction.js';
-import { persistThemeTx } from '../tx/theme.js';
+import { isOk } from '../lib/command-result.js';
+import { THEME_KEY } from '../lib/config.js';
+import { db } from '../db/instant.js';
+import { applyDocumentTheme, readBootTheme } from '../theme/theme-dom.js';
+import { commitTransaction } from '../db/transaction.js';
+import { persistThemeTx } from '../db/tx/theme.js';
 
 /**
  * Single theme owner after boot: Instant settings → local cache → DOM.

@@ -9,7 +9,7 @@ description: Draft-until-save editing, mutations, and read-only behavior.
 
 `updateEvent`, `removeEvent`, `createEvent`, `saveEvent` — all no-op / return false when read-only. Share editors pass `ruleParams`.
 
-Tx builders: `src/tx/events.js` — always normalize with `eventFields` on create/save; patches whitelist fields.
+Tx builders: `src/db/tx/events.js` — always normalize with `eventFields` on create/save; patches whitelist fields.
 
 ## Draft-until-save (`useEditorSession`)
 

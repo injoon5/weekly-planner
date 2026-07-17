@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import { DAYS_KO, SLOT_MIN } from '../config.js';
-import { geoX, slotHeight, slotTop } from '../grid-layout.js';
-import { fmt } from '../time.js';
+import { DAYS_KO, SLOT_MIN } from '../lib/config.js';
+import { geoX, slotHeight, slotTop } from '../grid/grid-layout.js';
+import { fmt } from '../lib/time.js';
 import { grid } from '../styles/grid.js';
 
 export function GridEventBlock({

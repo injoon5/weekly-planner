@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { colors } from '../tokens.stylex.js';
+import { colors } from './tokens.stylex.js';
 
 const MOBILE = '@media screen and (max-width: 720px)';
 const HOVER = '@media (hover: hover) and (pointer: fine)';

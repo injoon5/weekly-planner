@@ -15,7 +15,7 @@ curl https://plan.injoon5.com/api/v1/boards \
 
 Tokens are created on the [account page](/docs/features/account) (or via
 `/api/tokens`). Only a SHA-256 hash is stored — the plaintext `wp_…` value is
-shown exactly once at creation/rotation (`src/api-tokens.js`).
+shown exactly once at creation/rotation (`src/server/api-tokens.js`).
 
 ## How a request is authorized
 
@@ -62,7 +62,7 @@ sequenceDiagram
 | POST | `/api/v1/token/refresh` | — | Rotates the calling token |
 
 Dates are `YYYY-MM-DD`; event `start`/`dur` are minutes on the 06:00-origin
-grid and get snapped/clamped exactly like in-app edits (`src/models.js`).
+grid and get snapped/clamped exactly like in-app edits (`src/board/models.js`).
 
 ## Token lifecycle
 
@@ -84,7 +84,7 @@ field is unreadable and create/update are server-only.
 
 Two layers, both token buckets ([Instant rate limits](https://www.instantdb.com/docs/rate-limits)):
 
-1. **API layer** — 120 requests/minute per token (`src/rest.js`
+1. **API layer** — 120 requests/minute per token (`src/server/rest.js`
    `createRateLimiter`); exceeding it returns `429` with `Retry-After`.
 2. **Instant `$rateLimits`** (`instant.perms.ts`) — enforced inside permission
    rules for every writer, app or API: `eventWrites` (120/min burst,

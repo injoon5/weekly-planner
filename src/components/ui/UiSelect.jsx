@@ -1,7 +1,7 @@
 import { Select } from '@base-ui/react/select';
 import * as stylex from '@stylexjs/stylex';
 import { Check, ChevronDown } from 'lucide-react';
-import { colors } from '../../tokens.stylex.js';
+import { colors } from '../../styles/tokens.stylex.js';
 
 const s = stylex.create({
   trigger: {

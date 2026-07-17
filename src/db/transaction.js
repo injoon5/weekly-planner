@@ -1,4 +1,4 @@
-import { fail, ok } from './command-result.js';
+import { fail, ok } from '../lib/command-result.js';
 
 /**
  * @template T

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { isOk } from '../src/command-result.js';
-import { linkedId, linkedIds } from '../src/links.js';
+import { isOk } from '../src/lib/command-result.js';
+import { linkedId, linkedIds } from '../src/lib/links.js';
 import {
   isEditorRole,
   normalizeMemberRole,
@@ -8,9 +8,9 @@ import {
   normalizeShareRole,
   SHARE_MODE,
   SHARE_ROLE,
-} from '../src/roles.js';
-import { commitTransaction } from '../src/transaction.js';
-import { workspaceBootstrapPlan } from '../src/workspace-bootstrap.js';
+} from '../src/sharing/roles.js';
+import { commitTransaction } from '../src/db/transaction.js';
+import { workspaceBootstrapPlan } from '../src/board/workspace-bootstrap.js';
 
 afterEach(() => vi.restoreAllMocks());
 

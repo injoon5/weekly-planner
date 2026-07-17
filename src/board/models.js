@@ -1,5 +1,5 @@
-import { PALETTE } from './config.js';
-import { clamp, diffDays, dt, fmt, isoDate, snapDur, snapMin } from './time.js';
+import { PALETTE } from '../lib/config.js';
+import { clamp, diffDays, dt, fmt, isoDate, snapDur, snapMin } from '../lib/time.js';
 
 /** Normalize a loose event-shaped object into app invariants. */
 export function eventFields(input = {}) {

@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { colors } from '../tokens.stylex.js';
+import { colors } from './tokens.stylex.js';
 
 export const menus = stylex.create({
   // Invisible Popover.Backdrop: swallows the outside press so a click that

@@ -1,5 +1,5 @@
-import { DAY_MIN, SLOT_MIN, SLOTS } from './config.js';
-import { clamp } from './time.js';
+import { DAY_MIN, SLOT_MIN, SLOTS } from '../lib/config.js';
+import { clamp } from '../lib/time.js';
 
 /**
  * Pure draft math for calendar gestures.

@@ -1,8 +1,8 @@
-import { THEME_KEY } from './config.js';
-import { db, id } from './instant.js';
+import { THEME_KEY } from '../lib/config.js';
+import { db, id } from '../db/instant.js';
 import { readLegacyBoards, seedEvents } from './legacy.js';
-import { defaultBoardRange } from './time.js';
-import { boardTx } from './tx/boards.js';
+import { defaultBoardRange } from '../lib/time.js';
+import { boardTx } from '../db/tx/boards.js';
 import { workspaceBootstrapPlan } from './workspace-bootstrap.js';
 
 const inflight = new Map();

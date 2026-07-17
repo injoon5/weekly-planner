@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { db } from '../instant.js';
-import { buildTodayTodos, weekdayFromPlannerDate } from '../models.js';
-import { commitTransaction } from '../transaction.js';
-import { checkTodoTx, uncheckTodoTx } from '../tx/todos.js';
-import { plannerDate } from '../time.js';
+import { db } from '../db/instant.js';
+import { buildTodayTodos, weekdayFromPlannerDate } from '../board/models.js';
+import { commitTransaction } from '../db/transaction.js';
+import { checkTodoTx, uncheckTodoTx } from '../db/tx/todos.js';
+import { plannerDate } from '../lib/time.js';
 
 /**
  * Today's to-do list = the active board's events scheduled for today, in start

@@ -1,12 +1,12 @@
-import { isOk } from '../command-result.js';
-import { db } from '../instant.js';
+import { isOk } from '../lib/command-result.js';
+import { db } from '../db/instant.js';
 import {
   createEventTx,
   deleteEventTx,
   patchEventTx,
   saveEventTx,
-} from '../tx/events.js';
-import { commitTransaction } from '../transaction.js';
+} from '../db/tx/events.js';
+import { commitTransaction } from '../db/transaction.js';
 
 /** Event CRUD only — shared by workspace + share shells. */
 export function useEventMutations({ board, canEdit = true, ruleParams = null, onError }) {

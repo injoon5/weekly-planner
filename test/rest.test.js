@@ -7,7 +7,7 @@ import {
   hashApiToken,
   isApiTokenShape,
   parseBearer,
-} from '../src/api-tokens.js';
+} from '../src/server/api-tokens.js';
 import {
   RestValidationError,
   createRateLimiter,
@@ -15,7 +15,7 @@ import {
   matchRestRoute,
   restBoardFields,
   restSegments,
-} from '../src/rest.js';
+} from '../src/server/rest.js';
 
 describe('api tokens', () => {
   it('generates prefixed hex tokens that pass the shape check', () => {

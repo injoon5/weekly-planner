@@ -12,8 +12,8 @@ import {
   UserPlus,
   X,
 } from 'lucide-react';
-import { db, id } from '../instant.js';
-import { commitTransaction } from '../transaction.js';
+import { db, id } from '../db/instant.js';
+import { commitTransaction } from '../db/transaction.js';
 import { useTheme } from '../hooks/useTheme.js';
 import { PEER_COLORS, peerColor } from '../hooks/useBoardPresence.js';
 import { account } from '../styles/account.js';

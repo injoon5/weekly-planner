@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { colors, layout } from '../tokens.stylex.js';
+import { colors, layout } from './tokens.stylex.js';
 
 const MOBILE = '@media screen and (max-width: 720px)';
 const TPLC = `${layout.gutW} repeat(7, minmax(${layout.colMin}, 1fr))`;

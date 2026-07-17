@@ -1,7 +1,7 @@
 import { Separator } from '@base-ui/react/separator';
 import * as stylex from '@stylexjs/stylex';
 import { Moon, MoreHorizontal, Printer, Sun } from 'lucide-react';
-import { fmtRange, fmtRepeat } from '../time.js';
+import { fmtRange, fmtRepeat } from '../lib/time.js';
 import { menus } from '../styles/menus.js';
 import { planner } from '../styles/planner.js';
 import { PresenceAvatars } from './PresenceAvatars.jsx';

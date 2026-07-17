@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { colors, layout } from '../tokens.stylex.js';
+import { colors, layout } from './tokens.stylex.js';
 
 export const reset = stylex.create({
   html: {

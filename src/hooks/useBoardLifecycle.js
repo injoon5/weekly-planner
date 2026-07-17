@@ -1,24 +1,16 @@
-import { useRef } from 'react';
-import { isOk } from '../command-result.js';
-import { db } from '../instant.js';
-import {
-  buildExportPayload,
-  buildImportTransactions,
-  downloadJson,
-  exportFilename,
-  parseImportText,
-} from '../board-import-export.js';
-import { nextBoardName, nextBoardSortOrder } from '../models.js';
-import { defaultBoardRange } from '../time.js';
-import { commitTransaction } from '../transaction.js';
+import { isOk } from '../lib/command-result.js';
+import { db } from '../db/instant.js';
+import { nextBoardName, nextBoardSortOrder } from '../board/models.js';
+import { defaultBoardRange } from '../lib/time.js';
+import { commitTransaction } from '../db/transaction.js';
 import {
   boardTx,
   deleteBoardTx,
   deleteEventRowsTx,
   patchBoardTx,
-} from '../tx/boards.js';
+} from '../db/tx/boards.js';
 
-/** Owner board CRUD. Import/export live in board-import-export.js. */
+/** Owner board CRUD. JSON export/import lives in useBoardTransfer.js. */
 export function useBoardLifecycle({
   user,
   boards,
@@ -29,7 +21,6 @@ export function useBoardLifecycle({
   toast,
   isOwner = true,
 }) {
-  const fileRef = useRef(null);
   const commit = async (transaction, message) =>
     await commitTransaction((tx) => db.transact(tx), transaction, {
       message,
@@ -92,72 +83,11 @@ export function useBoardLifecycle({
     }
   };
 
-  const doExport = async () => {
-    let exportBoards;
-    try {
-      const result = await db.queryOnce({ boards: { events: {} } });
-      exportBoards = [...(result.data?.boards || [])].sort(
-        (a, b) =>
-          (a.sortOrder ?? 0) - (b.sortOrder ?? 0) ||
-          (a.createdAt ?? 0) - (b.createdAt ?? 0),
-      );
-    } catch (error) {
-      console.error(error);
-      toast('내보낼 시간표를 불러오지 못했어요');
-      return;
-    }
-    downloadJson(buildExportPayload(exportBoards), exportFilename());
-    closeMenu();
-    toast('JSON 파일로 내보냈어요');
-  };
-
-  const askImport = () => {
-    if (!isOwner) return;
-    closeMenu();
-    fileRef.current?.click();
-  };
-
-  const onImportFile = async (e) => {
-    if (!isOwner || !user) return;
-    const f = e.target.files && e.target.files[0];
-    e.target.value = '';
-    if (!f) return;
-    try {
-      const text = await f.text();
-      const parsed = await parseImportText(text);
-      if (parsed.error) {
-        toast(parsed.error);
-        return;
-      }
-      const built = buildImportTransactions(parsed.json, {
-        userId: user.id,
-        existingBoards: boards,
-      });
-      if (built.error) {
-        toast(built.error);
-        return;
-      }
-      if (!isOk(await commit(built.txs, '파일을 가져오지 못했어요'))) return;
-      setActiveId(built.firstId);
-      toast(
-        built.boards.length === 1
-          ? `'${built.boards[0].name}' 시간표를 가져왔어요`
-          : `시간표 ${built.boards.length}개를 가져왔어요`,
-      );
-    } catch {
-      toast('파일을 가져오지 못했어요');
-    }
-  };
-
   return {
-    fileRef,
     addBoard,
     commitBoard,
     duplicateBoard,
     clearBoard,
     deleteBoard,
-    doExport,
-    askImport,
-    onImportFile,
   };
 }

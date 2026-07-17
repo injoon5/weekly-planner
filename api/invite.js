@@ -1,12 +1,12 @@
 import { init, id } from '@instantdb/admin';
-import { linkedId } from '../src/links.js';
+import { linkedId } from '../src/lib/links.js';
 import {
   createMemberTxs,
   findMemberForUser,
   memberRoleTxs,
-} from '../src/member-policy.js';
-import { normalizeMemberRole } from '../src/roles.js';
-import schema from '../src/schema.js';
+} from '../src/sharing/member-policy.js';
+import { normalizeMemberRole } from '../src/sharing/roles.js';
+import schema from '../src/db/schema.js';
 
 const APP_ID = process.env.INSTANT_APP_ID || process.env.VITE_INSTANT_APP_ID;
 const ADMIN_TOKEN = process.env.INSTANT_ADMIN_TOKEN;

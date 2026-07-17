@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ImageResponse } from '@vercel/og';
-import { sanitizeOgImageTitle } from '../src/og-meta.js';
+import { sanitizeOgImageTitle } from '../src/server/og-meta.js';
 
 const fontDir = join(dirname(fileURLToPath(import.meta.url)), 'fonts');
 

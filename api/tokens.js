@@ -4,9 +4,9 @@ import {
   apiTokenPrefixOf,
   generateApiToken,
   hashApiToken,
-} from '../src/api-tokens.js';
-import { linkedId } from '../src/links.js';
-import schema from '../src/schema.js';
+} from '../src/server/api-tokens.js';
+import { linkedId } from '../src/lib/links.js';
+import schema from '../src/db/schema.js';
 
 const APP_ID = process.env.INSTANT_APP_ID || process.env.VITE_INSTANT_APP_ID;
 const ADMIN_TOKEN = process.env.INSTANT_ADMIN_TOKEN;

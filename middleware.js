@@ -4,7 +4,7 @@
  * so Open Graph / Twitter / Kakao unfurls see absolute meta + dynamic titles.
  */
 import { rewrite } from '@vercel/functions';
-import { isSocialCrawler } from './src/og-meta.js';
+import { isSocialCrawler } from './src/server/og-meta.js';
 
 export const config = {
   matcher: '/s/:token*',

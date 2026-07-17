@@ -6,9 +6,9 @@ import {
   NEXT_DAY_START_MIN,
   SLOTS,
   SLOT_MIN,
-} from '../config.js';
-import { beginPointerGesture } from '../drag.js';
-import { classifyGridPointerDown } from '../grid-gesture.js';
+} from '../lib/config.js';
+import { beginPointerGesture } from '../grid/drag.js';
+import { classifyGridPointerDown } from '../grid/grid-gesture.js';
 import {
   chipStyle,
   geoX,
@@ -20,9 +20,9 @@ import {
   slotHeight,
   slotTop,
   syncHeadTrack,
-} from '../grid-layout.js';
-import { fmt } from '../time.js';
-import { compactLayout, layout } from '../tokens.stylex.js';
+} from '../grid/grid-layout.js';
+import { fmt } from '../lib/time.js';
+import { compactLayout, layout } from '../styles/tokens.stylex.js';
 import { grid } from '../styles/grid.js';
 import { planner } from '../styles/planner.js';
 import { GridCursors } from './GridCursors.jsx';

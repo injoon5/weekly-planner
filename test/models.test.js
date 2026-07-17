@@ -10,8 +10,8 @@ import {
   pickLeastUsedColor,
   repeatWeeksOf,
   weekdayFromPlannerDate,
-} from '../src/models.js';
-import { packOverlappingEvents } from '../src/event-packing.js';
+} from '../src/board/models.js';
+import { packOverlappingEvents } from '../src/grid/event-packing.js';
 
 describe('model normalization', () => {
   it('normalizes loose event input into app invariants', () => {

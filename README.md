@@ -44,12 +44,16 @@ vite.config.js          # StyleX unplugin + React
 src/
   main.jsx              # createRoot
   router.jsx            # TanStack Router + db.useAuth
-  db.js                 # Instant init + tx helpers
-  tokens.stylex.js      # StyleX design tokens (defineVars)
-  themes.js             # darkTheme (createTheme)
-  styles/               # StyleX style modules
-  components/           # JSX UI
-  schema.js / …         # Instant schema + domain logic
+  components/           # JSX UI (+ ui/ primitives)
+  hooks/                # React hooks (workspace, runtime, share, …)
+  styles/               # StyleX style modules + tokens.stylex.js (defineVars)
+  db/                   # Instant init, schema, transactions (tx/)
+  board/                # Board/workspace domain: models, import/export, bootstrap
+  grid/                 # Week-grid geometry, drag + gesture logic
+  sharing/              # Share links, roles, member policy
+  theme/                # Theme state + darkTheme (createTheme)
+  server/               # Shared with api/ + middleware: REST, tokens, OG meta
+  lib/                  # Generic helpers: time, config, links, command-result
 instant.schema.ts
 instant.perms.ts
 vercel.json
@@ -57,7 +61,7 @@ vercel.json
 
 ## Instant setup
 
-1. App id in **`src/config.js`** (`APP_ID`). Same value in `.env` as `INSTANT_APP_ID`.
+1. App id in **`src/lib/config.js`** (`APP_ID`). Same value in `.env` as `INSTANT_APP_ID`.
 2. Admin token in `.env` from the [Instant dashboard](https://www.instantdb.com/dash).
 3. Optional lock:
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MOBILE_SHEET_MQ } from '../config.js';
+import { MOBILE_SHEET_MQ } from '../lib/config.js';
 
 /** True when overlays should render as a swipeable bottom drawer. */
 export function useMobileSheet() {

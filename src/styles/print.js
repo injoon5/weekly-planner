@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { colors } from '../tokens.stylex.js';
+import { colors } from './tokens.stylex.js';
 
 // The print sheet reuses the popover menu styles (menus.mi / mcap / drow), but
 // those are tuned for a 6px-padded popover where labels ride a 9px text rail.

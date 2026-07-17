@@ -4,7 +4,7 @@ import { registerSW } from 'virtual:pwa-register';
 import './app.css';
 import './styles/palette.css';
 import './styles/base-ui.css';
-import { bootDocumentTheme } from './theme-dom.js';
+import { bootDocumentTheme } from './theme/theme-dom.js';
 import { App } from './router.jsx';
 
 bootDocumentTheme();
