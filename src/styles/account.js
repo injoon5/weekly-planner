@@ -187,14 +187,42 @@ export const account = stylex.create({
     whiteSpace: 'nowrap',
   },
 
+  // One-line strip: overflow scrolls sideways; edge masks soft-fade when
+  // content is clipped (same pattern as board tabs).
   swatches: {
+    flex: 1,
+    minWidth: 0,
     display: 'flex',
     alignItems: 'center',
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
     gap: '8px',
+    overflowX: 'auto',
+    scrollbarWidth: 'none',
+    WebkitOverflowScrolling: 'touch',
+    // Room for the selected ring (+4px) without clipping mid-scroll.
+    padding: '4px 2px',
+    margin: '-4px -2px',
+  },
+
+  swatchesFadeLeft: {
+    maskImage: 'linear-gradient(to right, transparent, #000 24px)',
+    WebkitMaskImage: 'linear-gradient(to right, transparent, #000 24px)',
+  },
+
+  swatchesFadeRight: {
+    maskImage: 'linear-gradient(to left, transparent, #000 24px)',
+    WebkitMaskImage: 'linear-gradient(to left, transparent, #000 24px)',
+  },
+
+  swatchesFadeBoth: {
+    maskImage:
+      'linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent)',
+    WebkitMaskImage:
+      'linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent)',
   },
 
   swatch: {
+    flexShrink: 0,
     width: '22px',
     height: '22px',
     padding: 0,
