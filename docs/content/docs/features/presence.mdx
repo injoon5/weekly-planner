@@ -14,10 +14,14 @@ description: Live avatars and peer cursors on the week grid.
 - Boardless sessions park in per-tab idle rooms so hooks stay unconditional
 - Anonymous guests get stable session colors
 - Published name is shortened; never raw email
+- [Account settings](/docs/features/account) override both: `settings.displayName`
+  replaces the email local part, `settings.presenceColor` replaces the hash color
 
 ## Avatars
 
-`PresenceAvatars` — overlapping stack with `+N` overflow.
+`PresenceAvatars` — overlapping stack with `+N` overflow. The stack is a
+button: clicking it opens a popover listing everyone in the room by name,
+with their avatar color and role (편집/보기).
 
 ## Cursors
 

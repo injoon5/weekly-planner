@@ -17,7 +17,8 @@ Source: `instant.perms.ts`.
 | `shares` | board owner, or token lookup via `shareToken` | board owner | board owner |
 | `members` | board owner or self | board owner | owner; self can delete |
 | `boardPrefs` | self | auth + self | self |
-| `todos` | owner | auth + self | owner |
+| `todos` | owner | auth + self + rate limit | owner |
+| `apiTokens` | owner (`hash` field hidden) | never (server-only) | delete: owner; update: never |
 
 ## Bindings (boards)
 
@@ -28,6 +29,29 @@ Typical bindings: `isOwner`, `isMember`, `isEditor`, `hasShareSecret`.
 - Field rules hide `secret` / `editSecret` from everyone except the board owner.
 - Public metadata lookup can find a share by `ruleParams.shareToken` without exposing secrets.
 - Event writes for share editors must pass `ruleParams.secret` matching `shares.editSecret`.
+
+## Rate limits (`$rateLimits`)
+
+Event and todo writes pass through [Instant rate limits](https://www.instantdb.com/docs/rate-limits)
+— token buckets evaluated inside the permission rules:
+
+- `eventWrites`: 120/minute burst + 2000/day sustained. Signed-in writers are
+  keyed by `auth.id`; share-link guests by their `ruleParams.secret` (each
+  share link gets its own bucket).
+- `todoWrites`: 300/hour keyed by `auth.id`.
+
+`rateLimit.limit()` is the **last** term in each `&&` chain: CEL
+short-circuits, so a write that fails ownership checks never consumes a
+token. Because the [REST API](/docs/api/rest) impersonates the token owner,
+these buckets bound API abuse too. Capacities are sized far above interactive
+use — they exist to stop runaway scripts, not humans.
+
+## API tokens
+
+`apiTokens` rows can be listed and revoked by their owner in the client (the
+account page uses a live query), but `create`/`update` are `false`: secrets
+are minted only by `/api/tokens` through the admin SDK, and the `hash` field
+rule hides the stored digest from every client read.
 
 ## Why `/api/invite` exists
 

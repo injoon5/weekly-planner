@@ -12,6 +12,8 @@ const PEER_COLORS = [
   '#8F8F9C',
 ];
 
+export { PEER_COLORS };
+
 export function peerColor(seed = '') {
   let h = 0;
   const s = String(seed);
@@ -50,14 +52,17 @@ function sessionSeed() {
  * anonymous share-link guests — publish the short display name only,
  * never the raw email.
  */
-export function useBoardPresence({ boardId, user, role, guestLabel }) {
+export function useBoardPresence({ boardId, user, role, guestLabel, settings }) {
   const active = Boolean(boardId);
   // Hooks must run unconditionally; park boardless sessions in a per-tab
   // room instead of one global "__idle__" room shared by every client.
   const room = db.room('board', boardId || 'idle:' + sessionSeed());
 
-  const name = user?.email ? shortName(user.email) : guestLabel || '손님';
-  const color = peerColor(user?.email || sessionSeed());
+  const customName = settings?.displayName?.trim();
+  const name = customName || (user?.email ? shortName(user.email) : guestLabel || '손님');
+  const color = PEER_COLORS.includes(settings?.presenceColor)
+    ? settings.presenceColor
+    : peerColor(user?.email || sessionSeed());
 
   const { user: myPresence, peers: rawPeers, publishPresence } = db.rooms.usePresence(
     room,

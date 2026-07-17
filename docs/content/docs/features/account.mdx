@@ -1,0 +1,38 @@
+---
+title: Account page
+description: Editable profile, theme, and API tokens at /account.
+---
+
+# Account page
+
+`/account` (`src/components/Account.jsx`), reachable from the header user
+menu. The route redirects signed-out visitors to `/login` (`src/router.jsx`).
+
+## Editable settings
+
+All profile fields live on the per-user `settings` row and sync in realtime:
+
+| Setting | Field | Used by |
+| --- | --- | --- |
+| 표시 이름 (display name) | `settings.displayName` | Presence avatars + grid cursors, instead of the email local part |
+| 내 색 (avatar color) | `settings.presenceColor` | Presence avatar/cursor color; "자동" clears back to the email-hash color |
+| 테마 (theme) | `settings.theme` | Same row the in-planner toggle writes (`useTheme`) |
+
+If the user has no `settings` row yet (fresh account mid-bootstrap), the first
+save creates one with the owner link.
+
+## API tokens
+
+Non-guest accounts manage [REST API](/docs/api/rest) tokens here:
+
+- Create (named), rotate (새로 고침), and revoke — the `wp_…` secret is shown
+  once, immediately after create/rotate.
+- The list is a live Instant query on `apiTokens`; the permission rules hide
+  the stored hash from clients entirely.
+- Guests see an upgrade prompt instead: tokens require an email account
+  because API requests are impersonated by email.
+
+## Sign out
+
+Same `db.auth.signOut()` as the header menu; the router's auth context then
+redirects to the landing/login flow.

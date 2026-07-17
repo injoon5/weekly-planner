@@ -478,6 +478,52 @@ export const planner = stylex.create({
     },
   },
 
+  // Button wrapper so the stack opens the who's-here popover.
+  presenceBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: 0,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    borderRadius: '99px',
+    transitionProperty: 'transform',
+    transitionDuration: '.15s',
+    transitionTimingFunction: 'ease',
+    ':active': {
+      transform: 'scale(.95)',
+    },
+    '@media (pointer: coarse)': {
+      position: 'relative',
+      '::after': {
+        content: '""',
+        position: 'absolute',
+        left: '-3px',
+        right: '-3px',
+        top: '-8px',
+        bottom: '-8px',
+      },
+    },
+    '@media print': {
+      display: 'none',
+    },
+  },
+
+  peerRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '9px',
+    padding: '4px 9px',
+    minHeight: '32px',
+    boxSizing: 'border-box',
+  },
+
+  peerRowDot: {
+    marginLeft: 0,
+    flexShrink: 0,
+  },
+
   presenceDot: {
     width: '24px',
     height: '24px',

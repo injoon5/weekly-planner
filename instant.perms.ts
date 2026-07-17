@@ -29,9 +29,12 @@ const rules = {
   events: {
     allow: {
       view: 'isBoardOwner || isBoardMember || hasBoardShareSecret',
-      create: 'isBoardOwner || isBoardEditor || hasBoardEditSecret',
-      update: 'isBoardOwner || isBoardEditor || hasBoardEditSecret',
-      delete: 'isBoardOwner || isBoardEditor || hasBoardEditSecret',
+      // Signed-in writers consume a rate-limit token; share-link guests
+      // (auth.id == null) are keyed by their share secret instead. `limit`
+      // goes last in the && chain so denied writes never consume tokens.
+      create: '(isBoardOwner || isBoardEditor || hasBoardEditSecret) && canSpendWrite',
+      update: '(isBoardOwner || isBoardEditor || hasBoardEditSecret) && canSpendWrite',
+      delete: '(isBoardOwner || isBoardEditor || hasBoardEditSecret) && canSpendWrite',
     },
     bind: {
       isBoardOwner: "auth.id in data.ref('board.owner.id')",
@@ -41,6 +44,8 @@ const rules = {
         "true in data.ref('board.shares.enabled') && ruleParams.secret in data.ref('board.shares.secret')",
       hasBoardEditSecret:
         "true in data.ref('board.shares.enabled') && ruleParams.secret in data.ref('board.shares.editSecret')",
+      canSpendWrite:
+        'auth.id != null ? rateLimit.eventWrites.limit(auth.id) : rateLimit.eventWrites.limit(ruleParams.secret)',
     },
   },
   settings: {
@@ -93,7 +98,8 @@ const rules = {
   todos: {
     allow: {
       view: 'isOwner',
-      create: "auth.id != null && auth.id in data.ref('owner.id')",
+      create:
+        "auth.id != null && auth.id in data.ref('owner.id') && rateLimit.todoWrites.limit(auth.id)",
       update: 'isOwner',
       delete: 'isOwner',
     },
@@ -101,6 +107,47 @@ const rules = {
       isOwner: "auth.id in data.ref('owner.id')",
     },
   },
+  /**
+   * REST API personal access tokens. Created and rotated only server-side
+   * (`/api/tokens`, admin SDK bypasses these rules); clients may list and
+   * revoke their own rows but can never read or write the secret hash.
+   */
+  apiTokens: {
+    allow: {
+      view: 'isOwner',
+      create: 'false',
+      update: 'false',
+      delete: 'isOwner',
+    },
+    bind: {
+      isOwner: "auth.id in data.ref('owner.id')",
+    },
+    fields: {
+      hash: 'false',
+    },
+  },
 } satisfies InstantRules;
 
-export default rules;
+/**
+ * Token buckets for the rules above — https://www.instantdb.com/docs/rate-limits
+ * Limits are per entity (a transaction touching N rows spends N tokens), so
+ * capacities are sized well above interactive use: they only stop runaway
+ * scripts and abusive REST clients, never a human dragging events around.
+ * (Typed separately: `InstantRules` in @instantdb 0.22.x predates `$rateLimits`.)
+ */
+const rateLimits = {
+  $rateLimits: {
+    eventWrites: {
+      limits: [
+        // Burst: 120 event writes/minute; sustained: 2000/day.
+        { capacity: 120, refill: { period: '1 minute' } },
+        { capacity: 2000, refill: { period: '24 hours' } },
+      ],
+    },
+    todoWrites: {
+      limits: [{ capacity: 300, refill: { period: '1 hour' } }],
+    },
+  },
+};
+
+export default { ...rules, ...rateLimits };

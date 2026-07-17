@@ -3,6 +3,7 @@
   "pages": [
     "index",
     "auth",
+    "account",
     "boards",
     "events-and-editor",
     "grid-and-drag",

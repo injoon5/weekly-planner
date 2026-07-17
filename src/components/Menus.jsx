@@ -1,7 +1,7 @@
 import { Popover } from '@base-ui/react/popover';
 import { Separator } from '@base-ui/react/separator';
 import * as stylex from '@stylexjs/stylex';
-import { Download, Upload, LogOut, UserPlus } from 'lucide-react';
+import { Download, Upload, LogOut, Settings2, UserPlus } from 'lucide-react';
 import { menus } from '../styles/menus.js';
 
 export function MoreMenu({ onExport, onImport }) {
@@ -34,7 +34,7 @@ export function MoreMenu({ onExport, onImport }) {
   );
 }
 
-export function UserMenu({ email, isGuest, onUpgrade, onSignOut }) {
+export function UserMenu({ email, isGuest, onUpgrade, onAccount, onSignOut }) {
   return (
     <>
       {isGuest ? (
@@ -52,6 +52,14 @@ export function UserMenu({ email, isGuest, onUpgrade, onSignOut }) {
         </>
       ) : (
         email && <div {...stylex.props(menus.mcap, menus.mcapFirst)}>{email}</div>
+      )}
+      {onAccount && (
+        <Popover.Close render={<button {...stylex.props(menus.mi)} onClick={onAccount} />}>
+          <span {...stylex.props(menus.miIconWrap)}>
+            <Settings2 size={14} strokeWidth={1.75} />
+          </span>
+          <span {...stylex.props(menus.miLabel)}>계정 설정</span>
+        </Popover.Close>
       )}
       <Popover.Close render={<button {...stylex.props(menus.mi, menus.miRed)} onClick={onSignOut} />}>
         <span {...stylex.props(menus.miIconWrap)}>

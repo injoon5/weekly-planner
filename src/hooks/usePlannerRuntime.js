@@ -12,6 +12,7 @@ export function usePlannerRuntime({
   ruleParams = null,
   boardPrefs = null,
   user = null,
+  settings = null,
   role,
   canRenameColors = false,
   storageKey,
@@ -34,6 +35,7 @@ export function usePlannerRuntime({
     user,
     role,
     guestLabel,
+    settings,
   });
   const print = usePrintSetup(board);
 

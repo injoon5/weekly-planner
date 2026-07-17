@@ -5,23 +5,31 @@ description: Entry points, layering, and how the SPA, InstantDB, and Vercel APIs
 
 # Architecture
 
-Weekly Planner is a single-page app with a thin Vercel edge/API layer for invites and social metadata.
+Weekly Planner is a single-page app with a thin Vercel edge/API layer for the REST API, invites, and social metadata.
 
-```
-Browser
-  ├─ index.html (theme boot, SEO shell)
-  ├─ src/main.jsx → App (router)
-  │    ├─ Instant db.useAuth()
-  │    ├─ Landing | Login | Planner | SharedPlanner
-  │    └─ StyleX + Base UI
-  └─ InstantDB (IndexedDB + realtime)
+```mermaid
+flowchart LR
+  subgraph Browser
+    H[index.html<br/>theme boot, SEO shell] --> M[src/main.jsx → App]
+    M --> R[Router: Landing / Login /<br/>Planner / SharedPlanner / Account]
+    R --> S[StyleX + Base UI]
+  end
 
-Vercel
-  ├─ SPA rewrite → index.html
-  ├─ /api/invite          (admin SDK)
-  ├─ /api/og              (@vercel/og PNG)
-  ├─ /api/share-meta      (crawler HTML)
-  └─ middleware.js        (/s/:token → share-meta for bots)
+  subgraph Vercel
+    W[SPA rewrite → index.html]
+    V1["/api/v1/* (REST, bearer tokens)"]
+    T["/api/tokens (token mint/rotate)"]
+    I["/api/invite (admin SDK)"]
+    O["/api/og · /api/share-meta"]
+    MW["middleware.js (/s/:token → bots)"]
+  end
+
+  R -->|db.useAuth / useQuery / transact| DB[(InstantDB<br/>IndexedDB + realtime)]
+  R --> T
+  V1 -->|impersonated queries| DB
+  T --> DB
+  I --> DB
+  ExtClient[External REST client] --> V1
 ```
 
 ## Entry points

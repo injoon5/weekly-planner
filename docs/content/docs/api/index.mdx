@@ -9,10 +9,12 @@ Located under `/api` at the repo root (Vite app project), not inside `docs/`.
 
 | Route | Method | Purpose |
 | --- | --- | --- |
+| `/api/v1/*` | GET/POST/PATCH/DELETE | Token-authenticated REST API for boards/events/todos |
+| `/api/tokens` | GET/POST/DELETE | Create/rotate/revoke REST API tokens (session auth) |
 | `/api/invite` | POST | Invite member by email (admin SDK) |
 | `/api/og` | GET | Dynamic PNG Open Graph image |
 | `/api/share-meta` | GET | Crawler HTML for `/s/:token` |
 
 CORS: handlers support `OPTIONS` where needed.
 
-Deep dives: [Invite](/docs/api/invite), [OG & share-meta](/docs/api/og-and-share-meta), [Middleware](/docs/api/middleware).
+Deep dives: [REST API](/docs/api/rest), [Invite](/docs/api/invite), [OG & share-meta](/docs/api/og-and-share-meta), [Middleware](/docs/api/middleware).
