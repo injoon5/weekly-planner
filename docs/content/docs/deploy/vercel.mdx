@@ -14,6 +14,20 @@ description: SPA rewrites, headers, env scopes, and OG URL injection for the pro
 
 **Do not enable `cleanUrls`** — breaks SPA fallback to `/index.html`.
 
+## REST API routes (`/api/v1`)
+
+Vite projects on Vercel only get **single-segment** dynamic API paths — Next.js
+`[...path]` catch-alls are not supported and nested URLs return platform
+`NOT_FOUND`. Depth is explicit instead:
+
+| File | Matches |
+| --- | --- |
+| `api/v1/[a].js` | `/api/v1/me`, `/boards`, `/todos`, … |
+| `api/v1/[a]/[b].js` | `/boards/:id`, `/events/:id`, `/token/refresh`, … |
+| `api/v1/[a]/[b]/[c].js` | `/boards/:id/events` |
+
+All three re-export `src/server/rest-api.js`.
+
 ## Environment (Preview + Production)
 
 | Variable | Why |

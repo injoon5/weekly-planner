@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -22,5 +22,20 @@ describe('vercel SPA hosting', () => {
     expect(spa).toBeTruthy();
     expect(spa.source).toMatch(/api/);
     expect(rewrites.some((r) => r.destination?.startsWith('/api/'))).toBe(true);
+  });
+
+  it('exposes one REST entrypoint per path depth (no Vite catch-all)', () => {
+    // [...path] only matches a single segment on non-Next Vercel projects, so
+    // /api/v1/boards/:id was platform NOT_FOUND while /api/v1/boards worked.
+    const entries = [
+      'api/v1/[a].js',
+      'api/v1/[a]/[b].js',
+      'api/v1/[a]/[b]/[c].js',
+      'src/server/rest-api.js',
+    ];
+    for (const rel of entries) {
+      expect(existsSync(join(root, rel)), rel).toBe(true);
+    }
+    expect(existsSync(join(root, 'api/v1/[...path].js'))).toBe(false);
   });
 });
