@@ -88,7 +88,7 @@ const s = stylex.create({
     display: 'block',
     flexShrink: 0,
     // Lucide RefreshCw sits optically high next to Hangul — nudge down.
-    transform: 'translateY(1px)',
+    transform: 'translateY(1.5px)',
   },
 });
 
