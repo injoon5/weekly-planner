@@ -4,14 +4,19 @@
   box-sizing: border-box;
 }
 
-html,
-body {
-  overflow-x: hidden;
+/* `clip` (not `hidden`) so the viewport keeps scrolling the document —
+   `overflow-x: hidden` on html+body turns <body> into its own scroll
+   container, which freezes window.scrollY and breaks scroll-linked UI. */
+html {
+  overflow-x: clip;
 }
 
+/* The planner shell owns all scrolling (its grid panes scroll internally);
+   lock the document only while it is mounted so iOS Safari can't rubber-band
+   the page. Marketing / auth routes keep normal document scroll. */
 @media screen and (max-width: 720px) {
-  html,
-  body {
+  html:has([data-app-shell='planner']),
+  html:has([data-app-shell='planner']) body {
     overflow: hidden;
     overscroll-behavior: none;
     height: 100%;

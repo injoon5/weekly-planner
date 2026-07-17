@@ -1,7 +1,7 @@
 import { db, id } from '../instant.js';
-import { eventFields } from '../models.js';
 import { serializeColorLabels } from '../prefs.js';
 import { defaultBoardRange } from '../time.js';
+import { createEventTx } from './events.js';
 
 export function boardTx(userId, board, sortOrder) {
   const bid = id();
@@ -24,20 +24,7 @@ export function boardTx(userId, board, sortOrder) {
       .link({ owner: userId }),
   ];
   for (const e of board.events || []) {
-    const f = eventFields(e);
-    txs.push(
-      db.tx.events[id()]
-        .update({
-          day: f.day,
-          title: f.title,
-          start: f.start,
-          dur: f.dur,
-          color: f.color,
-          memo: f.memo,
-          createdAt: Date.now(),
-        })
-        .link({ board: bid }),
-    );
+    txs.push(createEventTx(bid, e).tx);
   }
   return { bid, txs };
 }

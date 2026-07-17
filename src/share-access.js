@@ -26,7 +26,9 @@ export function resolveShareSecret({ token, share, manualSecret }) {
 }
 
 /**
- * Pure guest-access derivation for public share routes.
+ * Pure guest-access derivation for public share routes. `state` is the single
+ * source of truth for what to render; the other fields are inputs the caller
+ * needs alongside it (secret for queries, role/canEdit for permissions).
  * @param {{
  *   token?: string | null,
  *   share?: { mode?: unknown, role?: unknown, enabled?: boolean } | null,
@@ -37,6 +39,15 @@ export function resolveShareSecret({ token, share, manualSecret }) {
  *   unlockError?: string | null,
  *   queryError?: unknown,
  * }} args
+ * @returns {{
+ *   state: 'loading' | 'passwordRequired' | 'unlockFailed' | 'disabled' | 'notFound' | 'ready' | 'pendingBoard',
+ *   secret: string,
+ *   role: 'viewer' | 'editor',
+ *   canEdit: boolean,
+ *   isLoading: boolean,
+ *   unlockError: string,
+ *   error: unknown,
+ * }}
  */
 export function deriveShareAccessState({
   token,
@@ -54,56 +65,39 @@ export function deriveShareAccessState({
       secret: '',
       role: 'viewer',
       canEdit: false,
-      needsPassword: false,
-      waitingUnlock: false,
-      passwordFailed: false,
       isLoading: false,
-      notFound: true,
-      disabled: false,
       unlockError: '',
       error: queryError || null,
     };
   }
 
   const needsPassword = share ? normalizeShareMode(share.mode) === SHARE_MODE.PASSWORD : false;
-  const waitingUnlock = Boolean(needsPassword) && !manualSecret;
+  const waitingUnlock = needsPassword && !manualSecret;
   const secret = resolveShareSecret({ token, share, manualSecret });
   const role = normalizeShareRole(share?.role);
   const canEdit = Boolean(board) && role === 'editor';
   const disabled = Boolean(share && share.enabled === false);
 
   const boardPending = Boolean(secret) && !waitingUnlock;
-  const isLoading =
-    Boolean(token) && (metaLoading || (boardPending && boardLoading && !board));
+  const isLoading = metaLoading || (boardPending && boardLoading && !board);
 
   const passwordFailed =
-    Boolean(needsPassword) &&
-    Boolean(manualSecret) &&
-    !boardLoading &&
-    !board &&
-    Boolean(share?.enabled);
+    needsPassword && Boolean(manualSecret) && !boardLoading && !board && Boolean(share?.enabled);
 
-  const boardMissing =
-    boardPending &&
-    !boardLoading &&
-    !board &&
-    Boolean(share?.enabled) &&
-    !waitingUnlock;
+  const boardMissing = boardPending && !boardLoading && !board && Boolean(share?.enabled);
 
   const notFound =
-    Boolean(token) &&
-    !waitingUnlock &&
-    ((!metaLoading && (!share || share.enabled === false) && !board) || boardMissing);
+    !waitingUnlock && ((!metaLoading && (!share || share.enabled === false) && !board) || boardMissing);
 
-  /** @type {'loading' | 'passwordRequired' | 'unlockFailed' | 'disabled' | 'notFound' | 'ready' | 'pendingBoard'} */
-  let state = 'loading';
+  let state;
+  // Callers surface query errors themselves; keep rendering the boot state
+  // underneath instead of misclassifying the share as missing.
   if (queryError) state = 'loading';
   else if (disabled) state = 'disabled';
   else if (waitingUnlock) state = 'passwordRequired';
   else if (passwordFailed) state = 'unlockFailed';
   else if (notFound) state = 'notFound';
   else if (board) state = 'ready';
-  else if (isLoading || boardPending) state = board && !boardLoading ? 'ready' : 'pendingBoard';
   else state = 'pendingBoard';
 
   return {
@@ -111,18 +105,8 @@ export function deriveShareAccessState({
     secret,
     role,
     canEdit,
-    needsPassword: waitingUnlock,
-    waitingUnlock,
-    passwordFailed,
     isLoading,
-    notFound,
-    disabled,
     unlockError: unlockError || (passwordFailed ? '비밀번호가 맞지 않아요' : ''),
     error: queryError || null,
   };
-}
-
-/** @deprecated Prefer deriveShareAccessState; kept for test naming clarity. */
-export function sharedNotFound(args) {
-  return deriveShareAccessState(args).notFound;
 }

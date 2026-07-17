@@ -3,7 +3,6 @@ import {
   DAY_ORIGIN,
   NEXT_DAY_START_MIN,
   SLOT_MIN,
-  SLOTS,
 } from './config.js';
 
 export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -79,19 +78,15 @@ export function fmtRepeat(weeks) {
 }
 
 export function fmtRange(a, b) {
-  const parse = (s) => {
-    const [y, m, d] = s.split('-').map(Number);
-    return { y, m, d };
-  };
-  const format = (o, withYear) =>
-    (withYear ? o.y + '.' : '') + pad(o.m) + '.' + pad(o.d);
+  const format = (d, withYear) =>
+    (withYear ? d.getFullYear() + '.' : '') + pad(d.getMonth() + 1) + '.' + pad(d.getDate());
   if (a && b) {
-    const A = parse(a);
-    const B = parse(b);
-    return format(A, true) + ' – ' + format(B, A.y !== B.y);
+    const A = parseDate(a);
+    const B = parseDate(b);
+    return format(A, true) + ' – ' + format(B, A.getFullYear() !== B.getFullYear());
   }
-  if (a) return format(parse(a), true) + ' –';
-  return '– ' + format(parse(b), true);
+  if (a) return format(parseDate(a), true) + ' –';
+  return '– ' + format(parseDate(b), true);
 }
 
 export function snapMin(m, max = DAY_MIN - SLOT_MIN) {
@@ -110,9 +105,7 @@ export function nowOnGrid(date = new Date()) {
     nowMin += DAY_MIN;
     nowDay = (nowDay + 6) % 7;
   }
-  // todayDow matches the planner's 06:00→06:00 day (same as nowDay / plannerDate
-  // weekday) so the grid highlight, now-line, and today's to-dos agree.
-  return { nowMin, nowDay, todayDow: nowDay };
+  // nowDay is the planner's 06:00→06:00 day (same as the plannerDate weekday),
+  // so the grid's today highlight, now-line, and today's to-dos all agree.
+  return { nowMin, nowDay };
 }
-
-export { SLOT_MIN, SLOTS, DAY_MIN };

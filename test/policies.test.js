@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { isOk } from '../src/command-result.js';
 import { linkedId, linkedIds } from '../src/links.js';
-import { isEditorRole, normalizeMemberRole } from '../src/member-role.js';
 import {
+  isEditorRole,
+  normalizeMemberRole,
   normalizeShareMode,
   normalizeShareRole,
   SHARE_MODE,

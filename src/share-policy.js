@@ -6,9 +6,22 @@ import {
 } from './roles.js';
 import { hashSharePassword, randomToken } from './share.js';
 
-/** @param {{ shares?: Array<{ enabled?: boolean }> } | null | undefined} board */
+/**
+ * The share row whose link is currently live, or null. The share panel keys
+ * its "create vs manage" UI off this.
+ * @param {{ shares?: Array<{ enabled?: boolean }> } | null | undefined} board
+ */
+export function enabledShareOf(board) {
+  return (board?.shares || []).find((s) => s.enabled) || null;
+}
+
+/**
+ * The share row write actions operate on: the enabled one, falling back to a
+ * disabled row so re-enabling reuses its token and the old URL stays valid.
+ * @param {{ shares?: Array<{ enabled?: boolean }> } | null | undefined} board
+ */
 export function activeShareOf(board) {
-  return (board?.shares || []).find((s) => s.enabled) || board?.shares?.[0] || null;
+  return enabledShareOf(board) || board?.shares?.[0] || null;
 }
 
 /**

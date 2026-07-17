@@ -159,7 +159,7 @@ export const grid = stylex.create({
     padding: '0 8px 6px',
     fontSize: '9.5px',
     fontWeight: 550,
-    color: colors.faint,
+    color: colors.muted,
     letterSpacing: '0.02em',
     backgroundColor: colors.glass2,
     WebkitBackdropFilter: 'blur(8px)',
@@ -227,7 +227,7 @@ export const grid = stylex.create({
   den: {
     fontSize: '10px',
     fontWeight: 500,
-    color: colors.faint,
+    color: colors.muted,
     letterSpacing: '0.012em',
     '@media print': {
       fontSize: '9.5px',
@@ -276,7 +276,7 @@ export const grid = stylex.create({
     fontSize: '10px',
     fontWeight: 500,
     lineHeight: 1,
-    color: colors.faint,
+    color: colors.muted,
     fontVariantNumeric: 'tabular-nums',
     letterSpacing: '0.012em',
     whiteSpace: 'nowrap',
@@ -308,14 +308,13 @@ export const grid = stylex.create({
     top: '-3px',
     right: 0,
     fontStyle: 'normal',
-    fontSize: '7px',
+    fontSize: '8px',
     fontWeight: 650,
     lineHeight: 1,
-    opacity: 0.75,
     letterSpacing: 0,
     pointerEvents: 'none',
     [MOBILE]: {
-      fontSize: '6px',
+      fontSize: '7px',
       top: '-2px',
     },
     '@media print': {

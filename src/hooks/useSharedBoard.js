@@ -95,7 +95,6 @@ export function useSharedBoard(token) {
     readOnly: !access.canEdit,
     ruleParams,
     state: access.state,
-    needsPassword: access.needsPassword,
     password,
     setPassword,
     tryPassword,
@@ -103,7 +102,5 @@ export function useSharedBoard(token) {
     unlockError: access.unlockError,
     isLoading: access.isLoading,
     error: access.error,
-    notFound: access.notFound,
-    disabled: access.disabled,
   };
 }

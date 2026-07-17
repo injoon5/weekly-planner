@@ -24,7 +24,7 @@ export const planner = stylex.create({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: colors.faint,
+    color: colors.muted,
     fontSize: '13px',
     fontWeight: 550,
   },
@@ -83,7 +83,7 @@ export const planner = stylex.create({
     flexShrink: 0,
     fontSize: '11px',
     fontWeight: 550,
-    color: colors.faint,
+    color: colors.muted,
     fontVariantNumeric: 'tabular-nums',
     letterSpacing: '0.01em',
     '@media print': {
@@ -501,7 +501,7 @@ export const planner = stylex.create({
     marginRight: '4px',
     fontSize: '11px',
     fontWeight: 600,
-    color: colors.faint,
+    color: colors.muted,
     fontVariantNumeric: 'tabular-nums',
   },
 

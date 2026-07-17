@@ -35,7 +35,6 @@ export function PlannerSurface({
   readOnly,
   swapping = false,
   updateEvent,
-  todayDow,
   nowMin,
   nowDay,
   printShowMemos = true,
@@ -52,7 +51,6 @@ export function PlannerSurface({
         myColor={presence.myColor}
         boardId={boardId}
         events={visibleEvents}
-        todayDow={todayDow}
         nowMin={nowMin}
         nowDay={nowDay}
         editing={session.editing}
@@ -60,7 +58,7 @@ export function PlannerSurface({
         onGestureResult={(result) =>
           handleGridGesture(result, { readOnly, session, updateEvent })
         }
-        gestureBlocked={Boolean(session.editing) || readOnly}
+        gestureBlocked={Boolean(session.editing)}
         readOnly={readOnly}
         days={views.days}
         compact={views.compact}

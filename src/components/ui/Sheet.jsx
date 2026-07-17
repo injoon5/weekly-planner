@@ -1,6 +1,8 @@
 import { Dialog } from '@base-ui/react/dialog';
 import { Drawer } from '@base-ui/react/drawer';
+import * as stylex from '@stylexjs/stylex';
 import { useMobileSheet } from '../../hooks/useMobileSheet.js';
+import { ui } from '../../styles/ui.js';
 
 /** Dialog on desktop; swipeable Drawer on mobile. */
 function SheetRoot({ open, onOpenChange, children }) {
@@ -48,6 +50,7 @@ function SheetPopup({ children, ...props }) {
   if (mobile) {
     return (
       <Drawer.Popup data-ui-drawer="" {...props}>
+        <span {...stylex.props(ui.drawerGrip)} aria-hidden="true" />
         <Drawer.Content>{children}</Drawer.Content>
       </Drawer.Popup>
     );

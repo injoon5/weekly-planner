@@ -21,7 +21,6 @@
     "src/legacy.js",
     "src/links.js",
     "src/member-policy.js",
-    "src/member-role.js",
     "src/models.js",
     "src/prefs.js",
     "src/print-prefs.js",

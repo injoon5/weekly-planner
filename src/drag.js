@@ -1,4 +1,5 @@
-import { clamp, DAY_MIN, SLOT_MIN, SLOTS } from './time.js';
+import { DAY_MIN, SLOT_MIN, SLOTS } from './config.js';
+import { clamp } from './time.js';
 
 /**
  * Pure draft math for calendar gestures.
@@ -347,12 +348,8 @@ export function beginPointerGesture(e, {
           session.tmr = 0;
           break;
         case 'continue':
+        default:
           break;
-        default: {
-          const _exhaustive = transition;
-          void _exhaustive;
-          break;
-        }
       }
       return;
     }

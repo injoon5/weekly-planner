@@ -20,7 +20,7 @@ export function Login() {
   } = useMagicCodeAuth();
 
   return (
-    <div {...stylex.props(auth.root)}>
+    <main {...stylex.props(auth.root)}>
       <div {...stylex.props(auth.card)}>
         <div {...stylex.props(auth.mark)} aria-hidden="true">
           <i {...stylex.props(auth.markA)} />
@@ -105,6 +105,6 @@ export function Login() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

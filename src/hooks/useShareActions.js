@@ -1,9 +1,6 @@
 import { fail, ok } from '../command-result.js';
 import { db } from '../instant.js';
-import {
-  removeMemberWithEditorTxs,
-  setMemberRoleTxs,
-} from '../tx/members.js';
+import { memberRoleTxs, removeMemberTxs } from '../member-policy.js';
 import {
   createShareTx,
   deleteShareTx,
@@ -27,9 +24,20 @@ async function copyUrl(url) {
   }
 }
 
+/** Share-policy validation errors carry user-facing Korean messages; prefer them. */
+function errorMessage(err, fallback) {
+  return err instanceof Error && err.message ? err.message : fallback;
+}
+
 /** Share links + member invite/role — owner-only except leave. */
 export function useShareActions({ board, isOwner = true, toast }) {
   const activeShare = () => activeShareOf(board);
+
+  const failWith = (message, error) => {
+    if (error !== undefined) console.error(error);
+    toast(message);
+    return fail(message, error);
+  };
 
   const enableShare = async ({ mode = 'open', role = 'viewer', password = '' } = {}) => {
     if (!isOwner || !board) return fail('소유자만 공유할 수 있어요');
@@ -47,9 +55,7 @@ export function useShareActions({ board, isOwner = true, toast }) {
       toast('공유 링크를 켰어요');
       return ok(url);
     } catch (err) {
-      const message = err instanceof Error ? err.message : '공유를 켜지 못했어요';
-      toast(message);
-      return fail(message, err);
+      return failWith(errorMessage(err, '공유를 켜지 못했어요'), err);
     }
   };
 
@@ -68,9 +74,7 @@ export function useShareActions({ board, isOwner = true, toast }) {
       toast('공유 설정을 바꿨어요');
       return ok();
     } catch (err) {
-      const message = err instanceof Error ? err.message : '공유 설정을 바꾸지 못했어요';
-      toast(message);
-      return fail(message, err);
+      return failWith(errorMessage(err, '공유 설정을 바꾸지 못했어요'), err);
     }
   };
 
@@ -107,9 +111,7 @@ export function useShareActions({ board, isOwner = true, toast }) {
       toast('새 링크를 만들었어요');
       return ok(url);
     } catch (err) {
-      const message = err instanceof Error ? err.message : '링크를 바꾸지 못했어요';
-      toast(message);
-      return fail(message, err);
+      return failWith(errorMessage(err, '링크를 바꾸지 못했어요'), err);
     }
   };
 
@@ -131,38 +133,32 @@ export function useShareActions({ board, isOwner = true, toast }) {
   const updateMemberRole = async (memberId, userId, role) => {
     if (!isOwner || !board || !userId) return fail();
     try {
-      await db.transact(setMemberRoleTxs(board.id, memberId, userId, role));
+      await db.transact(memberRoleTxs(db.tx, { boardId: board.id, memberId, userId, role }));
       return ok();
     } catch (error) {
-      console.error(error);
-      toast('멤버 역할을 바꾸지 못했어요');
-      return fail('멤버 역할을 바꾸지 못했어요', error);
+      return failWith('멤버 역할을 바꾸지 못했어요', error);
     }
   };
 
   const removeMember = async (memberId, userId) => {
     if (!isOwner || !board) return fail();
     try {
-      await db.transact(removeMemberWithEditorTxs(board.id, memberId, userId));
+      await db.transact(removeMemberTxs(db.tx, { boardId: board.id, memberId, userId }));
       toast('멤버를 제거했어요');
       return ok();
     } catch (error) {
-      console.error(error);
-      toast('멤버를 제거하지 못했어요');
-      return fail('멤버를 제거하지 못했어요', error);
+      return failWith('멤버를 제거하지 못했어요', error);
     }
   };
 
   const leaveBoard = async (memberId, userId) => {
     if (!memberId || !board) return fail();
     try {
-      await db.transact(removeMemberWithEditorTxs(board.id, memberId, userId));
+      await db.transact(removeMemberTxs(db.tx, { boardId: board.id, memberId, userId }));
       toast('시간표에서 나갔어요');
       return ok();
     } catch (error) {
-      console.error(error);
-      toast('시간표에서 나가지 못했어요');
-      return fail('시간표에서 나가지 못했어요', error);
+      return failWith('시간표에서 나가지 못했어요', error);
     }
   };
 
@@ -183,15 +179,13 @@ export function useShareActions({ board, isOwner = true, toast }) {
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const message = body.error || '초대에 실패했어요';
-        toast(message);
-        return fail(message);
+        toast(body.error || '초대에 실패했어요');
+        return fail(body.error || '초대에 실패했어요');
       }
       toast(body.updated ? '역할을 업데이트했어요' : '초대했어요');
       return ok({ updated: Boolean(body.updated), memberId: body.memberId });
     } catch (error) {
-      toast('초대에 실패했어요');
-      return fail('초대에 실패했어요', error);
+      return failWith('초대에 실패했어요', error);
     }
   };
 

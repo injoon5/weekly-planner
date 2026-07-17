@@ -3,20 +3,11 @@ import { eventFields } from '../models.js';
 
 export function createEventTx(boardId, fields, ruleParams) {
   const eid = id();
-  const f = eventFields(fields);
   return {
     eid,
     tx: withRuleParams(
       db.tx.events[eid]
-        .update({
-          day: f.day,
-          title: f.title,
-          start: f.start,
-          dur: f.dur,
-          color: f.color,
-          memo: f.memo,
-          createdAt: Date.now(),
-        })
+        .update({ ...eventFields(fields), createdAt: Date.now() })
         .link({ board: boardId }),
       ruleParams,
     ),
@@ -33,18 +24,7 @@ export function patchEventTx(eid, patch, ruleParams) {
 }
 
 export function saveEventTx(eid, fields, ruleParams) {
-  const f = eventFields(fields);
-  return withRuleParams(
-    db.tx.events[eid].update({
-      day: f.day,
-      title: f.title,
-      start: f.start,
-      dur: f.dur,
-      color: f.color,
-      memo: f.memo,
-    }),
-    ruleParams,
-  );
+  return withRuleParams(db.tx.events[eid].update(eventFields(fields)), ruleParams);
 }
 
 export function deleteEventTx(eid, ruleParams) {
