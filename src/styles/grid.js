@@ -349,6 +349,22 @@ export const grid = stylex.create({
     },
   },
 
+  // Single highlight for DayColumn pointer tracking (replaces per-slot nodes).
+  slotHover: {
+    position: 'absolute',
+    left: '2px',
+    right: '2px',
+    height: `calc(${layout.slotH} - 2px)`,
+    marginTop: '1px',
+    borderRadius: '5px',
+    backgroundColor: colors.hov,
+    pointerEvents: 'none',
+    zIndex: 1,
+    '@media print': {
+      display: 'none',
+    },
+  },
+
   layer: {
     position: 'absolute',
     inset: 0,

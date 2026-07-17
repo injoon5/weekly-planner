@@ -73,8 +73,9 @@ const indexRoute = createRoute({
   path: '/',
   component: function IndexPage() {
     const { auth } = rootRoute.useRouteContext();
-    // Compact status only — avoid a full-viewport takeover while auth resolves.
-    if (auth.isLoading) {
+    // Compact status only when we have no user yet — Instant often restores
+    // a cached session with `user` set while `isLoading` is still true.
+    if (auth.isLoading && !auth.user) {
       return <BootStatus>불러오는 중…</BootStatus>;
     }
     // Signed-out visitors get the marketing landing page (with guest sign-in);

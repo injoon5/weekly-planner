@@ -29,7 +29,7 @@ Avoid stacking blank full-page “불러오는 중…” gates. Intended order:
 
 1. **Auth** — `/` shows a compact status while `auth.isLoading`; other routes are not gated.
 2. **Planner chrome** — cold empty workspace still mounts a light header shell; once the **board list** has rows, the full header stays mounted (list board drives the shell while detail hydrates).
-3. **Surface** — `PlannerSurface` shows a local pending state until the active board detail arrives. Prefs may fill in after paint; they must not unmount chrome.
+3. **Surface** — Prefer an empty grid from the list board while detail hydrates. `surfacePending` only when there is no list row yet. Prefs may fill in after paint; they must not unmount chrome.
 4. **Viewer banner** — `shouldShowViewerBanner` / `roleKnown` gate the 보기 전용 bar until owner/editors links are resolved (no owner flash).
 
 Helpers: `src/board/workspace-loading.js`, `roleKnown` in `src/sharing/member-policy.js`.

@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { SLOTS, SLOT_MIN } from '../lib/config.js';
 import {
@@ -10,6 +11,38 @@ import {
 import { fmt } from '../lib/time.js';
 import { grid } from '../styles/grid.js';
 import { GridEventBlock } from './GridEventBlock.jsx';
+
+/** One hover highlight per day — replaces 48 slot nodes × N days. */
+function DayColumn({ day, colRef, first }) {
+  const [hoverTop, setHoverTop] = useState(null);
+  const hoverSlot = useRef(-1);
+
+  return (
+    <div
+      ref={colRef}
+      {...stylex.props(grid.col, first && grid.colFirst)}
+      data-day={day}
+      onPointerMove={(e) => {
+        if (e.pointerType === 'touch') return;
+        const rect = e.currentTarget.getBoundingClientRect();
+        if (rect.height <= 0) return;
+        const y = e.clientY - rect.top;
+        const si = Math.max(0, Math.min(SLOTS - 1, Math.floor((y / rect.height) * SLOTS)));
+        if (si === hoverSlot.current) return;
+        hoverSlot.current = si;
+        setHoverTop(slotTop(si * SLOT_MIN));
+      }}
+      onPointerLeave={() => {
+        hoverSlot.current = -1;
+        setHoverTop(null);
+      }}
+    >
+      {hoverTop != null && (
+        <div {...stylex.props(grid.slotHover)} style={{ top: hoverTop }} aria-hidden="true" />
+      )}
+    </div>
+  );
+}
 
 /** Day columns + overlay layer (events, drag ghost, now line). */
 export function WeekGridCanvas({
@@ -32,22 +65,14 @@ export function WeekGridCanvas({
   return (
     <>
       {days.map((d, i) => (
-        <div
+        <DayColumn
           key={d}
-          ref={(el) => {
+          day={d}
+          first={i === 0}
+          colRef={(el) => {
             dayColRefs.current[i] = el;
           }}
-          {...stylex.props(grid.col, i === 0 && grid.colFirst)}
-          data-day={d}
-        >
-          {Array.from({ length: SLOTS }, (_, si) => (
-            <div
-              key={si}
-              {...stylex.props(grid.slot)}
-              style={{ top: slotTop(si * SLOT_MIN) }}
-            />
-          ))}
-        </div>
+        />
       ))}
 
       <div {...stylex.props(grid.layer)}>

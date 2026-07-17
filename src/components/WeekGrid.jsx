@@ -9,6 +9,7 @@ import {
   scrollPaneToNow,
   syncHeadTrack,
 } from '../grid/grid-layout.js';
+import { usePlannerClock } from '../hooks/usePlannerClock.js';
 import { compactLayout, layout } from '../styles/tokens.stylex.js';
 import { grid } from '../styles/grid.js';
 import { planner } from '../styles/planner.js';
@@ -22,8 +23,6 @@ import { WeekGridHeader } from './WeekGridHeader.jsx';
 export function WeekGrid({
   boardId,
   events,
-  nowMin,
-  nowDay,
   editing,
   onOpenEdit,
   onGestureResult,
@@ -38,6 +37,8 @@ export function WeekGrid({
   presenceRoom = null,
   presenceColor,
 }) {
+  // Own the clock here so 30s ticks don't rebuild planner chrome / packing.
+  const { nowMin, nowDay } = usePlannerClock();
   const paneRef = useRef(null);
   const bodyRef = useRef(null);
   const gutRef = useRef(null);
@@ -87,16 +88,26 @@ export function WeekGrid({
       syncHeadTrack(pane, body, gut, track, dayColRefs.current);
     };
 
-    const ro = new ResizeObserver(sync);
+    let raf = 0;
+    const syncRaf = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        sync();
+      });
+    };
+
+    const ro = new ResizeObserver(syncRaf);
     ro.observe(pane);
     ro.observe(body);
     if (gut) ro.observe(gut);
 
-    pane.addEventListener('scroll', sync, { passive: true });
+    pane.addEventListener('scroll', syncRaf, { passive: true });
     sync();
     return () => {
       ro.disconnect();
-      pane.removeEventListener('scroll', sync);
+      pane.removeEventListener('scroll', syncRaf);
+      if (raf) cancelAnimationFrame(raf);
     };
   }, [boardId, dayCount, colTemplate]);
 

@@ -47,17 +47,23 @@ export function shouldFullPageBoot({
 }
 
 /**
- * Surface-only pending: list board can drive the header while detail hydrates.
- * Prefs must never gate this — only missing detail for the active board.
+ * Surface-only pending: list board can drive an empty grid while detail hydrates.
+ * Prefs must never gate this — and board switches must not wipe into a spinner
+ * when a list row already exists.
  *
  * @param {{
  *   activeBoardId?: string | null,
  *   hasDetailBoard?: boolean,
+ *   hasListBoard?: boolean,
  * }} args
  */
 export function isPlannerSurfacePending({
   activeBoardId = null,
   hasDetailBoard = false,
+  hasListBoard = false,
 } = {}) {
-  return Boolean(activeBoardId && !hasDetailBoard);
+  if (!activeBoardId) return false;
+  // List row is enough to keep the surface mounted (empty grid / swap).
+  if (hasListBoard) return false;
+  return !hasDetailBoard;
 }

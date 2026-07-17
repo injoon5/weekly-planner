@@ -19,8 +19,6 @@ export function PlannerSurface({
   swapping = false,
   surfacePending = false,
   updateEvent,
-  nowMin,
-  nowDay,
   printShowMemos = true,
 }) {
   const visibleEvents = useMemo(
@@ -44,8 +42,6 @@ export function PlannerSurface({
         myColor={presence.myColor}
         boardId={boardId}
         events={visibleEvents}
-        nowMin={nowMin}
-        nowDay={nowDay}
         editing={session.editing}
         onOpenEdit={session.openEdit}
         onGestureResult={(result) =>

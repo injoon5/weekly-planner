@@ -1,7 +1,6 @@
 import { useBoardPresence } from './useBoardPresence.js';
 import { useEditorSession } from './useEditorSession.js';
 import { useEventMutations } from './useEventMutations.js';
-import { usePlannerClock } from './usePlannerClock.js';
 import { usePrintSetup } from './usePrintSetup.js';
 import { useViewControls } from './useViewControls.js';
 
@@ -18,7 +17,7 @@ export function usePlannerRuntime({
   storageKey,
   guestLabel,
 }) {
-  const clock = usePlannerClock();
+  // Clock lives in WeekGrid so 30s ticks don't re-render the planner shell.
   const eventsApi = useEventMutations({ board, canEdit, ruleParams });
   const session = useEditorSession({ events, eventsApi });
   const views = useViewControls({
@@ -38,7 +37,6 @@ export function usePlannerRuntime({
   const print = usePrintSetup(board);
 
   return {
-    clock,
     eventsApi,
     session,
     views,

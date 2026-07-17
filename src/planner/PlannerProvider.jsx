@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useBoardSwap } from '../hooks/useBoardSwap.js';
 import { useBoardTransfer } from '../hooks/useBoardTransfer.js';
 import { usePlannerRuntime } from '../hooks/usePlannerRuntime.js';
@@ -40,14 +40,17 @@ export function PlannerProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspace.bootNote]);
 
-  const value = {
-    ...workspace,
-    theme,
-    toggleTheme,
-    runtime,
-    transfer,
-    swapping,
-  };
+  const value = useMemo(
+    () => ({
+      ...workspace,
+      theme,
+      toggleTheme,
+      runtime,
+      transfer,
+      swapping,
+    }),
+    [workspace, theme, toggleTheme, runtime, transfer, swapping],
+  );
 
   return <PlannerContext.Provider value={value}>{children}</PlannerContext.Provider>;
 }

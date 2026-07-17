@@ -52,23 +52,33 @@ describe('workspace loading gates', () => {
     ).toBe(true);
   });
 
-  it('surface pending only while detail is missing for the active board', () => {
+  it('surface pending only when there is no list row to drive the grid', () => {
     expect(
       isPlannerSurfacePending({
         activeBoardId: 'b1',
         hasDetailBoard: false,
+        hasListBoard: false,
       }),
     ).toBe(true);
     expect(
       isPlannerSurfacePending({
         activeBoardId: 'b1',
+        hasDetailBoard: false,
+        hasListBoard: true,
+      }),
+    ).toBe(false);
+    expect(
+      isPlannerSurfacePending({
+        activeBoardId: 'b1',
         hasDetailBoard: true,
+        hasListBoard: true,
       }),
     ).toBe(false);
     expect(
       isPlannerSurfacePending({
         activeBoardId: null,
         hasDetailBoard: false,
+        hasListBoard: false,
       }),
     ).toBe(false);
   });

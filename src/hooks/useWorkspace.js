@@ -101,6 +101,7 @@ export function useWorkspace() {
   const surfacePending = isPlannerSurfacePending({
     activeBoardId,
     hasDetailBoard: Boolean(detailBoard),
+    hasListBoard: Boolean(listBoard),
   });
 
   useEffect(() => {

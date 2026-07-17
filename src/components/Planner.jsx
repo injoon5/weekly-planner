@@ -123,8 +123,6 @@ function PlannerShell() {
         swapping={swapping}
         surfacePending={surfacePending}
         updateEvent={runtime.eventsApi.updateEvent}
-        nowMin={runtime.clock.nowMin}
-        nowDay={runtime.clock.nowDay}
         printShowMemos={runtime.print.prefs.showMemos}
       />
 
