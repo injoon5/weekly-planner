@@ -87,7 +87,6 @@ const DAYS = [
   ['목', 'Thu'],
   ['금', 'Fri'],
 ];
-const TODAY_COL = 2; // 수요일
 const NOW_START = 260; // 13:20, minutes from 09:00
 const PXPM = 270 / 540; // px per minute over the 9-hour window
 const PREVIEW_BLOCKS = [
@@ -100,14 +99,21 @@ const PREVIEW_BLOCKS = [
   { day: 4, start: 405, dur: 90, color: 'teal', title: '주간 회고', time: '15:45' },
 ];
 
+/** Mon–Fri preview column for today; null on Sat/Sun (no weekend columns). */
+function previewTodayCol(date = new Date()) {
+  const jsDay = date.getDay(); // 0=Sun … 6=Sat
+  return jsDay >= 1 && jsDay <= 5 ? jsDay - 1 : null;
+}
+
 function PlannerPreview() {
+  const todayCol = previewTodayCol();
   return (
     <div {...stylex.props(landing.preview)} role="img" aria-label="주간 시간표 미리보기">
       <div {...stylex.props(landing.pHead)}>
         <div {...stylex.props(landing.pCorner)}>시간</div>
         {DAYS.map(([ko, en], col) => (
           <div key={ko} {...stylex.props(landing.pDay)}>
-            <span {...stylex.props(landing.pDko, col === TODAY_COL && landing.pToday)}>
+            <span {...stylex.props(landing.pDko, col === todayCol && landing.pToday)}>
               {ko}
             </span>
             <span {...stylex.props(landing.pDen)}>{en}</span>
@@ -146,7 +152,7 @@ function PlannerPreview() {
                 {b.dur >= 60 && <div {...stylex.props(landing.pBm)}>{b.time}</div>}
               </div>
             ))}
-            {col === TODAY_COL && (
+            {col === todayCol && (
               <div {...stylex.props(landing.pNow)} style={{ top: `${NOW_START * PXPM}px` }} />
             )}
           </div>
