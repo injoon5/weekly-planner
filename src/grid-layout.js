@@ -77,7 +77,11 @@ export function nowLineStyle(nowMin, visualCol, dayCount = 7) {
 export function syncHeadTrack(pane, body, gut, track, dayColEls) {
   if (!pane || !body || !track) return;
 
-  clampPaneScroll(pane);
+  // Never write scrollLeft/Top from the scroll path. On iOS Safari, rubber-band
+  // overscroll + JS clamping fights every frame and the grid "vibrates".
+  // Clamp only the value we feed the sticky header transform.
+  const maxLeft = Math.max(0, pane.scrollWidth - pane.clientWidth);
+  const scrollLeft = Math.min(Math.max(0, pane.scrollLeft), maxLeft);
 
   const cols = dayColEls?.filter(Boolean) ?? [];
   let dayWidth = 0;
@@ -90,10 +94,13 @@ export function syncHeadTrack(pane, body, gut, track, dayColEls) {
   }
 
   if (dayWidth > 0) track.style.width = `${dayWidth}px`;
-  track.style.transform = `translate3d(-${pane.scrollLeft}px, 0, 0)`;
+  track.style.transform = `translate3d(-${scrollLeft}px, 0, 0)`;
 }
 
-/** Keep scroll inside real content bounds (no rubber-band into empty gutter). */
+/**
+ * Clamp scroll offsets to content bounds. Prefer CSS overscroll-behavior for
+ * live scrolling — calling this from a scroll listener vibrates on iOS Safari.
+ */
 export function clampPaneScroll(pane) {
   if (!pane) return;
   const maxLeft = Math.max(0, pane.scrollWidth - pane.clientWidth);

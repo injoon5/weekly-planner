@@ -97,12 +97,14 @@ export const grid = stylex.create({
     minHeight: 0,
     position: 'relative',
     overflow: 'auto',
-    overscrollBehavior: 'contain',
+    // `none` (not just `contain`) so iOS Safari doesn't rubber-band the grid
+    // into a fight with sticky-header sync. See syncHeadTrack.
+    overscrollBehavior: 'none',
     scrollbarWidth: 'thin',
     scrollbarColor: `${colors.sb} transparent`,
     WebkitOverflowScrolling: 'touch',
     [MOBILE]: {
-      overscrollBehavior: 'contain',
+      overscrollBehavior: 'none',
       touchAction: 'pan-x pan-y',
     },
     '@media print': {
