@@ -5,7 +5,7 @@ import { menus } from '../styles/menus.js';
 import { planner } from '../styles/planner.js';
 import { print } from '../styles/print.js';
 import { ui } from '../styles/ui.js';
-import { Sheet } from './ui/Sheet.jsx';
+import { Sheet } from './ui/sheet.js';
 import { SwitchRow } from './ui/SwitchRow.jsx';
 
 /**

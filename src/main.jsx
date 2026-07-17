@@ -11,8 +11,20 @@ bootDocumentTheme();
 // Service worker registration + refresh prompt live in <RefreshBanner />
 // (virtual:pwa-register/react) so a new deployment can show a dismissable banner.
 
-createRoot(document.getElementById('app')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+const PROD_HOST = 'plan.ij5.dev';
+
+async function start() {
+  // Toolbar on preview/local only — keep production host clean.
+  if (typeof location !== 'undefined' && location.hostname !== PROD_HOST) {
+    const { scan } = await import('react-scan/all-environments');
+    scan({ enabled: true, showToolbar: true });
+  }
+
+  createRoot(document.getElementById('app')).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+}
+
+void start();

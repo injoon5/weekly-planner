@@ -90,6 +90,8 @@ export default defineConfig({
         // ~3MB) so the browser keeps fetching only the subsets a page needs;
         // they're runtime-cached on demand below.
         globPatterns: ['**/*.{js,css,html,svg,png,ico,webp}'],
+        // Preview-only scanner — don't ship it to plan.ij5.dev via the SW precache.
+        globIgnores: ['**/react-scan-*.js', '**/react-scan-*.js.map'],
         navigateFallback: 'index.html',
         // /api/* are Vercel serverless routes (OG image, share-meta, invite).
         navigateFallbackDenylist: [/^\/api/],
@@ -128,6 +130,17 @@ export default defineConfig({
         // vendor updates don't bust the whole app cache.
         manualChunks(id) {
           if (!id.includes('node_modules')) return;
+          // Keep react-scan out of the always-preloaded vendor chunk — it is
+          // only dynamically imported off plan.ij5.dev.
+          if (
+            id.includes('react-scan') ||
+            id.includes(`${'node_modules'}/bippy/`) ||
+            id.includes(`${'node_modules'}/preact/`) ||
+            id.includes('@preact/') ||
+            id.includes('react-grab')
+          ) {
+            return 'react-scan';
+          }
           // Match Instant before a naive `/react/` check — `@instantdb/react`
           // would otherwise land in the React chunk.
           if (id.includes('@instantdb')) return 'instant';

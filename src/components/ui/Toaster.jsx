@@ -1,6 +1,7 @@
 import { Toast } from '@base-ui/react/toast';
 import * as stylex from '@stylexjs/stylex';
 import { colors } from '../../styles/tokens.stylex.js';
+import { toastManager } from './toast.js';
 
 const s = stylex.create({
   pill: {
@@ -19,13 +20,6 @@ const s = stylex.create({
     margin: 0,
   },
 });
-
-const toastManager = Toast.createToastManager();
-
-/** Show a transient status pill (replaces any pill currently visible). */
-export function toast(msg) {
-  toastManager.add({ description: msg, timeout: 2600 });
-}
 
 function Pills() {
   const { toasts } = Toast.useToastManager();

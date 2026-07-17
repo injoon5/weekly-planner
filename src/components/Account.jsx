@@ -22,7 +22,7 @@ import { account } from '../styles/account.js';
 import { planner } from '../styles/planner.js';
 import { ui } from '../styles/ui.js';
 import { HoldToConfirm } from './HoldToConfirm.jsx';
-import { toast } from './ui/Toaster.jsx';
+import { toast } from './ui/toast.js';
 import { UiSelect } from './ui/UiSelect.jsx';
 import { UpgradeDialog } from './UpgradeDialog.jsx';
 

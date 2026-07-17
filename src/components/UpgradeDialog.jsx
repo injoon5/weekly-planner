@@ -6,7 +6,7 @@ import { auth } from '../styles/auth.js';
 import { editor } from '../styles/editor.js';
 import { ui } from '../styles/ui.js';
 import { CodeInputs } from './CodeInputs.jsx';
-import { Sheet } from './ui/Sheet.jsx';
+import { Sheet } from './ui/sheet.js';
 
 /**
  * Upgrades a guest into a permanent account with a magic code. Instant links the

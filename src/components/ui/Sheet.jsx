@@ -5,7 +5,7 @@ import { useMobileSheet } from '../../hooks/useMobileSheet.js';
 import { ui } from '../../styles/ui.js';
 
 /** Dialog on desktop; swipeable Drawer on mobile. */
-function SheetRoot({ open, onOpenChange, children }) {
+export function SheetRoot({ open, onOpenChange, children }) {
   const mobile = useMobileSheet();
 
   if (mobile) {
@@ -23,12 +23,12 @@ function SheetRoot({ open, onOpenChange, children }) {
   );
 }
 
-function SheetPortal({ children }) {
+export function SheetPortal({ children }) {
   const mobile = useMobileSheet();
   return mobile ? <Drawer.Portal>{children}</Drawer.Portal> : <Dialog.Portal>{children}</Dialog.Portal>;
 }
 
-function SheetBackdrop(props) {
+export function SheetBackdrop(props) {
   const mobile = useMobileSheet();
   if (mobile) {
     return <Drawer.Backdrop data-ui-drawer-backdrop="" {...props} />;
@@ -36,7 +36,7 @@ function SheetBackdrop(props) {
   return <Dialog.Backdrop data-ui-dialog-backdrop="" {...props} />;
 }
 
-function SheetViewport({ children }) {
+export function SheetViewport({ children }) {
   const mobile = useMobileSheet();
   if (mobile) {
     return <Drawer.Viewport data-ui-drawer-viewport="">{children}</Drawer.Viewport>;
@@ -44,7 +44,7 @@ function SheetViewport({ children }) {
   return children;
 }
 
-function SheetPopup({ children, ...props }) {
+export function SheetPopup({ children, ...props }) {
   const mobile = useMobileSheet();
 
   if (mobile) {
@@ -63,22 +63,12 @@ function SheetPopup({ children, ...props }) {
   );
 }
 
-function SheetTitle(props) {
+export function SheetTitle(props) {
   const mobile = useMobileSheet();
   return mobile ? <Drawer.Title {...props} /> : <Dialog.Title {...props} />;
 }
 
-function SheetClose(props) {
+export function SheetClose(props) {
   const mobile = useMobileSheet();
   return mobile ? <Drawer.Close {...props} /> : <Dialog.Close {...props} />;
 }
-
-export const Sheet = {
-  Root: SheetRoot,
-  Portal: SheetPortal,
-  Backdrop: SheetBackdrop,
-  Viewport: SheetViewport,
-  Popup: SheetPopup,
-  Title: SheetTitle,
-  Close: SheetClose,
-};

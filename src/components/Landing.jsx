@@ -19,7 +19,7 @@ import { ui } from '../styles/ui.js';
 import { useLandingPresence } from '../hooks/useLandingPresence.js';
 import { IconSwap } from './ui/IconSwap.jsx';
 import { PresenceAvatars } from './PresenceAvatars.jsx';
-import { toast } from './ui/Toaster.jsx';
+import { toast } from './ui/toast.js';
 
 /** Pre-auth theme toggle — no Instant settings yet, so we drive the DOM + cache
  *  directly. `useTheme` takes over once the user is signed in. */

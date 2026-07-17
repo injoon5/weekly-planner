@@ -1,6 +1,7 @@
 import * as stylex from '@stylexjs/stylex';
 import { planner } from '../styles/planner.js';
-import { PlannerProvider, usePlannerContext } from '../planner/planner-context.jsx';
+import { PlannerProvider } from '../planner/PlannerProvider.jsx';
+import { usePlannerContext } from '../planner/usePlannerContext.js';
 import { AccountMenu } from './AccountMenu.jsx';
 import { BoardNav } from './BoardNav.jsx';
 import { MoreMenu } from './MoreMenu.jsx';

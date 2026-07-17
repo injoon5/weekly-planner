@@ -1,12 +1,11 @@
-import { createContext, useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useBoardSwap } from '../hooks/useBoardSwap.js';
 import { useBoardTransfer } from '../hooks/useBoardTransfer.js';
 import { usePlannerRuntime } from '../hooks/usePlannerRuntime.js';
 import { useTheme } from '../hooks/useTheme.js';
 import { useWorkspace } from '../hooks/useWorkspace.js';
 import { toast } from '../lib/notify.js';
-
-const PlannerContext = createContext(null);
+import { PlannerContext } from './planner-context.js';
 
 /**
  * Signed-in planner shell state: workspace query, runtime (events/views/presence),
@@ -51,10 +50,4 @@ export function PlannerProvider({ children }) {
   };
 
   return <PlannerContext.Provider value={value}>{children}</PlannerContext.Provider>;
-}
-
-export function usePlannerContext() {
-  const ctx = useContext(PlannerContext);
-  if (!ctx) throw new Error('usePlannerContext must be used within PlannerProvider');
-  return ctx;
 }

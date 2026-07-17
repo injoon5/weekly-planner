@@ -1,14 +1,9 @@
-import { createContext, useContext, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { applyAppUpdate } from '../lib/app-update-refresh.js';
+import { AppUpdateContext } from './app-update-context.js';
 
 const CHECK_INTERVAL_MS = 60 * 60 * 1000;
-
-const AppUpdateContext = createContext({
-  needRefresh: false,
-  dismiss: () => {},
-  refresh: () => {},
-});
 
 function shouldForceShow() {
   if (typeof window === 'undefined') return false;
@@ -55,8 +50,4 @@ export function AppUpdateProvider({ children }) {
   }, [swNeedRefresh, forceFromUrl, dismissed, setNeedRefresh, updateServiceWorker]);
 
   return <AppUpdateContext.Provider value={value}>{children}</AppUpdateContext.Provider>;
-}
-
-export function useAppUpdate() {
-  return useContext(AppUpdateContext);
 }
