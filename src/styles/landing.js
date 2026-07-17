@@ -174,10 +174,12 @@ export const landing = stylex.create({
   },
   ctaRow: {
     display: 'flex',
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
     alignItems: 'center',
     gap: '10px',
     marginTop: '30px',
+    width: 'max-content',
+    maxWidth: '100%',
   },
   ctaNote: {
     marginTop: '16px',
@@ -628,7 +630,15 @@ export const landing = stylex.create({
     marginLeft: '17px',
     backgroundColor: colors.line,
   },
-  guestCta: { marginTop: '28px', display: 'flex', flexWrap: 'wrap', gap: '10px' },
+  guestCta: {
+    marginTop: '28px',
+    display: 'flex',
+    flexWrap: 'nowrap',
+    alignItems: 'center',
+    gap: '10px',
+    width: 'max-content',
+    maxWidth: '100%',
+  },
 
   // ── Footer ─────────────────────────────────────────────────────────────
   footer: {
