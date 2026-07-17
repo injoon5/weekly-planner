@@ -1,5 +1,6 @@
 import { createContext, useContext, useMemo, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { applyAppUpdate } from '../lib/app-update-refresh.js';
 
 const CHECK_INTERVAL_MS = 60 * 60 * 1000;
 
@@ -21,7 +22,7 @@ function shouldForceShow() {
 export function AppUpdateProvider({ children }) {
   const [dismissed, setDismissed] = useState(false);
   const {
-    needRefresh: [needRefresh, setNeedRefresh],
+    needRefresh: [swNeedRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
     immediate: true,
@@ -37,7 +38,7 @@ export function AppUpdateProvider({ children }) {
   const forceFromUrl = shouldForceShow();
 
   const value = useMemo(() => {
-    const show = (needRefresh || forceFromUrl) && !dismissed;
+    const show = (swNeedRefresh || forceFromUrl) && !dismissed;
     return {
       needRefresh: show,
       dismiss: () => {
@@ -45,14 +46,13 @@ export function AppUpdateProvider({ children }) {
         setNeedRefresh(false);
       },
       refresh: () => {
-        if (needRefresh) {
-          void updateServiceWorker(true);
-          return;
-        }
-        window.location.reload();
+        applyAppUpdate({
+          hasWaitingWorker: swNeedRefresh,
+          updateServiceWorker,
+        });
       },
     };
-  }, [needRefresh, forceFromUrl, dismissed, setNeedRefresh, updateServiceWorker]);
+  }, [swNeedRefresh, forceFromUrl, dismissed, setNeedRefresh, updateServiceWorker]);
 
   return <AppUpdateContext.Provider value={value}>{children}</AppUpdateContext.Provider>;
 }
