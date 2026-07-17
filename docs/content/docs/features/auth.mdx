@@ -23,7 +23,7 @@ Screens: `Login.jsx`, `UpgradeDialog.jsx`.
 
 ## Guests
 
-Landing `GuestButton` → `db.auth.signInAsGuest()`. Errors toast via global `Toaster`.
+Landing `GuestButton` → `db.auth.signInAsGuest()`, then navigate to `/` when needed (e.g. from `/home`). Errors toast via global `Toaster`. Signed-in visitors on `/home` see “시간표 열기” instead of guest/login CTAs.
 
 Guest users get a real Instant workspace. Upgrade dialog converts the guest to an email identity **in place** (Instant links the account; no local data migration).
 

@@ -74,6 +74,13 @@ const indexRoute = createRoute({
   },
 });
 
+// Marketing page always — signed-in users see open-planner CTAs instead of guest/login.
+const homeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/home',
+  component: Landing,
+});
+
 const shareRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/s/$token',
@@ -91,7 +98,13 @@ const accountRoute = createRoute({
   component: Account,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, loginRoute, shareRoute, accountRoute]);
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  homeRoute,
+  loginRoute,
+  shareRoute,
+  accountRoute,
+]);
 
 const router = createRouter({
   routeTree,

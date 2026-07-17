@@ -155,7 +155,7 @@ function PlannerPreview() {
   );
 }
 
-function GuestButton({ variant = 'primary', label = '게스트로 시작하기', style }) {
+function GuestButton({ variant = 'primary', label = '게스트로 시작하기', style, onSignedIn }) {
   const [busy, setBusy] = useState(false);
 
   const start = async () => {
@@ -163,8 +163,8 @@ function GuestButton({ variant = 'primary', label = '게스트로 시작하기',
     setBusy(true);
     try {
       await db.auth.signInAsGuest();
-      // On success the auth state flips and the router swaps in the planner —
-      // no navigation needed here.
+      // On `/` auth flips into Planner; on `/home` (and similar) navigate in.
+      onSignedIn?.();
     } catch (ex) {
       setBusy(false);
       toast(ex?.body?.message || ex?.message || '시작하지 못했어요. 다시 시도해 주세요');
@@ -198,6 +198,23 @@ function GuestButton({ variant = 'primary', label = '게스트로 시작하기',
   );
 }
 
+function OpenPlannerButton({ variant = 'primary', label = '시간표 열기', style, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={style}
+      {...stylex.props(
+        landing.btn,
+        variant === 'primary' ? landing.btnPrimary : landing.btnGhost,
+      )}
+    >
+      {label}
+      <ArrowRight size={17} strokeWidth={2} {...stylex.props(landing.btnArrow)} />
+    </button>
+  );
+}
+
 const STEPS = [
   { title: '게스트로 시작', body: '이메일도, 비밀번호도 없이 버튼 한 번으로 바로 들어와요.' },
   { title: '자유롭게 사용', body: '시간표를 만들고, 편집하고, 공유해 보세요. 전부 실제로 저장돼요.' },
@@ -206,6 +223,8 @@ const STEPS = [
 
 export function Landing() {
   const navigate = useNavigate();
+  const auth = db.useAuth();
+  const signedIn = Boolean(auth.user);
   const { theme, toggle } = useLocalTheme();
   const [scrolled, setScrolled] = useState(false);
   const stagger = useRef(0);
@@ -226,6 +245,8 @@ export function Landing() {
   };
 
   const toLogin = () => navigate({ to: '/login' });
+  const toPlanner = () => navigate({ to: '/' });
+  const afterGuestSignIn = () => navigate({ to: '/' });
 
   return (
     <div {...stylex.props(landing.page)}>
@@ -248,9 +269,15 @@ export function Landing() {
                 inactiveIcon={<Moon size={16} strokeWidth={1.75} />}
               />
             </button>
-            <button type="button" onClick={toLogin} {...stylex.props(landing.navLink)}>
-              로그인
-            </button>
+            {signedIn ? (
+              <button type="button" onClick={toPlanner} {...stylex.props(landing.navLink)}>
+                시간표 열기
+              </button>
+            ) : (
+              <button type="button" onClick={toLogin} {...stylex.props(landing.navLink)}>
+                로그인
+              </button>
+            )}
           </div>
         </nav>
       </div>
@@ -273,17 +300,25 @@ export function Landing() {
                 내용은 그 자리에서 동기화됩니다.
               </p>
               <div {...riseIn()} {...stylex.props(landing.ctaRow)}>
-                <GuestButton />
-                <button
-                  type="button"
-                  onClick={toLogin}
-                  {...stylex.props(landing.btn, landing.btnGhost)}
-                >
-                  이메일로 로그인
-                </button>
+                {signedIn ? (
+                  <OpenPlannerButton onClick={toPlanner} />
+                ) : (
+                  <>
+                    <GuestButton onSignedIn={afterGuestSignIn} />
+                    <button
+                      type="button"
+                      onClick={toLogin}
+                      {...stylex.props(landing.btn, landing.btnGhost)}
+                    >
+                      이메일로 로그인
+                    </button>
+                  </>
+                )}
               </div>
               <p {...riseIn()} {...stylex.props(landing.ctaNote)}>
-                이메일 없이 바로 시작 · 나중에 계정으로 저장하면 데이터는 그대로예요.
+                {signedIn
+                  ? '이미 로그인되어 있어요. 시간표로 바로 이동할 수 있습니다.'
+                  : '이메일 없이 바로 시작 · 나중에 계정으로 저장하면 데이터는 그대로예요.'}
               </p>
             </div>
 
@@ -329,39 +364,56 @@ export function Landing() {
           </section>
         </div>
 
-        {/* ── Guest auth spotlight ─────────────────────────── */}
+        {/* ── Guest auth spotlight (signed-out) / open planner (signed-in) ── */}
         <div {...stylex.props(landing.shell)}>
           <section {...stylex.props(landing.section)} id="guest" style={{ paddingTop: 0 }}>
             <div {...stylex.props(landing.guest)}>
               <div {...stylex.props(landing.guestCopy)}>
-                <p {...stylex.props(landing.kicker)}>게스트 모드</p>
-                <h2 {...stylex.props(landing.h2)}>가입 없이, 지금 바로 써보세요</h2>
-                <p {...stylex.props(landing.sectionSub)}>
-                  게스트로 시작하면 계정을 만드는 순간을 미룰 수 있어요. 먼저 충분히 써보고, 마음에
-                  들면 그때 이메일을 연결하면 됩니다. 게스트로 만든 시간표는 계정으로 그대로
-                  이어져요.
-                </p>
-                <div {...stylex.props(landing.guestCta)}>
-                  <GuestButton />
-                </div>
+                {signedIn ? (
+                  <>
+                    <p {...stylex.props(landing.kicker)}>바로 시작</p>
+                    <h2 {...stylex.props(landing.h2)}>시간표로 돌아가기</h2>
+                    <p {...stylex.props(landing.sectionSub)}>
+                      로그인된 상태예요. 만든 보드와 일정은 그대로 기다리고 있습니다.
+                    </p>
+                    <div {...stylex.props(landing.guestCta)}>
+                      <OpenPlannerButton onClick={toPlanner} />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p {...stylex.props(landing.kicker)}>게스트 모드</p>
+                    <h2 {...stylex.props(landing.h2)}>가입 없이, 지금 바로 써보세요</h2>
+                    <p {...stylex.props(landing.sectionSub)}>
+                      게스트로 시작하면 계정을 만드는 순간을 미룰 수 있어요. 먼저 충분히 써보고,
+                      마음에 들면 그때 이메일을 연결하면 됩니다. 게스트로 만든 시간표는 계정으로
+                      그대로 이어져요.
+                    </p>
+                    <div {...stylex.props(landing.guestCta)}>
+                      <GuestButton onSignedIn={afterGuestSignIn} />
+                    </div>
+                  </>
+                )}
               </div>
 
-              <ol {...stylex.props(landing.guestSteps)}>
-                {STEPS.map((s, i) => (
-                  <li key={s.title}>
-                    <div {...stylex.props(landing.step)}>
-                      <span {...stylex.props(landing.stepNum)}>{i + 1}</span>
-                      <span>
-                        <span {...stylex.props(landing.stepTitle)}>{s.title}</span>
-                        <span {...stylex.props(landing.stepBody)} style={{ display: 'block' }}>
-                          {s.body}
+              {!signedIn && (
+                <ol {...stylex.props(landing.guestSteps)}>
+                  {STEPS.map((s, i) => (
+                    <li key={s.title}>
+                      <div {...stylex.props(landing.step)}>
+                        <span {...stylex.props(landing.stepNum)}>{i + 1}</span>
+                        <span>
+                          <span {...stylex.props(landing.stepTitle)}>{s.title}</span>
+                          <span {...stylex.props(landing.stepBody)} style={{ display: 'block' }}>
+                            {s.body}
+                          </span>
                         </span>
-                      </span>
-                    </div>
-                    {i < STEPS.length - 1 && <span {...stylex.props(landing.stepConnector)} />}
-                  </li>
-                ))}
-              </ol>
+                      </div>
+                      {i < STEPS.length - 1 && <span {...stylex.props(landing.stepConnector)} />}
+                    </li>
+                  ))}
+                </ol>
+              )}
             </div>
           </section>
         </div>

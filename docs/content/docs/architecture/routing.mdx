@@ -12,6 +12,7 @@ File: `src/router.jsx`
 | Path | Behavior |
 | --- | --- |
 | `/` | If signed in → `Planner`. If signed out → `Landing`. |
+| `/home` | Always `Landing` (marketing). Signed-in CTAs open the planner; signed-out keep guest/login. |
 | `/login` | Magic-code login. Authenticated users redirect to `/`. |
 | `/s/$token` | Public shared planner. No auth guard. |
 | `/account` | [Account page](/docs/features/account). Signed-out visitors redirect to `/login`. |
@@ -44,7 +45,7 @@ Guards re-run when auth changes because the router is invalidated. Shared links 
 
 ## Landing vs login
 
-- **Landing** — marketing preview, guest sign-in (`db.auth.signInAsGuest()`), theme toggle (local only), link to `/login`.
+- **Landing** (`/` when signed out, always on `/home`) — marketing preview, guest sign-in (`db.auth.signInAsGuest()`), theme toggle (local only). Signed-out: link to `/login`. Signed-in: “시간표 열기” → `/`.
 - **Login** — email → 6-digit code via `useMagicCodeAuth`.
 
 ## PWA and SPA fallback
