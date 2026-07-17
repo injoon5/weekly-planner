@@ -92,10 +92,14 @@ export function WeekGrid({
     if (gut) ro.observe(gut);
 
     pane.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('beforeprint', sync);
+    window.addEventListener('afterprint', sync);
     sync();
     return () => {
       ro.disconnect();
       pane.removeEventListener('scroll', sync);
+      window.removeEventListener('beforeprint', sync);
+      window.removeEventListener('afterprint', sync);
     };
   }, [boardId, dayCount, colTemplate]);
 

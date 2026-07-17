@@ -206,4 +206,33 @@ describe('grid event views', () => {
     expect(pane.scrollLeft).toBe(620);
     expect(track.style.transform).toBe('translate3d(-540px, 0, 0)');
   });
+
+  it('shows the full weekday row while printing', () => {
+    const matchMedia = vi.fn((query) => ({
+      matches: query === 'print',
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+    vi.stubGlobal('window', { matchMedia });
+
+    const pane = {
+      scrollLeft: 240,
+      scrollWidth: 900,
+      clientWidth: 360,
+    };
+    const track = { style: {} };
+
+    syncHeadTrack(pane, { offsetWidth: 700 }, { offsetWidth: 46 }, track, []);
+
+    expect(track.style.transform).toBe('none');
+    expect(track.style.width).toBe('100%');
+    expect(pane.scrollLeft).toBe(240);
+
+    vi.unstubAllGlobals();
+  });
 });

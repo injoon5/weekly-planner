@@ -73,9 +73,20 @@ export function nowLineStyle(nowMin, visualCol, dayCount = 7) {
   };
 }
 
+function isPrintLayout() {
+  return typeof window !== 'undefined' && window.matchMedia('print').matches;
+}
+
 /** Sync the sliding day-header track with the scrollable grid body. */
 export function syncHeadTrack(pane, body, gut, track, dayColEls) {
   if (!pane || !body || !track) return;
+
+  // Print uses the full weekday row — no horizontal mask/scroll sync.
+  if (isPrintLayout()) {
+    track.style.transform = 'none';
+    track.style.width = '100%';
+    return;
+  }
 
   // Never write scrollLeft/Top from the scroll path. On iOS Safari, rubber-band
   // overscroll + JS clamping fights every frame and the grid "vibrates".

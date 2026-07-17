@@ -145,11 +145,19 @@ export const grid = stylex.create({
   headMask: {
     overflow: 'hidden',
     minWidth: 0,
+    '@media print': {
+      overflow: 'visible',
+    },
   },
 
   headTrack: {
     display: 'grid',
     willChange: 'transform',
+    '@media print': {
+      transform: 'none',
+      width: '100%',
+      willChange: 'auto',
+    },
   },
 
   corner: {
