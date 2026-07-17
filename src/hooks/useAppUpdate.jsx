@@ -5,7 +5,6 @@ const CHECK_INTERVAL_MS = 60 * 60 * 1000;
 
 const AppUpdateContext = createContext({
   needRefresh: false,
-  forceShow: false,
   dismiss: () => {},
   refresh: () => {},
 });
@@ -17,10 +16,9 @@ function shouldForceShow() {
 
 /**
  * Registers the PWA service worker once at the app root.
- * The visual banner only mounts inside the planner table.
+ * The visual banner only mounts inside the planner table area.
  */
 export function AppUpdateProvider({ children }) {
-  const forceFromUrl = useMemo(() => shouldForceShow(), []);
   const [dismissed, setDismissed] = useState(false);
   const {
     needRefresh: [needRefresh, setNeedRefresh],
@@ -29,18 +27,19 @@ export function AppUpdateProvider({ children }) {
     immediate: true,
     onRegisteredSW(_swUrl, registration) {
       if (!registration) return;
-      // Long-lived tabs: poll for a new deployment about once an hour.
       window.setInterval(() => {
         void registration.update();
       }, CHECK_INTERVAL_MS);
     },
   });
 
+  // Re-check each render so soft navigations / reloads with ?updateBanner work.
+  const forceFromUrl = shouldForceShow();
+
   const value = useMemo(() => {
     const show = (needRefresh || forceFromUrl) && !dismissed;
     return {
       needRefresh: show,
-      forceShow: forceFromUrl && !needRefresh,
       dismiss: () => {
         setDismissed(true);
         setNeedRefresh(false);

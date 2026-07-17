@@ -1,19 +1,19 @@
-import { useEffect } from 'react';
-import { Toast } from '@base-ui/react/toast';
+import { Button } from '@base-ui/react/button';
 import { X } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { useAppUpdate } from '../hooks/useAppUpdate.jsx';
 import { colors } from '../styles/tokens.stylex.js';
 import { ui } from '../styles/ui.js';
 
-const TOAST_ID = 'app-refresh';
 const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
-
-const refreshToastManager = Toast.createToastManager();
 
 // Concentric radii: outer 16 = inner 8 + padding 8.
 const s = stylex.create({
-  card: {
+  banner: {
+    position: 'absolute',
+    top: '10px',
+    left: '50%',
+    zIndex: 45,
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
@@ -24,11 +24,10 @@ const s = stylex.create({
     backgroundColor: colors.glass,
     WebkitBackdropFilter: 'blur(12px) saturate(1.2)',
     backdropFilter: 'blur(12px) saturate(1.2)',
-    // Layered shadows (no hard border) — depth over outline.
     boxShadow: `0 0 0 1px ${colors.edge}, 0 1px 2px rgba(20, 20, 26, 0.04), 0 8px 24px -6px rgba(20, 20, 26, 0.18)`,
     color: colors.ink,
-    cursor: 'default',
-    userSelect: 'none',
+    transform: 'translateX(-50%)',
+    pointerEvents: 'auto',
     '@media print': {
       display: 'none',
     },
@@ -39,7 +38,7 @@ const s = stylex.create({
     flexDirection: 'column',
     gap: '1px',
     minWidth: 0,
-    flex: 1,
+    flex: '1 1 auto',
     paddingBlock: '2px',
   },
 
@@ -48,6 +47,7 @@ const s = stylex.create({
     fontSize: '13px',
     fontWeight: 600,
     lineHeight: 1.25,
+    whiteSpace: 'nowrap',
     textWrap: 'balance',
   },
 
@@ -57,6 +57,7 @@ const s = stylex.create({
     fontWeight: 500,
     color: colors.muted,
     lineHeight: 1.35,
+    whiteSpace: 'nowrap',
     textWrap: 'pretty',
   },
 
@@ -81,6 +82,7 @@ const s = stylex.create({
     height: '28px',
     margin: 0,
     padding: 0,
+    paddingTop: '1px',
     borderWidth: 0,
     borderStyle: 'none',
     borderRadius: '8px',
@@ -89,12 +91,9 @@ const s = stylex.create({
     cursor: 'pointer',
     fontFamily: 'inherit',
     outline: 'none',
-    // Optical nudge: Lucide X sits a hair high in the box.
-    paddingTop: '1px',
     transitionProperty: 'background-color, color, transform',
     transitionDuration: '140ms',
     transitionTimingFunction: EASE_OUT,
-    // Expand hit target to ≥40px without changing the visible control.
     '::before': {
       content: '""',
       position: 'absolute',
@@ -118,72 +117,43 @@ const s = stylex.create({
   },
 });
 
-function RefreshToasts({ onRefresh }) {
-  const { toasts } = Toast.useToastManager();
-
-  return toasts.map((t) => (
-    <Toast.Root
-      key={t.id}
-      toast={t}
-      swipeDirection={['up']}
-      data-ui-refresh-toast=""
-      {...stylex.props(s.card)}
-    >
-      <div {...stylex.props(s.copy)} data-ui-refresh-copy="">
-        {t.title ? <Toast.Title {...stylex.props(s.title)} /> : null}
-        {t.description ? <Toast.Description {...stylex.props(s.desc)} /> : null}
-      </div>
-      <Toast.Action
-        {...stylex.props(ui.btn, ui.btnPrimary, s.action)}
-        data-ui-refresh-action=""
-        onClick={onRefresh}
-      >
-        {t.actionProps?.children ?? '새로고침'}
-      </Toast.Action>
-      <Toast.Close {...stylex.props(s.close)} aria-label="닫기">
-        <span {...stylex.props(s.closeIcon)} aria-hidden>
-          <X size={14} strokeWidth={2.25} />
-        </span>
-      </Toast.Close>
-    </Toast.Root>
-  ));
-}
-
 /**
- * Dismissable update card — sits on the week table inside the planner shell.
- * SW registration lives in AppUpdateProvider; this only renders chrome.
+ * Dismissable update card on the week table.
+ * Plain overlay (not Toast viewport) so width isn't collapsed to 0.
  */
 export function RefreshBanner() {
   const { needRefresh, dismiss, refresh } = useAppUpdate();
 
-  useEffect(() => {
-    if (!needRefresh) {
-      refreshToastManager.close(TOAST_ID);
-      return;
-    }
-
-    refreshToastManager.add({
-      id: TOAST_ID,
-      type: 'refresh',
-      title: '새 버전이 있어요',
-      description: '새로고침하면 최신으로 업데이트돼요',
-      timeout: 0,
-      priority: 'high',
-      actionProps: {
-        children: '새로고침',
-      },
-      onClose: dismiss,
-    });
-  }, [needRefresh, dismiss]);
-
   if (!needRefresh) return null;
 
-  // Keep the provider in-tree (not portaled) so the banner anchors to the table.
   return (
-    <Toast.Provider toastManager={refreshToastManager} limit={1}>
-      <Toast.Viewport data-ui-refresh-viewport="">
-        <RefreshToasts onRefresh={refresh} />
-      </Toast.Viewport>
-    </Toast.Provider>
+    <div
+      role="status"
+      aria-live="polite"
+      data-ui-refresh-banner=""
+      {...stylex.props(s.banner)}
+    >
+      <div {...stylex.props(s.copy)}>
+        <p {...stylex.props(s.title)}>새 버전이 있어요</p>
+        <p {...stylex.props(s.desc)}>새로고침하면 최신으로 업데이트돼요</p>
+      </div>
+      <Button
+        type="button"
+        {...stylex.props(ui.btn, ui.btnPrimary, s.action)}
+        onClick={refresh}
+      >
+        새로고침
+      </Button>
+      <button
+        type="button"
+        {...stylex.props(s.close)}
+        aria-label="닫기"
+        onClick={dismiss}
+      >
+        <span {...stylex.props(s.closeIcon)} aria-hidden>
+          <X size={14} strokeWidth={2.25} />
+        </span>
+      </button>
+    </div>
   );
 }

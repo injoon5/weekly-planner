@@ -4,6 +4,7 @@ import { handleGridGesture } from '../grid/grid-gesture.js';
 import { planner } from '../styles/planner.js';
 import { BoardCanvas } from './BoardCanvas.jsx';
 import { Editor } from './Editor.jsx';
+import { RefreshBanner } from './RefreshBanner.jsx';
 
 /**
  * Shared planner body: board canvas + editor.
@@ -37,7 +38,8 @@ export function PlannerSurface({
   }
 
   return (
-    <>
+    <div {...stylex.props(planner.surface)}>
+      <RefreshBanner />
       <BoardCanvas
         room={presence.room}
         myColor={presence.myColor}
@@ -73,6 +75,6 @@ export function PlannerSurface({
           onDelete={session.deleteEvent}
         />
       )}
-    </>
+    </div>
   );
 }

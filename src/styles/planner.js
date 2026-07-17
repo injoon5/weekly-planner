@@ -52,6 +52,15 @@ export const planner = stylex.create({
     },
   },
 
+  // Wraps the week table so the refresh banner can sit on top of it.
+  surface: {
+    flex: 1,
+    minHeight: 0,
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+
   top: {
     display: 'flex',
     alignItems: 'center',

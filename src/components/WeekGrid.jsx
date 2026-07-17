@@ -27,7 +27,6 @@ import { grid } from '../styles/grid.js';
 import { planner } from '../styles/planner.js';
 import { GridCursors } from './GridCursors.jsx';
 import { GridEventBlock } from './GridEventBlock.jsx';
-import { RefreshBanner } from './RefreshBanner.jsx';
 
 export function WeekGrid({
   boardId,
@@ -152,8 +151,6 @@ export function WeekGrid({
     <main
       {...stylex.props(grid.pane, planner.gridSwap, swapping && planner.gridSwapOut)}
     >
-      <RefreshBanner />
-
       <div
         {...stylex.props(grid.headClip)}
         ref={headClipRef}

@@ -135,68 +135,27 @@
 
 /* ---- Refresh banner (on the planner table) ------------------------------ */
 
-[data-ui-refresh-viewport] {
-  position: absolute;
-  left: 50%;
-  top: 10px;
-  width: 0;
-  height: 0;
-  z-index: 45;
-  pointer-events: none;
+[data-ui-refresh-banner] {
+  animation-name: refresh-banner-in;
+  animation-duration: 0.22s;
+  animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  animation-fill-mode: both;
 }
 
-[data-ui-refresh-toast] {
-  position: absolute;
-  top: 0;
-  left: 0;
-  pointer-events: auto;
-  transform: translateX(calc(-50% + var(--toast-swipe-movement-x, 0px)))
-    translateY(var(--toast-swipe-movement-y, 0px));
-  transition:
-    transform 0.22s cubic-bezier(0.23, 1, 0.32, 1),
-    opacity 0.18s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-/* Enter from above (same path as swipe-up dismiss) — spatial consistency. */
-[data-ui-refresh-toast][data-starting-style] {
-  opacity: 0;
-  transform: translateX(-50%) translateY(-6px) scale(0.98);
-}
-
-[data-ui-refresh-toast][data-ending-style] {
-  opacity: 0;
-  transform: translateX(calc(-50% + var(--toast-swipe-movement-x, 0px)))
-    translateY(calc(var(--toast-swipe-movement-y, 0px) - 6px)) scale(0.98);
-}
-
-/* Stagger copy → action (better-ui split enter). */
-[data-ui-refresh-toast][data-starting-style] [data-ui-refresh-copy],
-[data-ui-refresh-toast][data-starting-style] [data-ui-refresh-action] {
-  opacity: 0;
-  transform: translateY(-4px);
-}
-
-[data-ui-refresh-toast] [data-ui-refresh-copy],
-[data-ui-refresh-toast] [data-ui-refresh-action] {
-  transition:
-    opacity 0.2s cubic-bezier(0.23, 1, 0.32, 1),
-    transform 0.2s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-[data-ui-refresh-toast][data-open] [data-ui-refresh-copy] {
-  transition-delay: 40ms;
-}
-
-[data-ui-refresh-toast][data-open] [data-ui-refresh-action] {
-  transition-delay: 90ms;
+@keyframes refresh-banner-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-ui-refresh-toast],
-  [data-ui-refresh-toast] [data-ui-refresh-copy],
-  [data-ui-refresh-toast] [data-ui-refresh-action] {
-    transition-duration: 0.01ms !important;
-    transition-delay: 0ms !important;
+  [data-ui-refresh-banner] {
+    animation: none;
   }
 }
 
