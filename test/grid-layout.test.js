@@ -16,6 +16,8 @@ import {
   mergeDragView,
   nowLineStyle,
   packView,
+  prepareHeadTracksForPrint,
+  restoreHeadTracksAfterPrint,
   scrollPaneToNow,
   slotHeight,
   slotTop,
@@ -206,17 +208,91 @@ describe('grid event views', () => {
     expect(pane.scrollLeft).toBe(620);
     expect(track.style.getPropertyValue('--head-scroll-x')).toBe('-540px');
   });
+
+  it('skips header sync while the document is in print mode', () => {
+    const previousWindow = globalThis.window;
+    globalThis.window = {
+      matchMedia: () => ({ matches: true }),
+    };
+    const track = { style: cssVarStyle() };
+
+    syncHeadTrack(
+      { scrollLeft: 120, scrollWidth: 900, clientWidth: 360 },
+      { offsetWidth: 700 },
+      { offsetWidth: 46 },
+      track,
+      [],
+    );
+
+    expect(track.style.getPropertyValue('--head-day-width')).toBe('');
+    globalThis.window = previousWindow;
+  });
+});
+
+describe('print header layout', () => {
+  it('clears synced vars and inline overrides before print', () => {
+    const track = { style: cssVarStyle() };
+    track.style.setProperty('--head-day-width', '560px');
+    track.style.setProperty('--head-scroll-x', '-120px');
+    track.style.width = '560px';
+    track.style.transform = 'translate3d(-120px, 0, 0)';
+    const root = {
+      querySelectorAll: () => [track],
+    };
+
+    prepareHeadTracksForPrint(root);
+
+    expect(track.style.getPropertyValue('--head-day-width')).toBe('');
+    expect(track.style.getPropertyValue('--head-scroll-x')).toBe('0px');
+    expect(track.style.width).toBe('100%');
+    expect(track.style.transform).toBe('none');
+  });
+
+  it('restores screen header overrides after print', () => {
+    const track = { style: cssVarStyle() };
+    track.style.setProperty('--head-scroll-x', '0px');
+    track.style.width = '100%';
+    track.style.transform = 'none';
+    const root = {
+      querySelectorAll: () => [track],
+    };
+
+    restoreHeadTracksAfterPrint(root);
+
+    expect(track.style.getPropertyValue('--head-scroll-x')).toBe('');
+    expect(track.style.width).toBe('');
+    expect(track.style.transform).toBe('');
+  });
 });
 
 /** Minimal CSSStyleDeclaration stand-in for custom property writes. */
 function cssVarStyle() {
   const props = Object.create(null);
-  return {
+  const style = {
     setProperty(name, value) {
       props[name] = String(value);
     },
     getPropertyValue(name) {
       return props[name] ?? '';
     },
+    removeProperty(name) {
+      delete props[name];
+      return '';
+    },
+    get width() {
+      return props.width ?? '';
+    },
+    set width(value) {
+      if (value === '') delete props.width;
+      else props.width = String(value);
+    },
+    get transform() {
+      return props.transform ?? '';
+    },
+    set transform(value) {
+      if (value === '') delete props.transform;
+      else props.transform = String(value);
+    },
   };
+  return style;
 }

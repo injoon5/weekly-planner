@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
 import {
+  prepareHeadTracksForPrint,
+  restoreHeadTracksAfterPrint,
+} from '../grid-layout.js';
+import {
   normalizePrintPrefs,
   resolvePrintPrefs,
   writePrintPrefs,
@@ -15,6 +19,17 @@ export function usePrintSetup(board) {
     setPrefs(next);
     setDraft(next);
   }, [board?.id, board?.from, board?.to]);
+
+  useEffect(() => {
+    const onBeforePrint = () => prepareHeadTracksForPrint();
+    const onAfterPrint = () => restoreHeadTracksAfterPrint();
+    window.addEventListener('beforeprint', onBeforePrint);
+    window.addEventListener('afterprint', onAfterPrint);
+    return () => {
+      window.removeEventListener('beforeprint', onBeforePrint);
+      window.removeEventListener('afterprint', onAfterPrint);
+    };
+  }, []);
 
   const open = () => {
     setDraft(resolvePrintPrefs(board));
@@ -37,7 +52,10 @@ export function usePrintSetup(board) {
     writePrintPrefs(next);
     setPrefs(next);
     setIsOpen(false);
-    requestAnimationFrame(() => window.print());
+    requestAnimationFrame(() => {
+      prepareHeadTracksForPrint();
+      requestAnimationFrame(() => window.print());
+    });
   };
 
   return {
