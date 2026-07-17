@@ -46,7 +46,8 @@ export default defineConfig({
     react(),
     socialUrls(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // Prompt so the app can show a refresh banner instead of silently reloading.
+      registerType: 'prompt',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: '주간 계획표',

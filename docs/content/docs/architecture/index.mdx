@@ -46,8 +46,7 @@ Static shell: `#app`, Pretendard font, baseline OG tags, and a pre-React script 
 ### `src/main.jsx`
 
 - `bootDocumentTheme()`
-- Registers the PWA service worker (`registerSW({ immediate: true })`)
-- Renders `<App />` in `StrictMode`
+- Renders `<App />` in `StrictMode` (`AppUpdateProvider` registers the PWA; the refresh banner mounts on the planner table)
 
 ### `src/router.jsx`
 
