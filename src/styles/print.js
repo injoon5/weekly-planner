@@ -29,11 +29,12 @@ export const print = stylex.create({
     borderRadius: '8px',
   },
 
-  // Revealed field row: label on the title rail, input flush to the right rail,
-  // nudged up so it groups with the switch above it.
+  // Revealed field row: label on the title rail, input flush to the right rail.
+  // Keep a small gap below the switch hover target so the highlight doesn't clip
+  // into the input.
   fieldRow: {
     paddingLeft: 0,
     paddingRight: 0,
-    marginTop: '-3px',
+    marginTop: '4px',
   },
 });
