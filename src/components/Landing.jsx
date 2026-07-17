@@ -156,7 +156,13 @@ function PlannerPreview() {
   );
 }
 
-function GuestButton({ variant = 'primary', label = '게스트로 시작하기', style, onSignedIn }) {
+function GuestButton({
+  variant = 'primary',
+  label = '게스트로 시작하기',
+  style,
+  onSignedIn,
+  showArrow = true,
+}) {
   const [busy, setBusy] = useState(false);
 
   const start = async () => {
@@ -192,7 +198,9 @@ function GuestButton({ variant = 'primary', label = '게스트로 시작하기',
       ) : (
         <>
           {label}
-          <ArrowRight size={17} strokeWidth={2} {...stylex.props(landing.btnArrow)} />
+          {showArrow ? (
+            <ArrowRight size={17} strokeWidth={2} {...stylex.props(landing.btnArrow)} />
+          ) : null}
         </>
       )}
     </button>
@@ -313,7 +321,11 @@ export function Landing() {
                       이메일로 로그인
                       <ArrowRight size={17} strokeWidth={2} {...stylex.props(landing.btnArrow)} />
                     </button>
-                    <GuestButton variant="ghost" onSignedIn={afterGuestSignIn} />
+                    <GuestButton
+                      variant="ghost"
+                      showArrow={false}
+                      onSignedIn={afterGuestSignIn}
+                    />
                   </>
                 )}
               </div>
