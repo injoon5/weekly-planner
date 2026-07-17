@@ -569,7 +569,7 @@ export const grid = stylex.create({
   hhTop: {
     top: '-2px',
     '::after': {
-      top: '3px',
+      top: '4px',
     },
     '@media (pointer: coarse)': {
       top: '-4px',
@@ -579,7 +579,7 @@ export const grid = stylex.create({
   hhBot: {
     bottom: '-2px',
     '::after': {
-      bottom: '3px',
+      bottom: '4px',
     },
     '@media (pointer: coarse)': {
       bottom: '-4px',
