@@ -1,4 +1,3 @@
-import { Button } from '@base-ui/react/button';
 import { RefreshCw } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { useAppUpdate } from '../hooks/useAppUpdate.jsx';
@@ -135,7 +134,7 @@ export function RefreshBanner() {
         <p {...stylex.props(s.title)}>앱 업데이트가 있어요</p>
         <p {...stylex.props(s.desc)}>새로고침해서 최신 버전을 사용하세요</p>
       </div>
-      <Button
+      <button
         type="button"
         data-ui-refresh-action=""
         {...stylex.props(ui.btn, ui.btnPrimary, s.action)}
@@ -145,7 +144,7 @@ export function RefreshBanner() {
           <RefreshCw size={15} strokeWidth={2.25} />
         </span>
         새로고침
-      </Button>
+      </button>
     </div>
   );
 }
