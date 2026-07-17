@@ -43,6 +43,7 @@ describe('og-meta helpers', () => {
 
   it('sanitizes and caps image titles', () => {
     expect(sanitizeOgImageTitle('  스터디 시간표  ')).toBe('스터디 시간표');
+    expect(sanitizeOgImageTitle('a'.repeat(40))).toBe(`${'a'.repeat(23)}…`);
     expect(sanitizeOgImageTitle('a'.repeat(40)).length).toBe(24);
     expect(sanitizeOgImageTitle('')).toBe('주간 계획표');
   });
@@ -50,6 +51,7 @@ describe('og-meta helpers', () => {
   it('sanitizes owners without leaking emails', () => {
     expect(sanitizeOgOwner('injoon@example.com')).toBe('injoon');
     expect(sanitizeOgOwner('  인준  ')).toBe('인준');
+    expect(sanitizeOgOwner('x'.repeat(40))).toBe(`${'x'.repeat(19)}…`);
     expect(sanitizeOgOwner('x'.repeat(40)).length).toBe(20);
     expect(sanitizeOgOwner('')).toBe('');
   });
@@ -132,6 +134,7 @@ describe('og-meta helpers', () => {
     expect(card.imageTitle).toBe('주간 계획표');
     expect(card.owner).toBe('');
     expect(card.useRealSchedule).toBe(false);
+    expect(card.locked).toBe(true);
     expect(card.events).toEqual([]);
     expect(card.title).not.toContain('비밀');
     expect(card.description).not.toContain('비밀인');
@@ -139,6 +142,7 @@ describe('og-meta helpers', () => {
     const params = buildOgImageSearchParams(card);
     expect(params.get('e')).toBeNull();
     expect(params.get('owner')).toBeNull();
+    expect(params.get('locked')).toBe('1');
   });
 
   it('falls back when share is missing or disabled', () => {

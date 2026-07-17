@@ -25,13 +25,19 @@ export function isSocialCrawler(userAgent) {
   return SOCIAL_CRAWLER_RE.test(userAgent || '');
 }
 
+function clipWithEllipsis(clean, max) {
+  if (clean.length <= max) return clean;
+  // Keep room for the ellipsis so the visible cap stays at `max`.
+  return `${clean.slice(0, Math.max(0, max - 1))}…`;
+}
+
 /** Strip control chars and cap length for OG image titles. */
 export function sanitizeOgImageTitle(raw, fallback = DEFAULT_OG_IMAGE_TITLE) {
   // eslint-disable-next-line no-control-regex
   const clean = String(raw || '')
     .replace(/[\u0000-\u001F\u007F]/g, '')
     .trim();
-  return clean ? clean.slice(0, 24) : fallback;
+  return clean ? clipWithEllipsis(clean, 24) : fallback;
 }
 
 /** Public owner label — never a raw email. */
@@ -42,7 +48,7 @@ export function sanitizeOgOwner(raw) {
     .trim();
   if (!clean) return '';
   const local = clean.includes('@') ? clean.split('@')[0] : clean;
-  return local.slice(0, OG_OWNER_MAX);
+  return clipWithEllipsis(local, OG_OWNER_MAX);
 }
 
 /**
@@ -178,6 +184,7 @@ export function buildOgImageSearchParams(card) {
   if (card.useRealSchedule) {
     params.set('e', encodeOgEvents(card.events || []));
   }
+  if (card.locked) params.set('locked', '1');
   return params;
 }
 
@@ -212,6 +219,7 @@ export function resolveShareOgCard(share, board, extras = {}) {
     eventCount: 0,
     events: [],
     useRealSchedule: false,
+    locked: false,
   };
 
   if (!share?.enabled) return blank;
@@ -221,6 +229,8 @@ export function resolveShareOgCard(share, board, extras = {}) {
       ...blank,
       title: '공유된 주간 계획표',
       description: '비밀번호가 필요한 공유 시간표예요',
+      // Demo grid stays under a thick blur + lock — never leak real data.
+      locked: true,
     };
   }
 
@@ -249,6 +259,7 @@ export function resolveShareOgCard(share, board, extras = {}) {
     eventCount,
     events,
     useRealSchedule: true,
+    locked: false,
   };
 }
 

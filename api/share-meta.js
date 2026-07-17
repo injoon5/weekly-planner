@@ -82,6 +82,7 @@ export default async function handler(req, res) {
         eventCount: 0,
         events: [],
         useRealSchedule: false,
+        locked: false,
       };
 
   const pageUrl = token ? `${origin}/s/${encodeURIComponent(token)}` : `${origin}/`;

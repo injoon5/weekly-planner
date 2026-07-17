@@ -73,6 +73,13 @@ describe('/api/og handler', () => {
     expect(body.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
   });
 
+  it('renders password-locked cards with demo grid under blur', async () => {
+    const { status, body } = await renderOg('/api/og?title=%EC%A3%BC%EA%B0%84%20%EA%B3%84%ED%9A%8D%ED%91%9C&locked=1');
+    expect(status).toBe(200);
+    expect(body.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
+    expect(body.byteLength).toBeGreaterThan(10_000);
+  });
+
   it('rejects non-GET methods', async () => {
     const { default: handler } = await import('../api/og.js');
 
@@ -109,6 +116,11 @@ describe('/api/og handler', () => {
         { day: 5, start: 390, dur: 120, color: 'graphite', title: '작업 시간' },
       ]);
 
+      const longTitle =
+        '이것은정말로아주아주긴보드이름이라서반드시잘려야하는예시입니다추가텍스트';
+      const longOwner =
+        '이건진짜로엄청나게긴소유자이름이라서말줄임표가보여야합니다';
+
       const cases = [
         ['01-default.png', '/api/og'],
         ['02-titled-demo.png', `/api/og?title=${encodeURIComponent('팀 위클리')}`],
@@ -122,11 +134,11 @@ describe('/api/og handler', () => {
         ],
         [
           '05-long-title-owner.png',
-          `/api/og?title=${encodeURIComponent('아주 긴 보드 이름입니다요')}&owner=${encodeURIComponent('긴이름이요정말로')}&n=3&e=${realE}`,
+          `/api/og?title=${encodeURIComponent(longTitle)}&owner=${encodeURIComponent(longOwner)}&n=3&e=${realE}`,
         ],
         [
-          '06-password-like-default.png',
-          `/api/og?title=${encodeURIComponent('주간 계획표')}`,
+          '06-password-locked.png',
+          `/api/og?title=${encodeURIComponent('주간 계획표')}&locked=1`,
         ],
       ];
 
@@ -145,8 +157,8 @@ describe('/api/og handler', () => {
           '02-titled-demo.png — titled but still demo grid (no e=)',
           '03-open-with-owner-schedule.png — open share with owner + real events',
           '04-open-empty-schedule.png — open share, empty board (no demo fallback)',
-          '05-long-title-owner.png — long title/owner truncation',
-          '06-password-like-default.png — password shares stay generic',
+          '05-long-title-owner.png — long title/owner truncation (ellipsis)',
+          '06-password-locked.png — password share: blurred demo grid + lock',
           '',
           `Generated from ${root}`,
         ].join('\n'),

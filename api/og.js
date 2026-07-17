@@ -183,7 +183,116 @@ const nowLine = () => [
   }),
 ];
 
-const card = ({ eventBlocks, showNow }) =>
+/** Lucide `lock` as a data-URI — stroke SVGs via Satori nodes often collapse. */
+const LOCK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 24 24" fill="none" stroke="#1B1B20" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
+const LOCK_DATA_URL = `data:image/svg+xml;base64,${Buffer.from(LOCK_SVG).toString('base64')}`;
+
+const lockIcon = (size = 108) => ({
+  type: 'img',
+  props: {
+    src: LOCK_DATA_URL,
+    width: size,
+    height: size,
+    style: { width: size, height: size },
+  },
+});
+
+const gridChrome = (eventBlocks, showNow) => [
+  // day headers
+  ...['월', '화', '수', '목', '금'].map((d, i) =>
+    abs(
+      {
+        left: day(i),
+        top: 0,
+        width: COL,
+        height: HEAD,
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 21,
+        fontWeight: 600,
+      },
+      i === 2
+        ? h(
+            'div',
+            {
+              display: 'flex',
+              width: 38,
+              height: 38,
+              borderRadius: 99,
+              backgroundColor: T.ink,
+              color: '#fff',
+              alignItems: 'center',
+              justifyContent: 'center',
+            },
+            d,
+          )
+        : d,
+    ),
+  ),
+  abs({ left: 0, right: 0, top: HEAD, height: 1, backgroundColor: T.line }),
+  abs({ left: GUT, top: 0, bottom: 0, width: 1, backgroundColor: T.line }),
+  // hour lines + gutter times
+  ...[9, 10, 11, 12, 13, 14, 15].flatMap((hr) => [
+    abs({ left: GUT, right: 0, top: y(hr), height: 1, backgroundColor: T.gridHour }),
+    abs(
+      {
+        left: 0,
+        width: GUT - 12,
+        top: y(hr) - 10,
+        justifyContent: 'flex-end',
+        fontSize: 15,
+        fontWeight: 500,
+        color: T.faint,
+        letterSpacing: 0.18,
+      },
+      `${hr}:00`,
+    ),
+  ]),
+  ...[1, 2, 3, 4].map((i) =>
+    abs({ left: day(i), top: HEAD, bottom: 0, width: 1, backgroundColor: T.gridHour }),
+  ),
+  ...eventBlocks,
+  ...(showNow ? nowLine() : []),
+];
+
+const lockedOverlay = () => [
+  // Frosted wash so the demo grid stays hinted but unreadable.
+  abs({
+    left: 0,
+    top: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(246,246,247,0.42)',
+  }),
+  abs({
+    left: 0,
+    top: 0,
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+    h(
+      'div',
+      {
+        display: 'flex',
+        width: 196,
+        height: 196,
+        borderRadius: 48,
+        backgroundColor: 'rgba(255,255,255,0.88)',
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderColor: 'rgba(24,24,28,0.08)',
+        boxShadow: '0 18px 40px rgba(20,20,26,.16)',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      lockIcon(120),
+    ),
+  ),
+];
+
+const card = ({ eventBlocks, showNow, locked }) =>
   abs(
     {
       left: 538,
@@ -198,64 +307,25 @@ const card = ({ eventBlocks, showNow }) =>
       boxShadow: '0 24px 48px rgba(20,20,26,.18)',
       overflow: 'hidden',
     },
-    // day headers
-    ...['월', '화', '수', '목', '금'].map((d, i) =>
-      abs(
-        {
-          left: day(i),
-          top: 0,
-          width: COL,
-          height: HEAD,
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 21,
-          fontWeight: 600,
-        },
-        i === 2
-          ? h(
-              'div',
-              {
-                display: 'flex',
-                width: 38,
-                height: 38,
-                borderRadius: 99,
-                backgroundColor: T.ink,
-                color: '#fff',
-                alignItems: 'center',
-                justifyContent: 'center',
-              },
-              d,
-            )
-          : d,
-      ),
-    ),
-    abs({ left: 0, right: 0, top: HEAD, height: 1, backgroundColor: T.line }),
-    abs({ left: GUT, top: 0, bottom: 0, width: 1, backgroundColor: T.line }),
-    // hour lines + gutter times
-    ...[9, 10, 11, 12, 13, 14, 15].flatMap((hr) => [
-      abs({ left: GUT, right: 0, top: y(hr), height: 1, backgroundColor: T.gridHour }),
-      abs(
-        {
-          left: 0,
-          width: GUT - 12,
-          top: y(hr) - 10,
-          justifyContent: 'flex-end',
-          fontSize: 15,
-          fontWeight: 500,
-          color: T.faint,
-          letterSpacing: 0.18,
-        },
-        `${hr}:00`,
-      ),
-    ]),
-    ...[1, 2, 3, 4].map((i) =>
-      abs({ left: day(i), top: HEAD, bottom: 0, width: 1, backgroundColor: T.gridHour }),
-    ),
-    ...eventBlocks,
-    ...(showNow ? nowLine() : []),
+    ...(locked
+      ? [
+          abs(
+            {
+              left: 0,
+              top: 0,
+              width: '100%',
+              height: '100%',
+              // Thick blur on the default demo table for password shares.
+              filter: 'blur(28px)',
+            },
+            ...gridChrome(eventBlocks, showNow),
+          ),
+          ...lockedOverlay(),
+        ]
+      : gridChrome(eventBlocks, showNow)),
   );
 
-const page = ({ title, subtitle, eventBlocks, showNow }) =>
+const page = ({ title, subtitle, eventBlocks, showNow, locked }) =>
   h(
     'div',
     {
@@ -315,24 +385,38 @@ const page = ({ title, subtitle, eventBlocks, showNow }) =>
       h(
         'div',
         {
-          // step the scale down for long board names; keep-all wraps Korean
-          // at word boundaries instead of mid-word
+          // Long board names: single-line ellipsis inside the left column width.
+          // Character cap still applies via sanitizeOgImageTitle.
+          width: 420,
           fontSize: title.length <= 6 ? 76 : title.length <= 12 ? 56 : 44,
           fontWeight: 700,
           letterSpacing: '-0.02em',
           lineHeight: 1.12,
-          wordBreak: 'keep-all',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
         },
         title,
       ),
       h(
         'div',
-        { marginTop: 22, fontSize: 30, fontWeight: 500, lineHeight: 1.45, color: T.muted, whiteSpace: 'pre-line' },
-        subtitle || '실시간으로 함께 쓰는\n주간 시간표',
+        {
+          marginTop: 22,
+          width: 420,
+          fontSize: 30,
+          fontWeight: 500,
+          lineHeight: 1.45,
+          color: T.muted,
+          whiteSpace: subtitle ? 'nowrap' : 'pre-line',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        },
+        subtitle ||
+          (locked ? '비밀번호가 필요한\n공유 시간표' : '실시간으로 함께 쓰는\n주간 시간표'),
       ),
       h('div', { marginTop: 30, fontSize: 22, fontWeight: 600, letterSpacing: 0.22, color: T.faint }, 'Weekly Planner'),
     ),
-    card({ eventBlocks, showNow }),
+    card({ eventBlocks, showNow, locked }),
   );
 
 function parseOgRequest(req) {
@@ -340,13 +424,15 @@ function parseOgRequest(req) {
   const title = sanitizeOgImageTitle(url.searchParams.get('title'), '주간 계획표');
   const owner = sanitizeOgOwner(url.searchParams.get('owner') || '');
   const eventCount = Math.min(999, Math.max(0, Math.round(Number(url.searchParams.get('n')) || 0)));
+  const locked =
+    url.searchParams.get('locked') === '1' || url.searchParams.get('locked') === 'true';
   const hasReal = url.searchParams.has('e');
   const events = hasReal ? decodeOgEvents(url.searchParams.get('e')) : null;
   const subtitle = ogImageSubtitle({ owner, eventCount }) || '';
-  const eventBlocks = hasReal ? blocksFromEvents(events) : blocksFromDemo();
-  // Demo card keeps the decorative now-line; real schedules stay honest.
-  const showNow = !hasReal;
-  return { title, subtitle, eventBlocks, showNow };
+  // Locked cards always use the demo table (blurred) — never real events.
+  const eventBlocks = locked || !hasReal ? blocksFromDemo() : blocksFromEvents(events);
+  const showNow = locked || !hasReal;
+  return { title, subtitle, eventBlocks, showNow, locked };
 }
 
 export default async function handler(req, res) {
@@ -367,6 +453,7 @@ export default async function handler(req, res) {
     subtitle: '',
     eventBlocks: blocksFromDemo(),
     showNow: true,
+    locked: false,
   };
   try {
     props = parseOgRequest(req);
