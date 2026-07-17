@@ -21,12 +21,6 @@ import { IconSwap } from './ui/IconSwap.jsx';
 import { PresenceAvatars } from './PresenceAvatars.jsx';
 import { toast } from './ui/toast.js';
 
-/** Presence room only for signed-in visitors — signed-out skip the websocket. */
-function LandingPresenceAvatars() {
-  const { peers } = useLandingPresence();
-  return <PresenceAvatars peers={peers} />;
-}
-
 /** Pre-auth theme toggle — no Instant settings yet, so we drive the DOM + cache
  *  directly. `useTheme` takes over once the user is signed in. */
 function useLocalTheme() {
@@ -233,6 +227,7 @@ export function Landing() {
   const auth = db.useAuth();
   const signedIn = Boolean(auth.user);
   const { theme, toggle } = useLocalTheme();
+  const { peers } = useLandingPresence();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -341,7 +336,7 @@ export function Landing() {
 
             <div {...riseIn()} {...stylex.props(landing.previewWrap)}>
               <div {...stylex.props(landing.presenceSlot)}>
-                {signedIn ? <LandingPresenceAvatars /> : <PresenceAvatars peers={[]} />}
+                <PresenceAvatars peers={peers} />
               </div>
               <PlannerPreview />
             </div>

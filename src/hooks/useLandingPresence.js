@@ -5,6 +5,22 @@ import { peerColor, PEER_COLORS } from './useBoardPresence.js';
 /** Fixed Instant room id for marketing-page presence (not a real board). */
 export const LANDING_ROOM_ID = 'landing';
 
+const SEED_KEY = 'weekly-planner.presence.seed';
+
+/** Stable per-tab seed so signed-out visitors get distinct colors. */
+function sessionSeed() {
+  try {
+    let s = sessionStorage.getItem(SEED_KEY);
+    if (!s) {
+      s = Math.random().toString(36).slice(2, 10);
+      sessionStorage.setItem(SEED_KEY, s);
+    }
+    return s;
+  } catch {
+    return String(Date.now() % 1e9);
+  }
+}
+
 function shortName(emailOrName) {
   if (!emailOrName) return '손님';
   const s = String(emailOrName);
@@ -13,36 +29,31 @@ function shortName(emailOrName) {
 }
 
 /**
- * Live presence on the landing page.
- * Publishes only when signed in (email or guest); signed-out visitors see
- * peers who are already in the room and never invent fake avatars.
+ * Live presence on the landing page for signed-in and signed-out visitors.
+ * Signed-out peers publish as anonymous "손님" with a per-tab color seed —
+ * they show up in the avatar stack like everyone else.
  */
 export function useLandingPresence() {
   const auth = db.useAuth();
   const user = auth.user;
-  const active = Boolean(user);
   const room = db.room('board', LANDING_ROOM_ID);
 
+  const seed = user?.email || user?.id || sessionSeed();
   const name = user?.email ? shortName(user.email) : '손님';
-  const color = peerColor(user?.email || user?.id || 'landing');
+  const color = peerColor(seed);
 
-  const { peers: rawPeers, publishPresence } = db.rooms.usePresence(
-    room,
-    active
-      ? {
-          initialPresence: {
-            name,
-            color,
-            role: 'viewer',
-          },
-        }
-      : undefined,
-  );
+  const { peers: rawPeers, publishPresence } = db.rooms.usePresence(room, {
+    initialPresence: {
+      name,
+      color,
+      role: 'viewer',
+    },
+  });
 
   useEffect(() => {
-    if (!active || !publishPresence) return;
+    if (!publishPresence) return;
     publishPresence({ name, color, role: 'viewer' });
-  }, [active, name, color, publishPresence]);
+  }, [name, color, publishPresence]);
 
   const peers = useMemo(() => {
     return Object.entries(rawPeers || {}).map(([id, peer]) => ({
@@ -56,5 +67,5 @@ export function useLandingPresence() {
     }));
   }, [rawPeers]);
 
-  return { peers, isReady: active };
+  return { peers, isReady: true };
 }
