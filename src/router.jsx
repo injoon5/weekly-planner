@@ -10,10 +10,10 @@ import {
 } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { db } from './db/instant.js';
-import { RefreshBanner } from './components/RefreshBanner.jsx';
 import { Toaster } from './components/ui/Toaster.jsx';
 import { Landing } from './components/Landing.jsx';
 import { Planner } from './components/Planner.jsx';
+import { AppUpdateProvider } from './hooks/useAppUpdate.js';
 import { reset } from './styles/ui.js';
 
 // Secondary routes stay lazy; `/` (Landing + Planner) is eager so cold loads
@@ -129,10 +129,11 @@ function InnerApp() {
 
 export function App() {
   return (
-    <div {...stylex.props(reset.app)}>
-      <InnerApp />
-      <Toaster />
-      <RefreshBanner />
-    </div>
+    <AppUpdateProvider>
+      <div {...stylex.props(reset.app)}>
+        <InnerApp />
+        <Toaster />
+      </div>
+    </AppUpdateProvider>
   );
 }

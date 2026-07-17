@@ -133,16 +133,15 @@
   transform: translateY(100%);
 }
 
-/* ---- Refresh banner (deployment update) --------------------------------- */
+/* ---- Refresh banner (on the planner table) ------------------------------ */
 
 [data-ui-refresh-viewport] {
-  position: fixed;
+  position: absolute;
   left: 50%;
-  /* Sit on the week table, just under the planner header chrome. */
-  top: calc(64px + env(safe-area-inset-top));
+  top: 10px;
   width: 0;
   height: 0;
-  z-index: 55;
+  z-index: 45;
   pointer-events: none;
 }
 
@@ -154,13 +153,14 @@
   transform: translateX(calc(-50% + var(--toast-swipe-movement-x, 0px)))
     translateY(var(--toast-swipe-movement-y, 0px));
   transition:
-    transform 0.22s cubic-bezier(0.2, 0, 0, 1),
-    opacity 0.18s ease;
+    transform 0.22s cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 0.18s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
+/* Enter from above (same path as swipe-up dismiss) — spatial consistency. */
 [data-ui-refresh-toast][data-starting-style] {
   opacity: 0;
-  transform: translateX(-50%) translateY(-8px) scale(0.98);
+  transform: translateX(-50%) translateY(-6px) scale(0.98);
 }
 
 [data-ui-refresh-toast][data-ending-style] {
@@ -169,9 +169,34 @@
     translateY(calc(var(--toast-swipe-movement-y, 0px) - 6px)) scale(0.98);
 }
 
-@media screen and (max-width: 720px) {
-  [data-ui-refresh-viewport] {
-    top: calc(56px + env(safe-area-inset-top));
+/* Stagger copy → action (better-ui split enter). */
+[data-ui-refresh-toast][data-starting-style] [data-ui-refresh-copy],
+[data-ui-refresh-toast][data-starting-style] [data-ui-refresh-action] {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+[data-ui-refresh-toast] [data-ui-refresh-copy],
+[data-ui-refresh-toast] [data-ui-refresh-action] {
+  transition:
+    opacity 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+[data-ui-refresh-toast][data-open] [data-ui-refresh-copy] {
+  transition-delay: 40ms;
+}
+
+[data-ui-refresh-toast][data-open] [data-ui-refresh-action] {
+  transition-delay: 90ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ui-refresh-toast],
+  [data-ui-refresh-toast] [data-ui-refresh-copy],
+  [data-ui-refresh-toast] [data-ui-refresh-action] {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
   }
 }
 
