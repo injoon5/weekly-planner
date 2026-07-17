@@ -267,10 +267,10 @@ const dayHeaders = () =>
             },
             abs(
               {
-                left: 0,
+                // Optical center for Pretendard 수 in Satori (glyph sits high-left).
+                left: 1,
                 right: 0,
-                // Optical center for Pretendard 수 in Satori (glyph sits high).
-                top: 10,
+                top: 11,
                 height: 18,
                 alignItems: 'center',
                 justifyContent: 'center',
