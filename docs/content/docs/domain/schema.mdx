@@ -57,8 +57,9 @@ One row per user (`settingsOwner`). All optional:
 | Field | Notes |
 | --- | --- |
 | `token` | unique indexed public id |
-| `secret` | indexed read secret |
+| `secret` | indexed read secret (open: token; password: PBKDF2 hex) |
 | `editSecret` | optional; editor writes |
+| `passwordSalt` | optional public hex salt for password-mode PBKDF2 |
 | `mode` | `open` \| `password` |
 | `role` | `viewer` \| `editor` |
 | `enabled` | boolean |

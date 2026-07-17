@@ -28,6 +28,7 @@ Typical bindings: `isOwner`, `isMember`, `isEditor`, `hasShareSecret`.
 
 - Field rules hide `secret` / `editSecret` from everyone except the board owner.
 - Public metadata lookup can find a share by `ruleParams.shareToken` without exposing secrets.
+  `passwordSalt` is readable on that lookup so guests can derive the secret client-side.
 - Event writes for share editors must pass `ruleParams.secret` matching `shares.editSecret`.
 
 ## Rate limits (`$rateLimits`)
