@@ -310,6 +310,7 @@ export function Landing() {
                       {...stylex.props(landing.btn, landing.btnPrimary)}
                     >
                       이메일로 로그인
+                      <ArrowRight size={17} strokeWidth={2} {...stylex.props(landing.btnArrow)} />
                     </button>
                     <GuestButton variant="ghost" onSignedIn={afterGuestSignIn} />
                   </>
