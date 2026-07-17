@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { useNavigate } from '@tanstack/react-router';
 import {
@@ -77,6 +77,82 @@ function Card({ index = 0, children }) {
   );
 }
 
+/** Presence color strip — always one line; soft edge fades when clipped. */
+function ColorSwatches({ activeColor, autoColor, onPick }) {
+  const rowRef = useRef(null);
+  const [fade, setFade] = useState({ left: false, right: false });
+
+  const updateFade = useCallback(() => {
+    const el = rowRef.current;
+    if (!el) return;
+    const left = el.scrollLeft > 2;
+    const right = el.scrollLeft + el.clientWidth < el.scrollWidth - 2;
+    setFade((f) => (f.left === left && f.right === right ? f : { left, right }));
+  }, []);
+
+  useLayoutEffect(() => {
+    updateFade();
+  }, [updateFade]);
+
+  useEffect(() => {
+    const row = rowRef.current;
+    if (!row) return;
+    const ro = new ResizeObserver(updateFade);
+    ro.observe(row);
+    return () => ro.disconnect();
+  }, [updateFade]);
+
+  // Vertical wheel → sideways scroll when the strip overflows (narrow windows).
+  const onWheel = (e) => {
+    const el = rowRef.current;
+    if (!el || el.scrollWidth <= el.clientWidth) return;
+    if (Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return;
+    el.scrollLeft += e.deltaY;
+  };
+
+  const fadeStyle =
+    fade.left && fade.right
+      ? account.swatchesFadeBoth
+      : fade.left
+        ? account.swatchesFadeLeft
+        : fade.right
+          ? account.swatchesFadeRight
+          : null;
+
+  return (
+    <div
+      ref={rowRef}
+      {...stylex.props(account.swatches, fadeStyle)}
+      role="group"
+      aria-labelledby="account-color-label"
+      onScroll={updateFade}
+      onWheel={onWheel}
+    >
+      <button
+        type="button"
+        {...stylex.props(account.swatch, account.swatchAuto, !activeColor && account.swatchOn)}
+        aria-pressed={!activeColor}
+        title="이메일에서 자동으로 정해진 색"
+        onClick={() => onPick(null)}
+      >
+        <span {...stylex.props(account.swatchAutoDot)} style={{ backgroundColor: autoColor }} />
+        자동
+      </button>
+      {PEER_COLORS.map((c) => (
+        <button
+          key={c}
+          type="button"
+          {...stylex.props(account.swatch, activeColor === c && account.swatchOn)}
+          style={{ backgroundColor: c }}
+          aria-pressed={activeColor === c}
+          aria-label={`아바타 색 ${c}`}
+          onClick={() => onPick(c)}
+        />
+      ))}
+    </div>
+  );
+}
+
 function ProfileCard({ index, user, settings, saveSettings }) {
   const [name, setName] = useState(settings?.displayName || '');
   const savedName = settings?.displayName || '';
@@ -144,36 +220,11 @@ function ProfileCard({ index, user, settings, saveSettings }) {
         <span {...stylex.props(account.rowLabel)} id="account-color-label">
           내 색
         </span>
-        <div
-          {...stylex.props(account.swatches)}
-          role="group"
-          aria-labelledby="account-color-label"
-        >
-          <button
-            type="button"
-            {...stylex.props(account.swatch, account.swatchAuto, !activeColor && account.swatchOn)}
-            aria-pressed={!activeColor}
-            title="이메일에서 자동으로 정해진 색"
-            onClick={() => void saveSettings({ presenceColor: null }, '색을 바꿨어요')}
-          >
-            <span
-              {...stylex.props(account.swatchAutoDot)}
-              style={{ backgroundColor: autoColor }}
-            />
-            자동
-          </button>
-          {PEER_COLORS.map((c) => (
-            <button
-              key={c}
-              type="button"
-              {...stylex.props(account.swatch, activeColor === c && account.swatchOn)}
-              style={{ backgroundColor: c }}
-              aria-pressed={activeColor === c}
-              aria-label={`아바타 색 ${c}`}
-              onClick={() => void saveSettings({ presenceColor: c }, '색을 바꿨어요')}
-            />
-          ))}
-        </div>
+        <ColorSwatches
+          activeColor={activeColor}
+          autoColor={autoColor}
+          onPick={(c) => void saveSettings({ presenceColor: c }, '색을 바꿨어요')}
+        />
       </div>
     </Card>
   );
