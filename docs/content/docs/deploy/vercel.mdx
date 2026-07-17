@@ -1,0 +1,29 @@
+---
+title: Vercel (app)
+description: SPA rewrites, headers, env scopes, and OG URL injection for the product app.
+---
+
+# Vercel (app)
+
+`vercel.json` at repo root:
+
+- `framework: "vite"`, `trailingSlash: false`
+- Rewrites: `/api/(.*)` → API; everything else (except API) → `/index.html`
+- Security headers: `X-Content-Type-Options`, `Referrer-Policy`
+- Long cache for hashed assets; no-cache for service worker / workbox / manifest
+
+**Do not enable `cleanUrls`** — breaks SPA fallback to `/index.html`.
+
+## Environment (Preview + Production)
+
+| Variable | Why |
+| --- | --- |
+| `INSTANT_ADMIN_TOKEN` | `/api/invite`, `/api/share-meta` |
+| `INSTANT_APP_ID` | Admin SDK (or `VITE_INSTANT_APP_ID`) |
+| `SITE_URL` | Optional absolute origin for OG tags on custom domains |
+
+Vite injects social URLs from `SITE_URL` → `VERCEL_PROJECT_PRODUCTION_URL` → `VERCEL_URL`.
+
+## PWA notes
+
+App shell precached; `/api/*` denied from navigate fallback; fonts CacheFirst. Instant owns offline app data via IndexedDB.

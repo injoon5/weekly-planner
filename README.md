@@ -102,6 +102,18 @@ Set `INSTANT_ADMIN_TOKEN` in Vercel **Preview** and **Production** env scopes so
 
 Optional: set `SITE_URL` to your custom domain so production builds inject absolute `og:image` / canonical tags (Vercel’s production URL is used automatically otherwise).
 
+## Documentation site
+
+Full codebase docs ship as a Fumadocs (Next.js) app in [`docs/`](./docs):
+
+```bash
+cd docs
+npm ci
+npm run dev
+```
+
+Deploy on Vercel with **Root Directory** = `docs`. See [`docs/README.md`](./docs/README.md) and the published docs under **Deploy → Docs site**.
+
 ## License
 
 Private / personal use unless you say otherwise.

@@ -1,0 +1,16 @@
+{
+  "title": "Features",
+  "pages": [
+    "index",
+    "auth",
+    "boards",
+    "events-and-editor",
+    "grid-and-drag",
+    "sharing",
+    "presence",
+    "todos",
+    "print",
+    "theme-and-prefs",
+    "import-export"
+  ]
+}

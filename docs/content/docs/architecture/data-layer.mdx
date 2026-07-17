@@ -1,0 +1,56 @@
+---
+title: Data layer
+description: InstantDB client, schema location, ruleParams, and transaction patterns.
+---
+
+# Data layer
+
+## Client
+
+`src/instant.js`:
+
+- `db = init({ appId: APP_ID, schema })`
+- re-exports `id` from `@instantdb/react`
+- `withRuleParams(tx, ruleParams)` — applies `.ruleParams()` only when params are non-empty
+
+Share guests rely on:
+
+- `ruleParams.shareToken` — metadata lookup without exposing secrets
+- `ruleParams.secret` — board/event access (and edit when it matches `editSecret`)
+
+## Schema
+
+- **Source of truth:** `src/schema.js`
+- **CLI entry:** `instant.schema.ts` re-exports it
+- **Permissions:** `instant.perms.ts`
+
+Full entity list: [Schema](/docs/domain/schema). Permissions: [Permissions](/docs/domain/permissions).
+
+## Queries in the UI
+
+Typical pattern in hooks:
+
+1. `db.useQuery(...)` with Instant indexes
+2. Normalize Instant link shapes via `links.js` (`linkedId` / `linkedIds`)
+3. Derive view models with pure helpers (`models.js`, prefs, share-access)
+
+`useWorkspace` loads accessible boards + settings, then active board details (owner, events, members, editors, shares, prefs). Write role comes from **owner / `boards.editors`**, not the `members.role` string alone.
+
+## Mutations
+
+Transaction builders in `src/tx/*` produce Instant txs. Hooks call:
+
+```js
+await commitTransaction(db.transact, txs, { onError });
+```
+
+`commitTransaction` returns `ok()` / `fail(message, error)`. Always branch with `isOk()` before assuming success.
+
+## Local persistence outside Instant
+
+| Storage | Keys / use |
+| --- | --- |
+| localStorage | theme, legacy boards (`v1`/`v2`), print prefs |
+| sessionStorage | share password unlock, guest view prefs on share links |
+
+App data (boards, events, members, shares, synced theme, board prefs, todos) lives in InstantDB.

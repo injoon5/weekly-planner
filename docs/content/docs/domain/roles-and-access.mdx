@@ -1,0 +1,48 @@
+---
+title: Roles & access
+description: Owner, member, and share-guest access paths and how secrets work.
+---
+
+# Roles & access
+
+## Role constants (`roles.js`)
+
+| Namespace | Values | Default on unknown |
+| --- | --- | --- |
+| `BOARD_ROLE` | `owner`, `editor`, `viewer` | — |
+| `MEMBER_ROLE` / `SHARE_ROLE` | `viewer`, `editor` | `viewer` |
+| `SHARE_MODE` | `open`, `password` | `open` |
+
+## Path 1: Authenticated members
+
+1. Owner invites via `/api/invite` with their Instant refresh token.
+2. `members` row stores display role + email cache.
+3. Editor authority is the Instant link `boards.editors`.
+4. `member-policy.js` keeps role row and editor link in sync for create/update/remove.
+
+Members can **leave**; only owners invite/remove/change roles (except self-leave).
+
+## Path 2: Share guests
+
+| Mode | Read secret | Notes |
+| --- | --- | --- |
+| Open | `secret = token` | Usable even before metadata loads |
+| Password | `secret = sha256(token:password)` | Unlock stored in **sessionStorage** |
+
+| Role | Edit |
+| --- | --- |
+| Viewer | read only |
+| Editor | `editSecret = secret`; event writes include `ruleParams.secret` |
+
+Policy helpers: `share-policy.js` (owner create/update), `share-access.js` (guest state machine), `share.js` (tokens, hashing, URLs, unlock storage).
+
+### Share access states
+
+`loading` → `passwordRequired` / `unlockFailed` / `disabled` / `notFound` / `ready` / `pendingBoard`
+
+Password and disabled shares must **not** leak board names in OG metadata (`og-meta.js`).
+
+## Workspace bootstrap
+
+- `workspaceBootstrapPlan` — if the user already has any accessible board (including member boards), do **not** seed a demo board.
+- `ensureWorkspace` — deduped per user; migrates legacy localStorage or seeds “내 시간표” + `seedEvents()`; creates settings with local/boot theme.

@@ -1,0 +1,26 @@
+---
+title: Testing
+description: Vitest suites and the invariants they lock in.
+---
+
+# Testing
+
+Config: `vitest.config.js` — Node environment, `test/**/*.test.js`.
+
+Run: `npm test` (or `npm run check`).
+
+| File | Focus |
+| --- | --- |
+| `models.test.js` | Event/board normalization, coverage, packing, todos derivation |
+| `policies.test.js` | Bootstrap policy, role normalization, `commitTransaction` |
+| `shared-board.test.js` | Share access state machine |
+| `drag.test.js` | Long-press, scroll cancel, rAF coalescing, edge scroll |
+| `grid-layout.test.js` | Geometry, header sync, pack/merge drag view |
+| `grid-cursors.test.js` | Coordinate conversion + cursor keys |
+| `time.test.js` | Grid time, planner day, snapping |
+| `print-prefs.test.js` | Defaults, normalization, storage failures |
+| `og-meta.test.js` | Crawlers, sanitization, privacy, HTML tags |
+| `og-handler.test.js` | `/api/og` writes PNG; rejects non-GET |
+| `vercel-spa.test.js` | No `cleanUrls`; SPA + API rewrites |
+
+Prefer pure modules so tests do not need Instant or a browser.

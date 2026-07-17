@@ -1,0 +1,39 @@
+---
+title: Environment variables
+description: App, Instant, Vercel, and CI environment variables used by Weekly Planner.
+---
+
+# Environment variables
+
+Copy `.env.example` to `.env` for local work.
+
+## Required for full local/API behavior
+
+| Variable | Used by | Purpose |
+| --- | --- | --- |
+| `INSTANT_APP_ID` | Instant CLI, Vercel APIs | Same value as `src/config.js` → `APP_ID`. Also accepted as `VITE_INSTANT_APP_ID` in API routes. |
+| `INSTANT_ADMIN_TOKEN` | `push:*`, `/api/invite`, `/api/share-meta` | Instant admin SDK. Set in Vercel **Preview** and **Production**. |
+
+## Auth origins (previews)
+
+| Variable | Used by | Purpose |
+| --- | --- | --- |
+| `INSTANT_CLI_AUTH_TOKEN` | `sync:auth-origins`, GitHub Action | From `npx instant-cli@latest login -p`. Do not commit. |
+| `VERCEL_PROJECT_NAME` | sync script | Defaults to repo slug `weekly-planner`. |
+| `INSTANT_AUTH_WEBSITE_URL` | sync script | Optional custom domain for website origin. |
+
+## Open Graph / site URL
+
+| Variable | Used by | Purpose |
+| --- | --- | --- |
+| `SITE_URL` | Vite build plugin | Absolute origin for `og:image` / canonical. On Vercel, `VERCEL_PROJECT_PRODUCTION_URL` / `VERCEL_URL` are used when unset. |
+
+## Browser vs server
+
+- **Browser** Instant client reads `APP_ID` from `src/config.js` (not Vite `import.meta.env`).
+- **Serverless** routes read Instant credentials from process env.
+- Theme, print prefs, share unlocks, and legacy migration use **localStorage / sessionStorage** keys defined in `src/config.js` — not env vars.
+
+## Docs site
+
+The Fumadocs app under `docs/` needs **no** Instant or app secrets to build or deploy.

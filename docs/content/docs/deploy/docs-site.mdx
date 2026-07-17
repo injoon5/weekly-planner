@@ -1,0 +1,35 @@
+---
+title: Docs site on Vercel
+description: Deploy this Fumadocs app as a separate Vercel project with Root Directory docs.
+---
+
+# Docs site on Vercel
+
+This documentation is a **Next.js + Fumadocs** app in `/docs`.
+
+## Create the project
+
+1. In Vercel, **Add New Project** → import the same GitHub repo
+2. Set **Root Directory** to `docs`
+3. Framework: Next.js (auto)
+4. Install: `npm ci` / Build: `npm run build` / Output: default Next
+5. No Instant or app secrets required
+
+Optional: attach a subdomain like `docs.your-domain.com`.
+
+## Local
+
+```bash
+cd docs
+npm ci
+npm run dev
+```
+
+- Home: `http://localhost:3000`
+- Docs: `http://localhost:3000/docs`
+
+## Content workflow
+
+1. Edit MDX under `docs/content/docs/`
+2. Adjust sidebar order in each folder’s `meta.json`
+3. Open a PR — Vercel preview deploys the docs project when Root Directory is `docs`

@@ -1,0 +1,14 @@
+---
+title: Middleware
+description: Bot-only rewrite from /s/:token to the share-meta HTML route.
+---
+
+# Middleware
+
+File: `middleware.js` (repo root Vite app).
+
+Matcher: `/s/:token*`.
+
+If the user-agent matches a social crawler **and** the path is exactly `/s/:token`, rewrite to `/api/share-meta?token=...`. Humans continue to the SPA shared planner.
+
+`public/robots.txt` allows `/api/og` and `/api/share-meta` for scrapers.

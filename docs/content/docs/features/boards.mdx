@@ -1,0 +1,37 @@
+---
+title: Boards
+description: Multi-board tabs, ownership rules, and board lifecycle actions.
+---
+
+# Boards
+
+## Workspace hook
+
+`useWorkspace` loads accessible boards (owned + member), settings, active board details, and prefs.
+
+- Sort: `sortOrder`, then `createdAt`
+- Default active board: one covering today, else first
+- Role: owner / editor / viewer from owner + editors links
+
+## Lifecycle (`useBoardLifecycle`)
+
+Owner-only (except where noted):
+
+| Action | Behavior |
+| --- | --- |
+| `addBoard` | New board + default range |
+| `commitBoard` | Patch name / dates / repeat / color labels |
+| `duplicateBoard` | Clone board + events |
+| `clearBoard` | Delete all events |
+| `deleteBoard` | Delete board; **blocked if last board** |
+| Import / export | See [Import / export](/docs/features/import-export) |
+
+## UI
+
+- `BoardTabs` — horizontal tabs, sliding pill, wheel→horizontal scroll, active click opens menu
+- `BoardMenu` — metadata, duplicate/clear/delete with hold-to-confirm
+- Viewer members see a read-only banner on `Planner`
+
+## Date range & repeat
+
+Stored on the board document. Coverage logic is in `boardCoversDate` ([Models](/docs/domain/models)).

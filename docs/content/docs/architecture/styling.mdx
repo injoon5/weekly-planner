@@ -1,0 +1,34 @@
+---
+title: Styling
+description: StyleX tokens, themes, CSS bridges for Base UI, and print/light rules.
+---
+
+# Styling
+
+## StyleX
+
+- Tokens: `src/tokens.stylex.js` — `colors`, `layout`, `compactLayout`
+- Dark theme: `src/themes.js` → `darkTheme` (`createTheme`)
+- Modules under `src/styles/*.js` — `ui`, `grid`, `planner`, `menus`, `editor`, `auth`, `landing`, `todos`, `print`
+
+Vite uses `@stylexjs/unplugin` with CSS layers (`vite.config.js`).
+
+## Theme boot
+
+1. Inline script in `index.html` sets `data-theme` / `theme-color` early
+2. `theme-dom.js` — `bootDocumentTheme()`, `applyDocumentTheme()`, StyleX dark class on `<html>`
+3. After login, `useTheme` syncs with Instant `settings.theme` and localStorage
+
+Print **forces light** theme temporarily. Dark palette CSS is screen-only.
+
+## Plain CSS bridges
+
+| File | Role |
+| --- | --- |
+| `src/app.css` | Box sizing, overflow clip, mobile scroll lock, body colors, print page margin |
+| `src/styles/base-ui.css` | Base UI lifecycle transitions StyleX cannot target (popover, dialog, drawer, toast, scrollarea); reduced motion; hide overlays in print |
+| `src/styles/palette.css` | Event colors via `data-color` CSS variables; light default (print-safe); dark under `html[data-theme='dark']` |
+
+## Layout tokens
+
+Important layout vars: `slotH`, `headH`, `gutW`, `colMin`, `font`. Mobile layout token overrides are **screen-only** so print does not shrink.

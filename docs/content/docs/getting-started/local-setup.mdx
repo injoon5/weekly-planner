@@ -1,0 +1,50 @@
+---
+title: Local setup
+description: Install dependencies, push Instant schema/permissions, and use project scripts.
+---
+
+# Local setup
+
+## Install
+
+```bash
+npm ci
+```
+
+## InstantDB
+
+1. App id lives in **`src/config.js`** (`APP_ID`). Mirror it in `.env` as `INSTANT_APP_ID`.
+2. Admin token in `.env` from the [Instant dashboard](https://www.instantdb.com/dash).
+3. Optionally lock schema and permissions:
+
+```bash
+npm run push:schema
+npm run push:perms
+```
+
+`instant.schema.ts` re-exports `src/schema.js` — **`src/schema.js` is the source of truth**.
+
+## Scripts
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Vite dev server (port 3000) |
+| `npm run build` | Production → `dist/` |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | Check core JavaScript modules |
+| `npm run test` | Vitest regression tests |
+| `npm run check` | Lint, typecheck, test, build |
+| `npm run preview` | Preview production build |
+| `npm run push:schema` | Push Instant schema |
+| `npm run push:perms` | Push Instant permissions |
+| `npm run sync:auth-origins` | Register Instant auth origins (Vercel previews) |
+
+## Docs site
+
+This documentation app is separate:
+
+```bash
+cd docs
+npm ci
+npm run dev
+```

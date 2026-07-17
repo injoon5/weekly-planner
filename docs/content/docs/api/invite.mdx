@@ -1,0 +1,29 @@
+---
+title: Invite API
+description: Server-side member invites with Instant admin SDK and ownership checks.
+---
+
+# Invite API
+
+File: `api/invite.js`
+
+## Request
+
+`POST` with body `{ boardId, email, role }`.
+
+Auth: Instant **refresh token** from `token` header or body `refreshToken`.
+
+## Flow
+
+1. Validate method / env / body
+2. Verify refresh token via admin SDK
+3. Load board owner + members
+4. Ensure caller is board owner
+5. Look up target registered user by email
+6. Reject self-invite
+7. Existing member → update role + editor link
+8. Else create member (+ editor link if editor)
+
+Env: `INSTANT_APP_ID` or `VITE_INSTANT_APP_ID`, `INSTANT_ADMIN_TOKEN`.
+
+Reuses `member-policy.js` helpers so client and server stay aligned.

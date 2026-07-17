@@ -1,0 +1,18 @@
+---
+title: API routes
+description: Vercel serverless handlers for invites, OG images, and share metadata.
+---
+
+# API routes
+
+Located under `/api` at the repo root (Vite app project), not inside `docs/`.
+
+| Route | Method | Purpose |
+| --- | --- | --- |
+| `/api/invite` | POST | Invite member by email (admin SDK) |
+| `/api/og` | GET | Dynamic PNG Open Graph image |
+| `/api/share-meta` | GET | Crawler HTML for `/s/:token` |
+
+CORS: handlers support `OPTIONS` where needed.
+
+Deep dives: [Invite](/docs/api/invite), [OG & share-meta](/docs/api/og-and-share-meta), [Middleware](/docs/api/middleware).

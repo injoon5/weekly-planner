@@ -1,0 +1,26 @@
+---
+title: Hooks
+description: Feature hooks and what each one owns.
+---
+
+# Hooks
+
+| Hook | Owns |
+| --- | --- |
+| `useWorkspace` | Accessible boards, active board, roles, bootstrap |
+| `useBoardLifecycle` | Owner board CRUD + import/export |
+| `usePlannerRuntime` | Shared composition for Planner + SharedPlanner |
+| `useEventMutations` | Event CRUD API |
+| `useEditorSession` | Draft editor state machine |
+| `useSharedBoard` | Share token load + unlock |
+| `useShareActions` | Share/member mutations + invite |
+| `useBoardPresence` | Instant room presence |
+| `useViewControls` | Filters, labels, visible events |
+| `useTodayTodos` | Derived checklist |
+| `useTheme` | Theme sync |
+| `usePrintSetup` | Print dialog + prefs |
+| `usePlannerClock` | Now line tick |
+| `useMagicCodeAuth` | Email OTP flow |
+| `useMobileSheet` | `max-width: 560px` media |
+
+`usePlannerRuntime` wires clock + mutations + editor + view + presence + print so both shells stay aligned.

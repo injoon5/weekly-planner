@@ -1,0 +1,26 @@
+---
+title: Print
+description: Print dialog, local print preferences, and light-only print styling.
+---
+
+# Print
+
+## Prefs (`print-prefs.js`)
+
+Key: `weekly-planner.print`.
+
+- Name/time fields normalized to 40 chars
+- Booleans default true unless explicitly false
+- Board `from`/`to` are resolved transiently — **not** persisted
+
+## Flow (`usePrintSetup` + `PrintDialog`)
+
+Open dialog → edit draft → write normalized prefs → `window.print()`.
+
+`PrintMeta` renders print-only header fields (blank underline when enabled but empty).
+
+## Style invariants
+
+- Print uses light palette even in dark mode
+- Popovers / dialogs / drawers / toasts hidden in print CSS
+- Grid print rules avoid clipped headers; CSS vars instead of pixel-locked header dims where needed
