@@ -25,6 +25,7 @@ import { fmt } from '../time.js';
 import { compactLayout, layout } from '../tokens.stylex.js';
 import { grid } from '../styles/grid.js';
 import { planner } from '../styles/planner.js';
+import { GridCursors } from './GridCursors.jsx';
 import { GridEventBlock } from './GridEventBlock.jsx';
 
 export function WeekGrid({
@@ -43,6 +44,8 @@ export function WeekGrid({
   printShowMemos = true,
   colorLabel,
   swapping = false,
+  presenceRoom = null,
+  presenceColor,
 }) {
   const paneRef = useRef(null);
   const bodyRef = useRef(null);
@@ -310,6 +313,14 @@ export function WeekGrid({
               />
             )}
           </div>
+
+          {presenceRoom && (
+            <GridCursors
+              room={presenceRoom}
+              userCursorColor={presenceColor}
+              paneRef={paneRef}
+            />
+          )}
         </div>
         </div>
       </div>
