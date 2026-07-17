@@ -25,10 +25,13 @@ export function isSocialCrawler(userAgent) {
   return SOCIAL_CRAWLER_RE.test(userAgent || '');
 }
 
+/** Satori/Pretendard liga collapses `...` → U+2026 (missing → `.`). Keep dots separate. */
+export const OG_ELLIPSIS = '.\u200B.\u200B.';
+
 function clipWithEllipsis(clean, max) {
   if (clean.length <= max) return clean;
-  // Keep room for the ellipsis so the visible cap stays at `max`.
-  return `${clean.slice(0, Math.max(0, max - 1))}…`;
+  const room = Math.max(0, max - OG_ELLIPSIS.length);
+  return `${clean.slice(0, room)}${OG_ELLIPSIS}`;
 }
 
 /** Strip control chars and cap length for OG image titles. */

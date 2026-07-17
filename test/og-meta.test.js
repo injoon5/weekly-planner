@@ -43,16 +43,18 @@ describe('og-meta helpers', () => {
 
   it('sanitizes and caps image titles', () => {
     expect(sanitizeOgImageTitle('  스터디 시간표  ')).toBe('스터디 시간표');
-    expect(sanitizeOgImageTitle('a'.repeat(40))).toBe(`${'a'.repeat(23)}…`);
-    expect(sanitizeOgImageTitle('a'.repeat(40)).length).toBe(24);
+    const long = sanitizeOgImageTitle('a'.repeat(40));
+    expect(long.endsWith('.\u200B.\u200B.')).toBe(true);
+    expect(long.length).toBe(24);
     expect(sanitizeOgImageTitle('')).toBe('주간 계획표');
   });
 
   it('sanitizes owners without leaking emails', () => {
     expect(sanitizeOgOwner('injoon@example.com')).toBe('injoon');
     expect(sanitizeOgOwner('  인준  ')).toBe('인준');
-    expect(sanitizeOgOwner('x'.repeat(40))).toBe(`${'x'.repeat(19)}…`);
-    expect(sanitizeOgOwner('x'.repeat(40)).length).toBe(20);
+    const long = sanitizeOgOwner('x'.repeat(40));
+    expect(long.endsWith('.\u200B.\u200B.')).toBe(true);
+    expect(long.length).toBe(20);
     expect(sanitizeOgOwner('')).toBe('');
   });
 

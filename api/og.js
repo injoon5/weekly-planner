@@ -8,6 +8,7 @@ import {
   sanitizeOgImageTitle,
   sanitizeOgOwner,
   OG_DAY_ORIGIN,
+  OG_ELLIPSIS,
 } from '../src/server/og-meta.js';
 
 const fontDir = join(dirname(fileURLToPath(import.meta.url)), 'fonts');
@@ -62,6 +63,8 @@ const T = {
   now: '#E5484D',
   markA: '#E96D4F',
   markB: '#4E9EDB',
+  /** SF systemGray — lock icon on password cards. */
+  lock: '#8E8E93',
 };
 const EV = {
   coral: ['#ffe3dd', '#a13a28', 'rgba(233,109,79,'],
@@ -107,10 +110,21 @@ const h = (type, style, ...children) => ({
 const abs = (style, ...children) =>
   h('div', { position: 'absolute', display: 'flex', ...style }, ...children);
 
+/** Fit a label into ~`max` visible chars with an ASCII `...` (Satori-safe). */
+function fitLabel(raw, max) {
+  const s = String(raw || '');
+  if (s.length <= max) return s;
+  const room = Math.max(0, max - OG_ELLIPSIS.length);
+  return `${s.slice(0, room)}${OG_ELLIPSIS}`;
+}
+
 const block = (d, h1, m1, h2, m2, color, title) => {
   const [bg, fg, accent] = EV[color] || EV.sky;
   const dur = h2 - h1 + (m2 - m1) / 60;
   if (dur <= 0) return null;
+  // ~7 Korean glyphs fit the mini column at 18px; truncate ourselves so we
+  // never rely on Satori's U+2026 text-overflow glyph.
+  const label = fitLabel(title, 7);
   return abs(
     {
       flexDirection: 'column',
@@ -136,11 +150,9 @@ const block = (d, h1, m1, h2, m2, color, title) => {
         letterSpacing: -0.07,
         lineHeight: 1.25,
         whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        width: '100%',
+        fontFeatureSettings: '"liga" 0, "clig" 0',
       },
-      title,
+      label,
     ),
     h(
       'div',
@@ -203,11 +215,11 @@ const nowLine = () => [
   }),
 ];
 
-/** Lucide `lock` as a data-URI — stroke SVGs via Satori nodes often collapse. */
-const LOCK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 24 24" fill="none" stroke="#1B1B20" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
+/** Lucide `lock` — Apple systemGray, no badge chrome. */
+const LOCK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
 const LOCK_DATA_URL = `data:image/svg+xml;base64,${Buffer.from(LOCK_SVG).toString('base64')}`;
 
-const lockIcon = (size = 108) => ({
+const lockIcon = (size = 128) => ({
   type: 'img',
   props: {
     src: LOCK_DATA_URL,
@@ -288,15 +300,8 @@ function shiftAbs(node, dx, dy) {
   return { ...node, props: { ...node.props, style } };
 }
 
+/** Lock only — pure blur underneath, no frost wash / badge plate. */
 const lockedOverlay = () => [
-  // Frosted wash over the schedule body only (headers/gutter stay clear).
-  abs({
-    left: GUT,
-    top: HEAD,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(246,246,247,0.42)',
-  }),
   abs(
     {
       left: GUT,
@@ -306,23 +311,7 @@ const lockedOverlay = () => [
       alignItems: 'center',
       justifyContent: 'center',
     },
-    h(
-      'div',
-      {
-        display: 'flex',
-        width: 196,
-        height: 196,
-        borderRadius: 48,
-        backgroundColor: 'rgba(255,255,255,0.88)',
-        borderWidth: 1,
-        borderStyle: 'solid',
-        borderColor: 'rgba(24,24,28,0.08)',
-        boxShadow: '0 18px 40px rgba(20,20,26,.16)',
-        alignItems: 'center',
-        justifyContent: 'center',
-      },
-      lockIcon(120),
-    ),
+    lockIcon(136),
   ),
 ];
 
@@ -432,18 +421,17 @@ const page = ({ title, subtitle, eventBlocks, showNow, locked }) =>
       h(
         'div',
         {
-          // Long board names: single-line ellipsis inside the left column width.
-          // Character cap still applies via sanitizeOgImageTitle.
+          // Long board names: truncate with ASCII `...` (Satori-safe).
           width: 420,
           fontSize: title.length <= 6 ? 76 : title.length <= 12 ? 56 : 44,
           fontWeight: 700,
           letterSpacing: '-0.02em',
           lineHeight: 1.12,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          fontFeatureSettings: '"liga" 0, "clig" 0',
         },
-        title,
+        fitLabel(title, title.length <= 6 ? 8 : title.length <= 12 ? 11 : 14),
       ),
       h(
         'div',
@@ -456,10 +444,13 @@ const page = ({ title, subtitle, eventBlocks, showNow, locked }) =>
           color: T.muted,
           whiteSpace: subtitle ? 'nowrap' : 'pre-line',
           overflow: 'hidden',
-          textOverflow: 'ellipsis',
+          fontFeatureSettings: '"liga" 0, "clig" 0',
         },
-        subtitle ||
-          (locked ? '비밀번호가 필요한\n공유 시간표' : '실시간으로 함께 쓰는\n주간 시간표'),
+        subtitle
+          ? fitLabel(subtitle, 22)
+          : locked
+            ? '비밀번호가 필요한\n공유 시간표'
+            : '실시간으로 함께 쓰는\n주간 시간표',
       ),
       h('div', { marginTop: 30, fontSize: 22, fontWeight: 600, letterSpacing: 0.22, color: T.faint }, 'Weekly Planner'),
     ),
