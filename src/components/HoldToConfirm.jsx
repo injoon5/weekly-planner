@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { menus } from '../styles/menus.js';
+import { toast } from './ui/toast.js';
 
 const HOLD_MS = 900;
 const EASE_BACK = 'clip-path 180ms cubic-bezier(0.2, 0, 0, 1)';
+const HOLD_HINT = '길게 누르고 있으세요';
+/** Only hint when the press looked like a tap, not a deliberate cancel. */
+const HINT_BELOW = 0.5;
 
 function isInside(e) {
   const el = e.currentTarget;
@@ -29,6 +33,7 @@ export function HoldToConfirm({
   const [easingOut, setEasingOut] = useState(false);
   const rafRef = useRef(0);
   const startRef = useRef(0);
+  const progressRef = useRef(0);
   const armedRef = useRef(false);
   const holdingRef = useRef(false);
   const confirmRef = useRef(onConfirm);
@@ -44,6 +49,10 @@ export function HoldToConfirm({
     rafRef.current = 0;
   };
 
+  const hintIfTap = () => {
+    if (progressRef.current < HINT_BELOW) toast(HOLD_HINT);
+  };
+
   const abortHold = () => {
     if (!holdingRef.current) return;
     holdingRef.current = false;
@@ -51,6 +60,7 @@ export function HoldToConfirm({
     clearTick();
     setEasingOut(true);
     setProgress(0);
+    hintIfTap();
   };
 
   const releaseHold = (e) => {
@@ -71,15 +81,18 @@ export function HoldToConfirm({
     }
     setEasingOut(true);
     setProgress(0);
+    hintIfTap();
   };
 
   const tick = (now) => {
     if (!holdingRef.current) return;
     const p = Math.min(1, (now - startRef.current) / duration);
+    progressRef.current = p;
     setProgress(p);
     if (p >= 1) {
       armedRef.current = true;
       clearTick();
+      progressRef.current = 1;
       setProgress(1);
       try {
         navigator.vibrate?.(12);
@@ -99,6 +112,7 @@ export function HoldToConfirm({
     armedRef.current = false;
     setEasingOut(false);
     startRef.current = performance.now();
+    progressRef.current = 0;
     setProgress(0);
     if (e.currentTarget?.setPointerCapture && e.pointerId != null) {
       try {
