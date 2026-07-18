@@ -32,13 +32,25 @@ export function useTheme(settings) {
   }, [settings?.theme]);
 
   useEffect(() => {
-    const before = () => applyDocumentTheme('light');
-    const after = () => applyDocumentTheme(themeRef.current);
-    window.addEventListener('beforeprint', before);
-    window.addEventListener('afterprint', after);
+    const toLight = () => applyDocumentTheme('light');
+    const restore = () => applyDocumentTheme(themeRef.current);
+    const onPrintMq = (event) => {
+      if (event.matches) toLight();
+      else restore();
+    };
+
+    // beforeprint is flaky on iOS Safari; matchMedia('print') covers preview.
+    const mq = window.matchMedia('print');
+    if (typeof mq.addEventListener === 'function') mq.addEventListener('change', onPrintMq);
+    else mq.addListener(onPrintMq);
+
+    window.addEventListener('beforeprint', toLight);
+    window.addEventListener('afterprint', restore);
     return () => {
-      window.removeEventListener('beforeprint', before);
-      window.removeEventListener('afterprint', after);
+      if (typeof mq.removeEventListener === 'function') mq.removeEventListener('change', onPrintMq);
+      else mq.removeListener(onPrintMq);
+      window.removeEventListener('beforeprint', toLight);
+      window.removeEventListener('afterprint', restore);
     };
   }, []);
 

@@ -8,7 +8,11 @@ const REDUCE_TRANSPARENCY = '@media (prefers-reduced-transparency: reduce)';
 export const reset = stylex.create({
   html: {
     height: '100%',
-    colorScheme: 'light dark',
+    colorScheme: {
+      default: 'light dark',
+      // Avoid iOS Safari painting overflow scrollports black in print preview.
+      [PRINT]: 'light',
+    },
   },
   body: {
     margin: 0,
@@ -29,6 +33,10 @@ export const reset = stylex.create({
     transitionProperty: 'background-color',
     transitionDuration: '200ms',
     transitionTimingFunction: 'ease',
+    [PRINT]: {
+      backgroundColor: '#FFFFFF',
+      color: '#1B1B20',
+    },
   },
   app: {
     height: '100%',

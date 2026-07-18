@@ -19,7 +19,10 @@ Vite uses `@stylexjs/unplugin` with CSS layers (`vite.config.js`).
 2. `theme-dom.js` — `bootDocumentTheme()`, `applyDocumentTheme()`, StyleX dark class on `<html>`
 3. After login, `useTheme` syncs with Instant `settings.theme` and localStorage
 
-Print **forces light** theme temporarily. Dark palette CSS is screen-only.
+Print **forces light** theme temporarily (`beforeprint` + `matchMedia('print')` —
+iOS Safari often skips `beforeprint`). Grid print styles also hardcode white
+paper / light grid lines so a late dark-theme class cannot paint the table
+body black. Dark palette CSS is screen-only.
 
 ## Plain CSS bridges
 

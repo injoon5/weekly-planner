@@ -60,6 +60,19 @@ html body {
 /* Screen sync pins the day-header track to scroll position via CSS vars.
    Those pixel locks must not survive into print or only 일/월/화 show. */
 @media print {
+  /* iOS Safari print preview often paints overflow scrollports black when
+     color-scheme is dark — and beforeprint is too late / missing. Force
+     light scheme + white paper in CSS so we don't depend on the JS flip. */
+  html {
+    color-scheme: light !important;
+  }
+
+  html,
+  body {
+    background-color: #fff !important;
+    color: #1b1b20 !important;
+  }
+
   [data-head-track] {
     width: 100% !important;
     transform: none !important;

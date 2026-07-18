@@ -78,6 +78,8 @@ export const grid = stylex.create({
       overflow: 'visible',
       borderRadius: 0,
       borderColor: '#D8D8DD',
+      // Hex (not tokens): Safari may still have dark theme vars during print.
+      backgroundColor: '#FFFFFF',
     },
   },
 
@@ -98,6 +100,7 @@ export const grid = stylex.create({
     },
     '@media print': {
       overflow: 'visible',
+      backgroundColor: '#FFFFFF',
     },
   },
 
@@ -107,6 +110,7 @@ export const grid = stylex.create({
     '@media print': {
       minWidth: 0,
       width: '100%',
+      backgroundColor: '#FFFFFF',
     },
   },
 
@@ -121,6 +125,10 @@ export const grid = stylex.create({
     borderBottom: `1px solid ${colors.line}`,
     [PRINT]: {
       overflow: 'visible',
+      backgroundColor: '#FFFFFF',
+      WebkitBackdropFilter: 'none',
+      backdropFilter: 'none',
+      borderBottomColor: '#E9E9EC',
     },
   },
 
@@ -158,6 +166,13 @@ export const grid = stylex.create({
     WebkitBackdropFilter: 'blur(8px)',
     backdropFilter: 'blur(8px)',
     borderRight: `1px solid ${colors.line}`,
+    [PRINT]: {
+      backgroundColor: '#FFFFFF',
+      WebkitBackdropFilter: 'none',
+      backdropFilter: 'none',
+      borderRightColor: '#E9E9EC',
+      color: '#6E6E76',
+    },
   },
 
   dcell: {
@@ -241,6 +256,10 @@ export const grid = stylex.create({
     [PRINT]: {
       position: 'relative',
       left: 'auto',
+      backgroundColor: '#FFFFFF',
+      WebkitBackdropFilter: 'none',
+      backdropFilter: 'none',
+      borderRightColor: '#E9E9EC',
     },
   },
 
@@ -318,8 +337,20 @@ export const grid = stylex.create({
       opacity: 0.55,
       borderTop: `1px solid ${colors.edge}`,
       pointerEvents: 'none',
+      // Light wash even if dark theme vars are still live during Safari print.
+      '@media print': {
+        backgroundColor: 'rgba(27,27,32,.05)',
+        borderTopColor: 'rgba(27,27,32,.10)',
+      },
     },
     '@media print': {
+      backgroundColor: '#FFFFFF',
+      borderLeftColor: '#E9E9EC',
+      // Light grid lines — dark-theme token values would vanish on white paper.
+      backgroundImage: `
+        repeating-linear-gradient(to bottom, rgba(24,24,28,.075) 0 1px, transparent 1px ${GRID_HOUR_HEIGHT}),
+        repeating-linear-gradient(to bottom, transparent 0 ${layout.slotH}, rgba(24,24,28,.035) ${layout.slotH} calc(${layout.slotH} + 1px), transparent calc(${layout.slotH} + 1px) ${GRID_HOUR_HEIGHT})
+      `,
       printColorAdjust: 'exact',
       WebkitPrintColorAdjust: 'exact',
     },

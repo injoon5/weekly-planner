@@ -31,6 +31,8 @@ Open dialog → edit draft → write normalized prefs → print **or** image exp
 
 ## Style invariants
 
-- Print uses light palette even in dark mode
+- Print uses light palette even in dark mode (CSS hardcodes white grid paper;
+  JS also flips the StyleX theme — `beforeprint` plus `matchMedia('print')`
+  because iOS Safari is flaky with print events)
 - Popovers / dialogs / drawers / toasts hidden in print CSS
 - Grid print rules avoid clipped headers; CSS vars instead of pixel-locked header dims where needed
