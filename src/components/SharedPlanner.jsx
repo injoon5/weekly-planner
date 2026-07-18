@@ -1,18 +1,20 @@
 import { useEffect } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { Link, useParams } from '@tanstack/react-router';
-import { EMPTY_PRESENCE, usePlannerRuntime } from '../hooks/usePlannerRuntime.js';
+import { usePlannerRuntime } from '../hooks/usePlannerRuntime.js';
 import { useSharedBoard } from '../hooks/useSharedBoard.js';
 import { useTheme } from '../hooks/useTheme.js';
 import { planner } from '../styles/planner.js';
 import { ui } from '../styles/ui.js';
 import { auth as authStyles } from '../styles/auth.js';
-import { BoardPresenceBridge } from './BoardPresenceBridge.jsx';
+import {
+  PlannerReadyChrome,
+  PlannerStatusShell,
+  usePlannerScrollLock,
+} from './PlannerChrome.jsx';
 import { PrintDialog } from './PrintDialog.jsx';
 import { PlannerHeader } from './PlannerHeader.jsx';
 import { PlannerSurface } from './PlannerSurface.jsx';
-
-const PLANNER_SCROLL_LOCK = 'planner-scroll-lock';
 
 export function SharedPlanner() {
   const { token } = useParams({ from: '/s/$token' });
@@ -31,10 +33,7 @@ export function SharedPlanner() {
     guestLabel: shared.canEdit ? '공유 편집' : '공유 보기',
   });
 
-  useEffect(() => {
-    document.documentElement.classList.add(PLANNER_SCROLL_LOCK);
-    return () => document.documentElement.classList.remove(PLANNER_SCROLL_LOCK);
-  }, []);
+  usePlannerScrollLock();
 
   useEffect(() => {
     const name = shared.board?.name?.trim();
@@ -47,22 +46,12 @@ export function SharedPlanner() {
   }, [shared.board?.name]);
 
   if (shared.isLoading) {
-    return (
-      <div {...stylex.props(planner.app)} data-app-shell="shared">
-        <header {...stylex.props(planner.top)}>
-          <h1 {...stylex.props(planner.h1)}>주간 계획표</h1>
-        </header>
-        <div {...stylex.props(planner.surfacePending)} aria-busy="true" role="status">
-          <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
-          불러오는 중…
-        </div>
-      </div>
-    );
+    return <PlannerStatusShell shell="shared" message="불러오는 중…" />;
   }
   if (shared.error) {
     return (
       <div {...stylex.props(planner.boot)} role="alert">
-        오류: {shared.error.message}
+        불러오지 못했어요
       </div>
     );
   }
@@ -91,10 +80,15 @@ export function SharedPlanner() {
         >
           <h1 {...stylex.props(authStyles.title)}>비밀번호</h1>
           <p {...stylex.props(authStyles.copy)}>이 시간표는 비밀번호로 보호되어 있어요</p>
+          <label {...stylex.props(authStyles.copy)} htmlFor="share-password">
+            비밀번호
+          </label>
           <input
+            id="share-password"
             {...stylex.props(ui.input)}
             type="password"
             autoFocus
+            autoComplete="current-password"
             value={shared.password}
             onChange={(e) => shared.setPassword(e.target.value)}
             placeholder="비밀번호"
@@ -117,68 +111,51 @@ export function SharedPlanner() {
   }
 
   if (!shared.board) {
-    return (
-      <div {...stylex.props(planner.app)} data-app-shell="shared">
-        <header {...stylex.props(planner.top)}>
-          <h1 {...stylex.props(planner.h1)}>주간 계획표</h1>
-        </header>
-        <div {...stylex.props(planner.surfacePending)} aria-busy="true" role="status">
-          <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
-          불러오는 중…
-        </div>
-      </div>
-    );
+    return <PlannerStatusShell shell="shared" message="불러오는 중…" />;
   }
 
   const board = shared.board;
   const readOnly = shared.readOnly;
 
-  const view = (presence) => (
-    <div {...stylex.props(planner.app)} data-app-shell="planner">
-      <div {...stylex.props(planner.banner)}>
-        <span {...stylex.props(planner.bannerStrong)}>
-          {readOnly ? '보기 전용' : '공유 편집'}
-        </span>
-        <span>{board.name || '시간표'}</span>
-      </div>
-
-      <PlannerHeader
-        board={board}
-        printPrefs={runtime.print.prefs}
-        presence={presence}
-        views={runtime.views}
-        theme={theme}
-        onToggleTheme={toggleTheme}
-        onPrint={runtime.print.open}
-      />
-
-      <PlannerSurface
-        boardId={board.id}
-        events={shared.events}
-        session={runtime.session}
-        views={runtime.views}
-        presence={presence}
-        readOnly={readOnly}
-        updateEvent={runtime.eventsApi.updateEvent}
-        printShowMemos={runtime.print.prefs.showMemos}
-      />
-
-      <PrintDialog {...runtime.print.dialog} />
-    </div>
-  );
-
-  if (!board.id) return view(EMPTY_PRESENCE);
-
-  const { user, role, guestLabel, settings } = runtime.presenceArgs;
   return (
-    <BoardPresenceBridge
-      boardId={board.id}
-      user={user}
-      role={role}
-      guestLabel={guestLabel}
-      settings={settings}
+    <PlannerReadyChrome
+      presenceBoardId={board.id || null}
+      presenceArgs={board.id ? runtime.presenceArgs : null}
+      banner={
+        <div {...stylex.props(planner.banner)}>
+          <span {...stylex.props(planner.bannerStrong)}>
+            {readOnly ? '보기 전용' : '공유 편집'}
+          </span>
+          <span>{board.name || '시간표'}</span>
+        </div>
+      }
     >
-      {view}
-    </BoardPresenceBridge>
+      {(presence) => (
+        <>
+          <PlannerHeader
+            board={board}
+            printPrefs={runtime.print.prefs}
+            presence={presence}
+            views={runtime.views}
+            theme={theme}
+            onToggleTheme={toggleTheme}
+            onPrint={runtime.print.open}
+          />
+
+          <PlannerSurface
+            boardId={board.id}
+            events={shared.events}
+            session={runtime.session}
+            views={runtime.views}
+            presence={presence}
+            readOnly={readOnly}
+            updateEvent={runtime.eventsApi.updateEvent}
+            printShowMemos={runtime.print.prefs.showMemos}
+          />
+
+          <PrintDialog {...runtime.print.dialog} />
+        </>
+      )}
+    </PlannerReadyChrome>
   );
 }

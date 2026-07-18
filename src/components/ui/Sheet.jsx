@@ -1,25 +1,34 @@
 import { Dialog } from '@base-ui/react/dialog';
 import { Drawer } from '@base-ui/react/drawer';
 import * as stylex from '@stylexjs/stylex';
+import { createContext, useContext } from 'react';
 import { useMobileSheet } from '../../hooks/useMobileSheet.js';
 import { ui } from '../../styles/ui.js';
 
-/** Dialog on desktop; swipeable Drawer on mobile. */
-export function SheetRoot({ open, onOpenChange, children }) {
+/** @typedef {'dialog' | 'rail'} SheetVariant */
+
+const SheetVariantContext = createContext(/** @type {SheetVariant} */ ('dialog'));
+
+function useSheetVariant() {
+  return useContext(SheetVariantContext);
+}
+
+/** Dialog (or side-rail) on desktop; swipeable Drawer on mobile. */
+export function SheetRoot({ open, onOpenChange, variant = 'dialog', children }) {
   const mobile = useMobileSheet();
 
-  if (mobile) {
-    return (
-      <Drawer.Root open={open} onOpenChange={onOpenChange} swipeDirection="down">
-        {children}
-      </Drawer.Root>
-    );
-  }
-
-  return (
+  const tree = mobile ? (
+    <Drawer.Root open={open} onOpenChange={onOpenChange} swipeDirection="down">
+      {children}
+    </Drawer.Root>
+  ) : (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       {children}
     </Dialog.Root>
+  );
+
+  return (
+    <SheetVariantContext.Provider value={variant}>{tree}</SheetVariantContext.Provider>
   );
 }
 
@@ -30,8 +39,12 @@ export function SheetPortal({ children }) {
 
 export function SheetBackdrop(props) {
   const mobile = useMobileSheet();
+  const variant = useSheetVariant();
   if (mobile) {
     return <Drawer.Backdrop data-ui-drawer-backdrop="" {...props} />;
+  }
+  if (variant === 'rail') {
+    return <Dialog.Backdrop data-ui-todos-backdrop="" {...props} />;
   }
   return <Dialog.Backdrop data-ui-dialog-backdrop="" {...props} />;
 }
@@ -46,6 +59,7 @@ export function SheetViewport({ children }) {
 
 export function SheetPopup({ children, ...props }) {
   const mobile = useMobileSheet();
+  const variant = useSheetVariant();
 
   if (mobile) {
     return (
@@ -53,6 +67,14 @@ export function SheetPopup({ children, ...props }) {
         <span {...stylex.props(ui.drawerGrip)} aria-hidden="true" />
         <Drawer.Content>{children}</Drawer.Content>
       </Drawer.Popup>
+    );
+  }
+
+  if (variant === 'rail') {
+    return (
+      <Dialog.Popup data-ui-todos="" {...props}>
+        {children}
+      </Dialog.Popup>
     );
   }
 

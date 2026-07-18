@@ -3,8 +3,11 @@
  * serverless functions and tests — only a hash of the token is ever stored;
  * the plaintext is shown once at creation/rotation.
  *
- * Hash = SHA-256(pepper ? `${pepper}:${token}` : token). Pepper comes from
- * `API_TOKEN_PEPPER` on the server; leave unset for legacy unpeppered hashes.
+/**
+ * Hash = SHA-256(pepper ? `${pepper}:${token}` : token).
+ * New tokens should always pass `API_TOKEN_PEPPER` when configured.
+ * Lookup still tries the unpeppered form so pre-pepper rows keep working
+ * until the owner rotates them.
  */
 
 export const API_TOKEN_PREFIX = 'wp_';

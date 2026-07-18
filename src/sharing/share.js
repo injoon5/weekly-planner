@@ -47,7 +47,8 @@ export function randomShareSalt() {
 
 /**
  * Legacy share password hash: SHA-256(token:password).
- * Kept so existing password shares unlock until the owner rotates the password.
+ * Unlock-only — new password shares always mint a PBKDF2 salt.
+ * Rows without `passwordSalt` keep working until the owner sets a new password.
  */
 export async function hashSharePasswordLegacy(token, password) {
   const data = new TextEncoder().encode(`${token}:${password}`);

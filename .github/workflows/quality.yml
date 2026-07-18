@@ -24,3 +24,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+        env:
+          VITE_INSTANT_APP_ID: 00000000-0000-0000-0000-000000000000
+          INSTANT_APP_ID: 00000000-0000-0000-0000-000000000000

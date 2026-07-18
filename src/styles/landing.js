@@ -3,8 +3,6 @@ import { colors, layout } from './tokens.stylex.js';
 
 // Strong ease-out (starts fast → responsive entrances). Matches the auth card.
 const EASE_OUT = 'cubic-bezier(.23,1,.32,1)';
-const CORAL = '#E96D4F';
-const BLUE = '#4E9EDB';
 const REDUCE = '@media (prefers-reduced-motion: reduce)';
 const NARROW = '@media (max-width: 760px)';
 const TIGHT = '@media (max-width: 460px)';
@@ -30,7 +28,7 @@ export const landing = stylex.create({
     // Soft twin-accent wash, anchored top corners — same hues as the auth mark,
     // faint enough to survive both themes.
     backgroundColor: colors.bg,
-    backgroundImage: `radial-gradient(1100px 560px at 8% -8%, color-mix(in srgb, ${CORAL} 13%, transparent), transparent 58%), radial-gradient(900px 520px at 100% -4%, color-mix(in srgb, ${BLUE} 12%, transparent), transparent 55%)`,
+    backgroundImage: `radial-gradient(1100px 560px at 8% -8%, color-mix(in srgb, ${colors.brandCoral} 13%, transparent), transparent 58%), radial-gradient(900px 520px at 100% -4%, color-mix(in srgb, ${colors.brandSky} 12%, transparent), transparent 55%)`,
     backgroundRepeat: 'no-repeat',
     overflowX: 'hidden',
     // Korean line-breaking: break between words (eojeol), never mid-word.
@@ -94,13 +92,6 @@ export const landing = stylex.create({
     padding: '6px',
     flexShrink: 0,
   },
-  markLg: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '12px',
-    padding: '9px',
-    gap: '3.5px',
-  },
 
   // ── Layout shell ───────────────────────────────────────────────────────
   shell: {
@@ -127,33 +118,36 @@ export const landing = stylex.create({
     maxWidth: '38ch',
     [NARROW]: { maxWidth: 'none' },
   },
-  eyebrow: {
-    display: 'inline-block',
-    color: colors.muted,
-    fontSize: '13px',
-    fontWeight: 560,
-    letterSpacing: '0.002em',
-    marginBottom: '18px',
+  heroBrand: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '14px',
   },
   h1: {
     margin: 0,
-    fontSize: 'clamp(38px, 6.4vw, 64px)',
-    lineHeight: 1.04,
-    letterSpacing: '-0.035em',
+    fontSize: 'clamp(36px, 5.8vw, 56px)',
+    lineHeight: 1.08,
+    letterSpacing: '-0.032em',
     fontWeight: 720,
     color: colors.ink,
     textWrap: 'balance',
   },
   h1Accent: {
-    // Gradient ink for the second line — coral→blue, the product's two hues.
-    backgroundImage: `linear-gradient(105deg, ${CORAL}, ${BLUE})`,
+    marginTop: '14px',
+    marginBottom: 0,
+    fontSize: 'clamp(20px, 3.2vw, 28px)',
+    lineHeight: 1.25,
+    letterSpacing: '-0.02em',
+    fontWeight: 650,
+    // Gradient ink — coral→blue, the product's two hues.
+    backgroundImage: `linear-gradient(105deg, ${colors.brandCoral}, ${colors.brandSky})`,
     WebkitBackgroundClip: 'text',
     backgroundClip: 'text',
     color: 'transparent',
     WebkitTextFillColor: 'transparent',
   },
   lede: {
-    marginTop: '20px',
+    marginTop: '16px',
     marginBottom: 0,
     fontSize: 'clamp(15px, 1.7vw, 17.5px)',
     lineHeight: 1.6,
@@ -459,7 +453,7 @@ export const landing = stylex.create({
     fontWeight: 640,
     letterSpacing: '0.04em',
     textTransform: 'uppercase',
-    color: CORAL,
+    color: colors.brandCoral,
     marginBottom: '12px',
   },
   h2: {
@@ -540,7 +534,7 @@ export const landing = stylex.create({
     paddingInline: 'clamp(24px, 5vw, 56px)',
     backgroundColor: colors.paper,
     boxShadow: `inset 0 0 0 1px ${colors.edge}`,
-    backgroundImage: `radial-gradient(720px 300px at 88% -20%, color-mix(in srgb, ${BLUE} 14%, transparent), transparent 60%), radial-gradient(560px 260px at 4% 120%, color-mix(in srgb, ${CORAL} 12%, transparent), transparent 62%)`,
+    backgroundImage: `radial-gradient(720px 300px at 88% -20%, color-mix(in srgb, ${colors.brandSky} 14%, transparent), transparent 60%), radial-gradient(560px 260px at 4% 120%, color-mix(in srgb, ${colors.brandCoral} 12%, transparent), transparent 62%)`,
     display: 'grid',
     gridTemplateColumns: '1fr auto',
     gap: 'clamp(28px, 5vw, 56px)',

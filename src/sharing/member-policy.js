@@ -1,9 +1,12 @@
-import { BOARD_ROLE, isEditorRole, normalizeMemberRole } from './roles.js';
+import { ACCESS_ROLE, BOARD_ROLE, isEditorRole, normalizeMemberRole } from './roles.js';
 import { linkedId, linkedIds } from '../lib/links.js';
 
 /**
  * Member role txs against any Instant `tx` namespace (client or admin).
- * Write authority = boards.editors link; members.role is display cache.
+ *
+ * Write authority = `boards.editors` link (Instant perms can check links, not
+ * correlated `members.role` fields). `members.role` is written in the same
+ * transaction as a display mirror for SharePanel — never consulted for auth.
  *
  * @param {any} tx Instant transaction namespace (`db.tx`)
  * @param {{ boardId: string, memberId: string, userId: string, role: unknown }} args
@@ -64,10 +67,27 @@ export function ownerIdOf(board) {
 }
 
 /**
+ * Display role for a membership row. Prefers `boards.editors` when hydrated;
+ * falls back to the mirrored `members.role` field.
+ *
+ * @param {{ editors?: unknown } | null | undefined} board
+ * @param {{ user?: unknown, role?: unknown }} member
+ * @returns {'viewer' | 'editor'}
+ */
+export function displayRoleForMember(board, member) {
+  const userId = linkedId(member?.user);
+  if (userId && Array.isArray(board?.editors)) {
+    return linkedIds(board.editors).includes(userId)
+      ? ACCESS_ROLE.EDITOR
+      : ACCESS_ROLE.VIEWER;
+  }
+  return normalizeMemberRole(member?.role);
+}
+
+/**
  * Effective role of a user on a board.
- * Write truth = boards.editors link (members.role is display cache).
- * Defaults to viewer when links are missing — pair with `roleKnown` before
- * showing viewer-only UI so owners/editors never flash the banner mid-hydrate.
+ * Write truth = boards.editors link. Defaults to viewer when links are missing —
+ * pair with `roleKnown` before showing viewer-only UI.
  */
 export function roleForBoard(board, userId) {
   if (!board || !userId) return BOARD_ROLE.VIEWER;
@@ -78,8 +98,8 @@ export function roleForBoard(board, userId) {
 
 /**
  * Whether board relation links are hydrated enough to trust `roleForBoard`.
- * List queries often include `owner` but omit `editors`; until editors (or a
- * matching member row) are present, a non-owner may still be an editor.
+ * List queries should include `editors: {}` so this resolves without waiting
+ * on the detail query.
  *
  * @param {{
  *   owner?: unknown,
@@ -91,7 +111,6 @@ export function roleForBoard(board, userId) {
 export function roleKnown(board, userId) {
   if (!board || !userId) return false;
   if (ownerIdOf(board) === userId) return true;
-  // Detail query includes editors: {} → array (possibly empty).
   if (Array.isArray(board.editors)) return true;
   if (Array.isArray(board.members) && findMemberForUser(board.members, userId)) {
     return true;

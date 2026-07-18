@@ -11,6 +11,7 @@ import {
   SHARE_ROLE,
 } from '../src/sharing/roles.js';
 import {
+  displayRoleForMember,
   roleForBoard,
   roleKnown,
   shouldShowViewerBanner,
@@ -87,6 +88,14 @@ describe('member role policy', () => {
         'u1',
       ),
     ).toBe(false);
+  });
+
+  it('displayRoleForMember prefers editors link when hydrated', () => {
+    const member = { user: { id: 'u1' }, role: 'viewer' };
+    expect(displayRoleForMember({ editors: [{ id: 'u1' }] }, member)).toBe('editor');
+    expect(displayRoleForMember({ editors: [] }, member)).toBe('viewer');
+    // No editors array → fall back to mirrored members.role
+    expect(displayRoleForMember({}, { user: { id: 'u1' }, role: 'editor' })).toBe('editor');
   });
 });
 

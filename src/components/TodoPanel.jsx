@@ -1,13 +1,11 @@
 import { useLayoutEffect, useState } from 'react';
 import { Checkbox } from '@base-ui/react/checkbox';
-import { Dialog } from '@base-ui/react/dialog';
-import { Drawer } from '@base-ui/react/drawer';
 import { ScrollArea } from '@base-ui/react/scroll-area';
 import * as stylex from '@stylexjs/stylex';
 import { CalendarClock, X } from 'lucide-react';
 import { DAYS_KO } from '../lib/config.js';
-import { useMobileSheet } from '../hooks/useMobileSheet.js';
 import { todos as s } from '../styles/todos.js';
+import { Sheet } from './ui/sheet.js';
 
 function subtitle(iso) {
   const [y, m, d] = iso.split('-').map(Number);
@@ -21,7 +19,6 @@ function TodoRow({ todo, index, onToggle }) {
     <li {...stylex.props(s.rowClip)}>
       <div
         {...stylex.props(s.row)}
-        // Cascade on open; a soft entrance per row.
         style={{ animationDelay: `${Math.min(index, 10) * 24}ms` }}
       >
         <Checkbox.Root
@@ -49,8 +46,7 @@ function TodoRow({ todo, index, onToggle }) {
   );
 }
 
-/** Shared panel body — identical on desktop dialog and mobile drawer. */
-function PanelBody({ api, TitleTag, CloseTag }) {
+function PanelBody({ api }) {
   const { todos: items, date, toggle } = api;
 
   const total = items.length;
@@ -59,19 +55,17 @@ function PanelBody({ api, TitleTag, CloseTag }) {
 
   return (
     <>
-      <span {...stylex.props(s.grip)} aria-hidden="true" />
-
       <header {...stylex.props(s.head)}>
         <div {...stylex.props(s.headText)}>
-          <TitleTag {...stylex.props(s.title)}>오늘 할 일</TitleTag>
+          <Sheet.Title {...stylex.props(s.title)}>오늘 할 일</Sheet.Title>
           <span {...stylex.props(s.sub)}>
             {subtitle(date)}
             {total > 0 && ` · ${done}/${total} 완료`}
           </span>
         </div>
-        <CloseTag {...stylex.props(s.close)} aria-label="닫기">
+        <Sheet.Close {...stylex.props(s.close)} aria-label="닫기">
           <X size={17} strokeWidth={1.9} />
-        </CloseTag>
+        </Sheet.Close>
       </header>
 
       <div {...stylex.props(s.rail)}>
@@ -107,51 +101,35 @@ function PanelBody({ api, TitleTag, CloseTag }) {
 }
 
 /**
- * Today's to-do list — live read-through of the active schedule's events for
- * today. Slide-in side panel on desktop, swipeable bottom drawer on mobile —
- * mirroring the app's Sheet split, but anchored to the right so it reads as a
- * companion rail rather than a centered modal.
- *
+ * Today's to-do list via the shared Sheet shell (drawer on mobile, dialog on desktop).
  * Mounts closed, then opens on layout so Base UI applies its enter transition.
  */
 export function TodoPanel({ open, onOpenChange, api }) {
-  const mobile = useMobileSheet();
   const [shown, setShown] = useState(false);
 
   useLayoutEffect(() => {
     setShown(open);
   }, [open]);
 
-  const handleOpenChange = (next) => {
-    setShown(next);
-    if (!next) onOpenChange(false);
-  };
-
-  if (mobile) {
-    return (
-      <Drawer.Root open={shown} onOpenChange={handleOpenChange} swipeDirection="down">
-        <Drawer.Portal>
-          <Drawer.Backdrop data-ui-todos-backdrop="" {...stylex.props(s.scrim)} />
-          <Drawer.Viewport data-ui-drawer-viewport="">
-            <Drawer.Popup data-ui-drawer="" {...stylex.props(s.panel, s.panelMobile)}>
-              <Drawer.Content {...stylex.props(s.content)}>
-                <PanelBody api={api} TitleTag={Drawer.Title} CloseTag={Drawer.Close} />
-              </Drawer.Content>
-            </Drawer.Popup>
-          </Drawer.Viewport>
-        </Drawer.Portal>
-      </Drawer.Root>
-    );
-  }
-
   return (
-    <Dialog.Root open={shown} onOpenChange={handleOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Backdrop data-ui-todos-backdrop="" {...stylex.props(s.scrim)} />
-        <Dialog.Popup data-ui-todos="" {...stylex.props(s.panel)}>
-          <PanelBody api={api} TitleTag={Dialog.Title} CloseTag={Dialog.Close} />
-        </Dialog.Popup>
-      </Dialog.Portal>
-    </Dialog.Root>
+    <Sheet.Root
+      variant="rail"
+      open={shown}
+      onOpenChange={(next) => {
+        setShown(next);
+        if (!next) onOpenChange(false);
+      }}
+    >
+      <Sheet.Portal>
+        <Sheet.Backdrop {...stylex.props(s.scrim)} />
+        <Sheet.Viewport>
+          <Sheet.Popup {...stylex.props(s.panel, s.panelMobile)}>
+            <div {...stylex.props(s.content)}>
+              <PanelBody api={api} />
+            </div>
+          </Sheet.Popup>
+        </Sheet.Viewport>
+      </Sheet.Portal>
+    </Sheet.Root>
   );
 }

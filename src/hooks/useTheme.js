@@ -8,9 +8,10 @@ import { commitTransaction } from '../db/transaction.js';
 import { persistThemeTx } from '../db/tx/theme.js';
 
 /**
- * Single theme owner after boot: Instant settings → local cache → DOM.
- * Print: beforeprint flips StyleX chrome to light; event colors use @media screen
- * dark rules so print inherits the base light palette without a second CSS dump.
+ * Theme owner after boot.
+ * Signed-in: Instant `settings.theme` is source of truth; localStorage is a
+ * FOUC/boot cache written on every apply (see index.html inline script).
+ * Guests / share shell (`settings == null`): localStorage only.
  */
 export function useTheme(settings) {
   const [theme, setTheme] = useState(readBootTheme);

@@ -1,16 +1,20 @@
+import { Popover } from '@base-ui/react/popover';
 import { Separator } from '@base-ui/react/separator';
 import * as stylex from '@stylexjs/stylex';
 import { Moon, MoreHorizontal, Printer, Sun } from 'lucide-react';
 import { fmtRange, fmtRepeat } from '../lib/time.js';
 import { menus } from '../styles/menus.js';
 import { planner } from '../styles/planner.js';
-import { ui } from '../styles/ui.js';
 import { PresenceAvatars } from './PresenceAvatars.jsx';
 import { PrintMeta } from './PrintMeta.jsx';
 import { ViewControls } from './ViewControls.jsx';
 import { IconSwap } from './ui/IconSwap.jsx';
 import { MenuPopover } from './ui/MenuPopover.jsx';
 
+/**
+ * Planner top chrome. Primary cluster: presence, account, todos, share, theme.
+ * Views + print + import/export live in the ⋯ menu.
+ */
 export function PlannerHeader({
   board,
   printPrefs,
@@ -46,7 +50,6 @@ export function PlannerHeader({
         <PresenceAvatars peers={presence.peers} />
         {leadingActions}
         {todosAction}
-
         {afterViewActions}
 
         <button
@@ -62,7 +65,6 @@ export function PlannerHeader({
           />
         </button>
 
-        {/* View controls + extra actions share one ⋯ menu. */}
         <MenuPopover
           width={264}
           trigger={
@@ -72,19 +74,22 @@ export function PlannerHeader({
           }
         >
           <ViewControls views={views} />
+          {onPrint ? (
+            <>
+              <Separator {...stylex.props(menus.mdiv)} />
+              <Popover.Close
+                render={<button {...stylex.props(menus.mi)} onClick={onPrint} />}
+              >
+                <span {...stylex.props(menus.miIconWrap)}>
+                  <Printer size={14} strokeWidth={1.75} />
+                </span>
+                <span {...stylex.props(menus.miLabel)}>인쇄</span>
+              </Popover.Close>
+            </>
+          ) : null}
           {moreMenuItems && <Separator {...stylex.props(menus.mdiv)} />}
           {moreMenuItems}
         </MenuPopover>
-
-        <button
-          {...stylex.props(planner.btn, ui.btnPlain)}
-          type="button"
-          aria-label="인쇄"
-          onClick={onPrint}
-        >
-          <Printer size={14} strokeWidth={1.75} />
-          <span {...stylex.props(planner.btnLabelHide)}>인쇄</span>
-        </button>
       </div>
     </header>
   );
