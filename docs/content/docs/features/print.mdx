@@ -1,6 +1,6 @@
 ---
 title: Print
-description: Print dialog, local print preferences, and light-only print styling.
+description: Print dialog, local print preferences, light-only print styling, and mobile image fallback.
 ---
 
 # Print
@@ -15,7 +15,17 @@ Key: `weekly-planner.print:v1` (legacy `weekly-planner.print` is still read).
 
 ## Flow (`usePrintSetup` + `PrintDialog`)
 
-Open dialog → edit draft → write normalized prefs → `window.print()`.
+Open dialog → edit draft → write normalized prefs → print **or** image export.
+
+`canNativePrint()` (`print-support.js`) is false when:
+
+- `window.print` is missing
+- Installed PWA / standalone (or `minimal-ui`) display mode
+- Known in-app browsers (KakaoTalk, Instagram, Facebook, Line, Naver in-app, Android `wv`)
+
+**Native path:** `prepareHeadTracksForPrint()` → `window.print()`.
+
+**Fallback path:** force `@media print` onto the screen (`print-media.js`), capture `[data-app-shell=planner]` via `html-to-image` (`print-image.js`), then Web Share the PNG or download it (`print-share.js`). Dialog title/CTA switch to “이미지로 저장”.
 
 `PrintMeta` renders print-only header fields (blank underline when enabled but empty).
 
