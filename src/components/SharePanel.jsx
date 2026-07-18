@@ -1,171 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Separator } from '@base-ui/react/separator';
 import * as stylex from '@stylexjs/stylex';
-import { Copy, KeyRound, Link2, Link2Off, LogOut, RefreshCw, UserPlus, X } from 'lucide-react';
+import { Copy, KeyRound, Link2, Link2Off, LogOut, RefreshCw } from 'lucide-react';
 import { useShareActions } from '../hooks/useShareActions.js';
 import { enabledShareOf } from '../sharing/share-policy.js';
-import { UiSelect } from './ui/UiSelect.jsx';
 import { menus } from '../styles/menus.js';
-import { ui } from '../styles/ui.js';
-import { linkedId } from '../lib/links.js';
 import { isOk } from '../lib/command-result.js';
 import { sharePath } from '../sharing/share.js';
-
-const MODE_OPTS = [
-  { value: 'open', label: '공개 링크' },
-  { value: 'password', label: '비밀번호' },
-];
-
-const ROLE_OPTS = [
-  { value: 'viewer', label: '보기' },
-  { value: 'editor', label: '편집' },
-];
-
-function ShareSettingsFields({
-  mode,
-  role,
-  password,
-  passwordPlaceholder,
-  busy = false,
-  onModeChange,
-  onRoleChange,
-  onPasswordChange,
-}) {
-  return (
-    <>
-      <div {...stylex.props(menus.drow)}>
-        <span {...stylex.props(menus.drowLabel)}>모드</span>
-        <UiSelect
-          ariaLabel="공유 모드"
-          items={MODE_OPTS}
-          value={mode}
-          disabled={busy}
-          xstyle={menus.drowInput}
-          onValueChange={onModeChange}
-        />
-      </div>
-      <div {...stylex.props(menus.drow)}>
-        <span {...stylex.props(menus.drowLabel)}>권한</span>
-        <UiSelect
-          ariaLabel="공유 권한"
-          items={ROLE_OPTS}
-          value={role}
-          disabled={busy}
-          xstyle={menus.drowInput}
-          onValueChange={onRoleChange}
-        />
-      </div>
-      {mode === 'password' && (
-        <div {...stylex.props(menus.pin)}>
-          <input
-            {...stylex.props(ui.input, ui.inputSm)}
-            type="password"
-            placeholder={passwordPlaceholder}
-            value={password}
-            onChange={(event) => onPasswordChange(event.target.value)}
-          />
-        </div>
-      )}
-    </>
-  );
-}
-
-function InviteSection({ busy, refreshToken, onInvite, run }) {
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState('viewer');
-
-  return (
-    <>
-      <Separator {...stylex.props(menus.mdiv)} />
-      <div {...stylex.props(menus.mcap, menus.mcapStrong)}>멤버 초대</div>
-      <div {...stylex.props(menus.mcap, menus.mcapTight)}>등록된 계정만 초대할 수 있어요</div>
-      <div {...stylex.props(menus.pin)}>
-        <input
-          {...stylex.props(ui.input, ui.inputSm)}
-          type="email"
-          placeholder="email@example.com"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-        />
-      </div>
-      <div {...stylex.props(menus.drow)}>
-        <span {...stylex.props(menus.drowLabel)}>역할</span>
-        <UiSelect
-          ariaLabel="초대 역할"
-          items={ROLE_OPTS}
-          value={role}
-          xstyle={menus.drowInput}
-          onValueChange={setRole}
-        />
-      </div>
-      <button
-        type="button"
-        {...stylex.props(menus.mi)}
-        disabled={busy || !email.trim()}
-        onClick={() => {
-          void (async () => {
-            const result = await run(() =>
-              onInvite({ email: email.trim(), role, refreshToken }),
-            );
-            if (isOk(result)) setEmail('');
-          })();
-        }}
-      >
-        <span {...stylex.props(menus.miIconWrap)}>
-          <UserPlus size={14} strokeWidth={1.75} />
-        </span>
-        <span {...stylex.props(menus.miLabel)}>초대</span>
-      </button>
-    </>
-  );
-}
-
-function MembersSection({ members, isOwner, onUpdateRole, onRemoveMember }) {
-  if (!members.length) return null;
-
-  return (
-    <>
-      <Separator {...stylex.props(menus.mdiv)} />
-      <div {...stylex.props(menus.mcap, menus.mcapStrong)}>멤버</div>
-      {members.map((member) => {
-        const userId = linkedId(member.user);
-        const label =
-          member.email || member.user?.email || userId?.slice?.(0, 8) || '멤버';
-        return (
-          <div key={member.id} {...stylex.props(menus.memberRow)}>
-            <span {...stylex.props(menus.memberName)} title={label}>
-              {label}
-            </span>
-            {isOwner ? (
-              <>
-                <UiSelect
-                  ariaLabel={`${label} 역할`}
-                  items={ROLE_OPTS}
-                  value={member.role === 'editor' ? 'editor' : 'viewer'}
-                  xstyle={menus.memberRoleSelect}
-                  onValueChange={(role) => void onUpdateRole(member.id, userId, role)}
-                />
-                <button
-                  type="button"
-                  {...stylex.props(menus.memberRemove)}
-                  title="제거"
-                  aria-label={`${label} 제거`}
-                  onClick={() => void onRemoveMember(member.id, userId)}
-                >
-                  <X size={14} strokeWidth={2} />
-                </button>
-              </>
-            ) : (
-              <span {...stylex.props(menus.memberRoleText)}>
-                {member.role === 'editor' ? '편집' : '보기'}
-              </span>
-            )}
-          </div>
-        );
-      })}
-    </>
-  );
-}
+import { ShareSettingsFields } from './share/ShareSettingsFields.jsx';
+import { InviteSection } from './share/ShareInviteSection.jsx';
+import { MembersSection } from './share/ShareMembersSection.jsx';
 
 export function SharePanel({
   board,
@@ -377,6 +221,7 @@ function SharePanelContent({
       )}
 
       <MembersSection
+        board={board}
         members={members}
         isOwner={isOwner}
         onUpdateRole={actions.updateMemberRole}
