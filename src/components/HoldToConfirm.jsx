@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { menus } from '../styles/menus.js';
+import { toast } from './ui/toast.js';
 
 const HOLD_MS = 900;
 const EASE_BACK = 'clip-path 180ms cubic-bezier(0.2, 0, 0, 1)';
+const HOLD_HINT = '길게 누르고 있으세요';
 
 function isInside(e) {
   const el = e.currentTarget;
@@ -44,13 +46,19 @@ export function HoldToConfirm({
     rafRef.current = 0;
   };
 
+  const hintHold = () => {
+    toast(HOLD_HINT);
+  };
+
   const abortHold = () => {
     if (!holdingRef.current) return;
+    const wasArmed = armedRef.current;
     holdingRef.current = false;
     armedRef.current = false;
     clearTick();
     setEasingOut(true);
     setProgress(0);
+    if (!wasArmed) hintHold();
   };
 
   const releaseHold = (e) => {
@@ -71,6 +79,7 @@ export function HoldToConfirm({
     }
     setEasingOut(true);
     setProgress(0);
+    hintHold();
   };
 
   const tick = (now) => {
