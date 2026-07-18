@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Separator } from '@base-ui/react/separator';
 import * as stylex from '@stylexjs/stylex';
 import { Copy, KeyRound, Link2, Link2Off, LogOut, RefreshCw, UserPlus, X } from 'lucide-react';
@@ -179,9 +179,8 @@ export function SharePanel({
 
   return (
     <SharePanelContent
-      // Remount when the live share row changes so local mode/role/password
-      // drafts reset to the fresh row instead of carrying stale state over.
-      key={`${share?.id || 'new'}:${share?.mode || 'open'}:${share?.role || 'viewer'}`}
+      // Remount when the share row id changes (not every field patch).
+      key={share?.id || 'new'}
       board={board}
       share={share}
       isOwner={isOwner}
@@ -206,6 +205,11 @@ function SharePanelContent({
   const [role, setRole] = useState(share?.role === 'editor' ? 'editor' : 'viewer');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    setMode(share?.mode === 'password' ? 'password' : 'open');
+    setRole(share?.role === 'editor' ? 'editor' : 'viewer');
+  }, [share?.mode, share?.role]);
 
   const members = board?.members || [];
 

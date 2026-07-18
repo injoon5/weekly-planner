@@ -1,6 +1,7 @@
 /**
  * Pure loading-gate helpers for the signed-in planner shell.
- * Keep chrome mounted once a board list exists; only cold-boot full-page.
+ * Keep chrome mounted once a board list exists; cold empty workspace uses a
+ * soft shell (header + surface pending), not a full-viewport takeover.
  */
 
 /**
@@ -23,39 +24,23 @@ export function isWorkspaceColdBoot({
 }
 
 /**
- * True when the planner should replace the whole tree with a boot screen.
- * Once boards exist, detail/prefs refresh must not tear down chrome.
- *
- * @param {{
- *   workspaceLoading?: boolean,
- *   ready?: boolean,
- *   boardCount?: number,
- *   hasBoard?: boolean,
- * }} args
- */
-export function shouldFullPageBoot({
-  workspaceLoading = false,
-  ready = false,
-  boardCount = 0,
-  hasBoard = false,
-} = {}) {
-  if (isWorkspaceColdBoot({ workspaceLoading, ready, boardCount })) return true;
-  // Boards listed but no row to drive the shell yet (brief selection gap).
-  return boardCount === 0 || !hasBoard;
-}
-
-/**
- * Surface-only pending: list board can drive the header while detail hydrates.
- * Prefs must never gate this — only missing detail for the active board.
+ * Surface-only pending: list board can drive an empty grid while detail hydrates.
+ * Prefs must never gate this — and board switches must not wipe into a spinner
+ * when a list row already exists.
  *
  * @param {{
  *   activeBoardId?: string | null,
  *   hasDetailBoard?: boolean,
+ *   hasListBoard?: boolean,
  * }} args
  */
 export function isPlannerSurfacePending({
   activeBoardId = null,
   hasDetailBoard = false,
+  hasListBoard = false,
 } = {}) {
-  return Boolean(activeBoardId && !hasDetailBoard);
+  if (!activeBoardId) return false;
+  // List row is enough to keep the surface mounted (empty grid / swap).
+  if (hasListBoard) return false;
+  return !hasDetailBoard;
 }

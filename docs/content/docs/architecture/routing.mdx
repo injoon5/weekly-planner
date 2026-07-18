@@ -17,22 +17,24 @@ File: `src/router.jsx`
 | `/s/$token` | Public shared planner. No auth guard. |
 | `/account` | [Account page](/docs/features/account). Signed-out visitors redirect to `/login`. |
 
-Root layout shows a boot screen while Instant auth is loading, or an error screen if auth fails.
+Root layout only shows a compact error status if auth fails. While Instant auth is loading, routes still paint — `/` uses a compact status only when no cached `user` is restored yet; `/login`, `/home`, and share links render immediately.
 
 ## Eager vs lazy routes
 
-`Landing` and `Planner` are **static imports** on `/` so a signed-in cold load does not hit another full-page pending screen after auth. `Login`, `Account`, and `SharedPlanner` stay `lazyRouteComponent`. `defaultPendingComponent` is unset so secondary lazy routes do not blank the whole app shell.
+`Landing` and `Planner` are **lazy** so signed-in cold loads do not pull marketing JS (and signed-out loads skip the planner bundle). Compact `BootStatus` is the `defaultPendingComponent` while chunks resolve. `Login`, `Account`, and `SharedPlanner` stay lazy as well.
 
 ## Boot sequence (signed-in `/`)
 
-Avoid stacking three full-page “불러오는 중…” gates. Intended order:
+Avoid stacking blank full-page “불러오는 중…” gates. Intended order:
 
-1. **Auth** — `RootLayout` boots only while `auth.isLoading`.
-2. **Planner chrome** — once the workspace **board list** has rows, keep the header mounted (list board drives the shell while detail hydrates).
-3. **Surface** — `PlannerSurface` shows a local pending state until the active board detail arrives. Prefs may fill in after paint; they must not unmount chrome.
+1. **Auth** — `/` shows a compact status while `auth.isLoading`; other routes are not gated.
+2. **Planner chrome** — cold empty workspace still mounts a light header shell; once the **board list** has rows, the full header stays mounted (list board drives the shell while detail hydrates).
+3. **Surface** — Prefer an empty grid from the list board while detail hydrates. `surfacePending` only when there is no list row yet. Prefs may fill in after paint; they must not unmount chrome.
 4. **Viewer banner** — `shouldShowViewerBanner` / `roleKnown` gate the 보기 전용 bar until owner/editors links are resolved (no owner flash).
 
 Helpers: `src/board/workspace-loading.js`, `roleKnown` in `src/sharing/member-policy.js`.
+
+Guest sign-in keeps the landing CTA spinner until auth resolves, then the planner paints an optimistic board shell (empty grid) while `ensureWorkspace` seeds — presence joins only once a real board id exists. Todo badge subscription is unchanged.
 
 ## Auth context
 

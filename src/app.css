@@ -13,10 +13,11 @@ html {
 
 /* The planner shell owns all scrolling (its grid panes scroll internally);
    lock the document only while it is mounted so iOS Safari can't rubber-band
-   the page. Marketing / auth routes keep normal document scroll. */
+   the page. Marketing / auth routes keep normal document scroll.
+   Class is toggled from Planner mount (cheaper than html:has). */
 @media screen and (max-width: 720px) {
-  html:has([data-app-shell='planner']),
-  html:has([data-app-shell='planner']) body {
+  html.planner-scroll-lock,
+  html.planner-scroll-lock body {
     overflow: hidden;
     overscroll-behavior: none;
     height: 100%;

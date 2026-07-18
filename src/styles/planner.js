@@ -19,11 +19,14 @@ export const planner = stylex.create({
     },
   },
 
+  // Compact status for share/account boots — not a full-viewport takeover.
   boot: {
-    minHeight: '100dvh',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: '8px',
+    paddingBlock: '48px',
+    paddingInline: '16px',
     color: colors.muted,
     fontSize: '13px',
     fontWeight: 550,
@@ -37,18 +40,40 @@ export const planner = stylex.create({
     textAlign: 'center',
   },
 
-  // Soft detail hydrate: keep header/chrome; only the grid area waits.
+  // Soft hydrate: keep header/chrome; only the grid area waits.
   surfacePending: {
     flex: 1,
     minHeight: 0,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: '8px',
     color: colors.muted,
     fontSize: '13px',
     fontWeight: 550,
     '@media print': {
       display: 'none',
+    },
+  },
+
+  surfacePendingSpinner: {
+    width: '14px',
+    height: '14px',
+    flexShrink: 0,
+    borderRadius: '99px',
+    borderWidth: '2px',
+    borderStyle: 'solid',
+    borderColor: 'currentColor',
+    borderTopColor: 'transparent',
+    animationName: stylex.keyframes({ to: { transform: 'rotate(360deg)' } }),
+    animationDuration: '640ms',
+    animationTimingFunction: 'linear',
+    animationIterationCount: 'infinite',
+    opacity: 0.85,
+    '@media (prefers-reduced-motion: reduce)': {
+      animationName: 'none',
+      borderTopColor: 'currentColor',
+      opacity: 0.45,
     },
   },
 

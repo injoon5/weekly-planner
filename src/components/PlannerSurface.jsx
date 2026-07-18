@@ -19,8 +19,6 @@ export function PlannerSurface({
   swapping = false,
   surfacePending = false,
   updateEvent,
-  nowMin,
-  nowDay,
   printShowMemos = true,
 }) {
   const visibleEvents = useMemo(
@@ -30,7 +28,8 @@ export function PlannerSurface({
 
   if (surfacePending) {
     return (
-      <div {...stylex.props(planner.surfacePending)} aria-busy="true">
+      <div {...stylex.props(planner.surfacePending)} aria-busy="true" role="status">
+        <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
         불러오는 중…
       </div>
     );
@@ -43,8 +42,6 @@ export function PlannerSurface({
         myColor={presence.myColor}
         boardId={boardId}
         events={visibleEvents}
-        nowMin={nowMin}
-        nowDay={nowDay}
         editing={session.editing}
         onOpenEdit={session.openEdit}
         onGestureResult={(result) =>

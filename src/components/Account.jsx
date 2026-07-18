@@ -427,11 +427,23 @@ export function Account() {
   const settings = data?.settings?.[0] || null;
   const { theme, persistTheme } = useTheme(settings);
 
-  if (!user || isLoading) {
-    return <div {...stylex.props(planner.boot)}>불러오는 중…</div>;
+  if (!user) {
+    if (auth.isLoading) {
+      return (
+        <div {...stylex.props(planner.boot)} role="status" aria-live="polite">
+          <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
+          불러오는 중…
+        </div>
+      );
+    }
+    return null;
   }
   if (error) {
-    return <div {...stylex.props(planner.boot)}>오류: {error.message}</div>;
+    return (
+      <div {...stylex.props(planner.boot)} role="alert">
+        오류: {error.message}
+      </div>
+    );
   }
 
   const saveSettings = async (patch, message) => {
@@ -461,47 +473,56 @@ export function Account() {
           <h1 {...stylex.props(account.title)}>계정 설정</h1>
         </div>
 
-        <ProfileCard index={0} user={user} settings={settings} saveSettings={saveSettings} />
-        <ThemeCard index={1} theme={theme} persistTheme={persistTheme} />
-
-        {isGuest ? (
-          <Card index={2}>
-            <h2 {...stylex.props(account.cardTitle)}>API 토큰</h2>
-            <p {...stylex.props(account.cardHint)}>
-              게스트 모드에서는 API 토큰을 만들 수 없어요. 계정을 만들면 데이터가 저장되고 REST
-              API도 쓸 수 있어요.
-            </p>
-            <button
-              type="button"
-              {...stylex.props(ui.btn, ui.btnPrimary)}
-              onClick={() => setUpgradeOpen(true)}
-            >
-              <UserPlus size={14} strokeWidth={1.75} />
-              계정 만들기
-            </button>
-          </Card>
-        ) : (
-          <TokensCard index={2} refreshToken={user.refresh_token} />
-        )}
-
-        <Card index={3}>
-          <div {...stylex.props(account.dangerZone)}>
-            <div>
-              <h2 {...stylex.props(account.cardTitle)}>로그아웃</h2>
-              <p {...stylex.props(account.cardHint, account.cardHintTight)}>
-                이 기기에서 로그아웃해요.
-              </p>
-            </div>
-            <button
-              type="button"
-              {...stylex.props(ui.btn, ui.btnPlain, account.rowBtn)}
-              onClick={() => void db.auth.signOut()}
-            >
-              <LogOut size={14} strokeWidth={1.75} />
-              로그아웃
-            </button>
+        {isLoading ? (
+          <div {...stylex.props(planner.boot)} role="status" aria-live="polite">
+            <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
+            불러오는 중…
           </div>
-        </Card>
+        ) : (
+          <>
+            <ProfileCard index={0} user={user} settings={settings} saveSettings={saveSettings} />
+            <ThemeCard index={1} theme={theme} persistTheme={persistTheme} />
+
+            {isGuest ? (
+              <Card index={2}>
+                <h2 {...stylex.props(account.cardTitle)}>API 토큰</h2>
+                <p {...stylex.props(account.cardHint)}>
+                  게스트 모드에서는 API 토큰을 만들 수 없어요. 계정을 만들면 데이터가 저장되고 REST
+                  API도 쓸 수 있어요.
+                </p>
+                <button
+                  type="button"
+                  {...stylex.props(ui.btn, ui.btnPrimary)}
+                  onClick={() => setUpgradeOpen(true)}
+                >
+                  <UserPlus size={14} strokeWidth={1.75} />
+                  계정 만들기
+                </button>
+              </Card>
+            ) : (
+              <TokensCard index={2} refreshToken={user.refresh_token} />
+            )}
+
+            <Card index={3}>
+              <div {...stylex.props(account.dangerZone)}>
+                <div>
+                  <h2 {...stylex.props(account.cardTitle)}>로그아웃</h2>
+                  <p {...stylex.props(account.cardHint, account.cardHintTight)}>
+                    이 기기에서 로그아웃해요.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  {...stylex.props(ui.btn, ui.btnPlain, account.rowBtn)}
+                  onClick={() => void db.auth.signOut()}
+                >
+                  <LogOut size={14} strokeWidth={1.75} />
+                  로그아웃
+                </button>
+              </div>
+            </Card>
+          </>
+        )}
       </div>
 
       <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />

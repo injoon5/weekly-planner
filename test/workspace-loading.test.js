@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   isPlannerSurfacePending,
   isWorkspaceColdBoot,
-  shouldFullPageBoot,
 } from '../src/board/workspace-loading.js';
 
 describe('workspace loading gates', () => {
@@ -16,7 +15,7 @@ describe('workspace loading gates', () => {
     expect(
       isWorkspaceColdBoot({ workspaceLoading: false, ready: true, boardCount: 0 }),
     ).toBe(false);
-    // Boards already present — never full-page boot for detail/prefs refresh.
+    // Boards already present — never soft-shell cold boot for detail/prefs refresh.
     expect(
       isWorkspaceColdBoot({ workspaceLoading: true, ready: false, boardCount: 2 }),
     ).toBe(false);
@@ -25,50 +24,33 @@ describe('workspace loading gates', () => {
     ).toBe(false);
   });
 
-  it('shouldFullPageBoot keeps chrome when a list board exists', () => {
-    expect(
-      shouldFullPageBoot({
-        workspaceLoading: false,
-        ready: true,
-        boardCount: 1,
-        hasBoard: true,
-      }),
-    ).toBe(false);
-    expect(
-      shouldFullPageBoot({
-        workspaceLoading: true,
-        ready: false,
-        boardCount: 0,
-        hasBoard: false,
-      }),
-    ).toBe(true);
-    expect(
-      shouldFullPageBoot({
-        workspaceLoading: false,
-        ready: true,
-        boardCount: 1,
-        hasBoard: false,
-      }),
-    ).toBe(true);
-  });
-
-  it('surface pending only while detail is missing for the active board', () => {
+  it('surface pending only when there is no list row to drive the grid', () => {
     expect(
       isPlannerSurfacePending({
         activeBoardId: 'b1',
         hasDetailBoard: false,
+        hasListBoard: false,
       }),
     ).toBe(true);
     expect(
       isPlannerSurfacePending({
         activeBoardId: 'b1',
+        hasDetailBoard: false,
+        hasListBoard: true,
+      }),
+    ).toBe(false);
+    expect(
+      isPlannerSurfacePending({
+        activeBoardId: 'b1',
         hasDetailBoard: true,
+        hasListBoard: true,
       }),
     ).toBe(false);
     expect(
       isPlannerSurfacePending({
         activeBoardId: null,
         hasDetailBoard: false,
+        hasListBoard: false,
       }),
     ).toBe(false);
   });

@@ -1,7 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { db } from '../db/instant.js';
 import { roleForBoard, shouldShowViewerBanner } from '../sharing/member-policy.js';
 import { boardCoversDate, fromInstantEvents } from '../board/models.js';
+import {
+  isOptimisticBoardId,
+  makeOptimisticBoard,
+} from '../board/optimistic-board.js';
 import {
   isPlannerSurfacePending,
   isWorkspaceColdBoot,
@@ -15,9 +19,10 @@ import { ensureWorkspace } from '../board/workspace-ensure.js';
  * Includes owned and member boards (via Instant view perms).
  *
  * Loading gates:
- * - Cold boot (full-page) only while the board list is empty and still loading
- *   or bootstrap has not finished.
- * - Once a list row exists, keep the planner shell mounted; detail/prefs can
+ * - Soft shell while the Instant list query is still empty/loading.
+ * - Once the list settles empty, paint an optimistic board shell so guest
+ *   create / cold seed don't wait on `ensureWorkspace` before chrome shows.
+ * - Once a real list row exists, keep the planner shell mounted; detail/prefs
  *   hydrate into the surface without tearing down the header.
  */
 export function useWorkspace() {
@@ -43,6 +48,7 @@ export function useWorkspace() {
   const [activeId, setActiveId] = useState(null);
   const [ready, setReady] = useState(false);
   const [bootNote, setBootNote] = useState(null);
+  const clearBootNote = useCallback(() => setBootNote(null), []);
 
   // Prefer the user's selection; otherwise open the schedule that covers today.
   const activeBoardId = useMemo(() => {
@@ -51,6 +57,9 @@ export function useWorkspace() {
     const today = isoDate();
     return (boards.find((b) => boardCoversDate(b, today)) || boards[0]).id;
   }, [boards, activeId]);
+
+  // Lean detail: events + role links. Share rows / nested member users load
+  // only when the Share popover opens (see ShareAction).
   const detail = db.useQuery(
     activeBoardId
       ? {
@@ -58,9 +67,8 @@ export function useWorkspace() {
             $: { where: { id: activeBoardId } },
             owner: {},
             events: {},
-            members: { user: {} },
+            members: {},
             editors: {},
-            shares: {},
           },
         }
       : null,
@@ -86,22 +94,47 @@ export function useWorkspace() {
   const detailRow = detail.data?.boards?.[0] || null;
   // Instant can briefly keep the previous query result while the new where clause loads.
   const detailBoard = detailRow?.id === activeBoardId ? detailRow : null;
-  // Prefer hydrated detail; fall back to the list row so chrome can paint early.
-  const board = detailBoard || listBoard;
+
+  // After the list query settles empty, paint a placeholder board while seed runs.
+  const seeding = Boolean(user) && !workspace.isLoading && boards.length === 0 && !ready;
+  const optimisticBoard = useMemo(
+    () => (seeding ? makeOptimisticBoard(user) : null),
+    [seeding, user],
+  );
+
+  // Prefer hydrated detail; fall back to list row, then optimistic seed shell.
+  const board = detailBoard || listBoard || optimisticBoard;
+  const isOptimistic = isOptimisticBoardId(board?.id);
+
   // Remap whenever the board row changes. Instant may keep the same `events`
   // array reference across patches; keying off `board` keeps titles/times fresh
   // for the grid and today's to-do list.
-  const events = useMemo(() => fromInstantEvents(detailBoard?.events), [detailBoard]);
+  const events = useMemo(
+    () => (isOptimistic ? [] : fromInstantEvents(detailBoard?.events)),
+    [detailBoard, isOptimistic],
+  );
   const myRole = useMemo(() => roleForBoard(board, user?.id), [board, user?.id]);
-  const canEdit = myRole === BOARD_ROLE.OWNER || myRole === BOARD_ROLE.EDITOR;
-  const isOwner = myRole === BOARD_ROLE.OWNER;
-  const showViewerBanner = shouldShowViewerBanner(board, user?.id);
+  // Optimistic shell is read-only until the real board id lands.
+  const canEdit =
+    !isOptimistic && (myRole === BOARD_ROLE.OWNER || myRole === BOARD_ROLE.EDITOR);
+  const isOwner = !isOptimistic && myRole === BOARD_ROLE.OWNER;
+  const showViewerBanner = !isOptimistic && shouldShowViewerBanner(board, user?.id);
 
   const boardPrefs = prefsQuery.data?.boardPrefs?.[0] || null;
   const surfacePending = isPlannerSurfacePending({
     activeBoardId,
     hasDetailBoard: Boolean(detailBoard),
+    hasListBoard: Boolean(listBoard || optimisticBoard),
   });
+  // Cold boot only while Instant is still loading an empty list — optimistic
+  // seed bypasses the spinner once the query has settled.
+  const isLoading =
+    isWorkspaceColdBoot({
+      workspaceLoading: workspace.isLoading,
+      ready,
+      boardCount: boards.length,
+    }) && !optimisticBoard;
+  const error = workspace.error || detail.error || prefsQuery.error;
 
   useEffect(() => {
     if (workspace.isLoading || !user) return;
@@ -126,29 +159,47 @@ export function useWorkspace() {
     };
   }, [workspace.isLoading, user, user?.id, boards.length, settings, settings?.id]);
 
-  return {
-    user,
-    boards,
-    board,
-    events,
-    settings,
-    boardPrefs,
-    myRole,
-    canEdit,
-    isOwner,
-    showViewerBanner,
-    activeId: activeBoardId,
-    setActiveId,
-    // Full-page boot only for a cold empty workspace — never for detail/prefs.
-    isLoading: isWorkspaceColdBoot({
-      workspaceLoading: workspace.isLoading,
+  return useMemo(
+    () => ({
+      user,
+      boards,
+      board,
+      events,
+      settings,
+      boardPrefs,
+      myRole,
+      canEdit,
+      isOwner,
+      showViewerBanner,
+      activeId: activeBoardId,
+      setActiveId,
+      isLoading,
+      surfacePending,
+      error,
       ready,
-      boardCount: boards.length,
+      bootNote,
+      clearBootNote,
+      isOptimistic,
     }),
-    surfacePending,
-    error: workspace.error || detail.error || prefsQuery.error,
-    ready,
-    bootNote,
-    clearBootNote: () => setBootNote(null),
-  };
+    [
+      user,
+      boards,
+      board,
+      events,
+      settings,
+      boardPrefs,
+      myRole,
+      canEdit,
+      isOwner,
+      showViewerBanner,
+      activeBoardId,
+      isLoading,
+      surfacePending,
+      error,
+      ready,
+      bootNote,
+      clearBootNote,
+      isOptimistic,
+    ],
+  );
 }

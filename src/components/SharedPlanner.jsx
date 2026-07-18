@@ -1,15 +1,18 @@
+import { useEffect } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { Link, useParams } from '@tanstack/react-router';
-import { useEffect } from 'react';
-import { usePlannerRuntime } from '../hooks/usePlannerRuntime.js';
+import { EMPTY_PRESENCE, usePlannerRuntime } from '../hooks/usePlannerRuntime.js';
 import { useSharedBoard } from '../hooks/useSharedBoard.js';
 import { useTheme } from '../hooks/useTheme.js';
 import { planner } from '../styles/planner.js';
 import { ui } from '../styles/ui.js';
 import { auth as authStyles } from '../styles/auth.js';
+import { BoardPresenceBridge } from './BoardPresenceBridge.jsx';
 import { PrintDialog } from './PrintDialog.jsx';
 import { PlannerHeader } from './PlannerHeader.jsx';
 import { PlannerSurface } from './PlannerSurface.jsx';
+
+const PLANNER_SCROLL_LOCK = 'planner-scroll-lock';
 
 export function SharedPlanner() {
   const { token } = useParams({ from: '/s/$token' });
@@ -29,6 +32,11 @@ export function SharedPlanner() {
   });
 
   useEffect(() => {
+    document.documentElement.classList.add(PLANNER_SCROLL_LOCK);
+    return () => document.documentElement.classList.remove(PLANNER_SCROLL_LOCK);
+  }, []);
+
+  useEffect(() => {
     const name = shared.board?.name?.trim();
     if (!name) return undefined;
     const prev = document.title;
@@ -39,10 +47,24 @@ export function SharedPlanner() {
   }, [shared.board?.name]);
 
   if (shared.isLoading) {
-    return <div {...stylex.props(planner.boot)}>불러오는 중…</div>;
+    return (
+      <div {...stylex.props(planner.app)} data-app-shell="shared">
+        <header {...stylex.props(planner.top)}>
+          <h1 {...stylex.props(planner.h1)}>주간 계획표</h1>
+        </header>
+        <div {...stylex.props(planner.surfacePending)} aria-busy="true" role="status">
+          <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
+          불러오는 중…
+        </div>
+      </div>
+    );
   }
   if (shared.error) {
-    return <div {...stylex.props(planner.boot)}>오류: {shared.error.message}</div>;
+    return (
+      <div {...stylex.props(planner.boot)} role="alert">
+        오류: {shared.error.message}
+      </div>
+    );
   }
   if (shared.state === 'notFound' || shared.state === 'disabled') {
     return (
@@ -95,13 +117,23 @@ export function SharedPlanner() {
   }
 
   if (!shared.board) {
-    return <div {...stylex.props(planner.boot)}>불러오는 중…</div>;
+    return (
+      <div {...stylex.props(planner.app)} data-app-shell="shared">
+        <header {...stylex.props(planner.top)}>
+          <h1 {...stylex.props(planner.h1)}>주간 계획표</h1>
+        </header>
+        <div {...stylex.props(planner.surfacePending)} aria-busy="true" role="status">
+          <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
+          불러오는 중…
+        </div>
+      </div>
+    );
   }
 
   const board = shared.board;
   const readOnly = shared.readOnly;
 
-  return (
+  const view = (presence) => (
     <div {...stylex.props(planner.app)} data-app-shell="planner">
       <div {...stylex.props(planner.banner)}>
         <span {...stylex.props(planner.bannerStrong)}>
@@ -113,7 +145,7 @@ export function SharedPlanner() {
       <PlannerHeader
         board={board}
         printPrefs={runtime.print.prefs}
-        presence={runtime.presence}
+        presence={presence}
         views={runtime.views}
         theme={theme}
         onToggleTheme={toggleTheme}
@@ -125,15 +157,28 @@ export function SharedPlanner() {
         events={shared.events}
         session={runtime.session}
         views={runtime.views}
-        presence={runtime.presence}
+        presence={presence}
         readOnly={readOnly}
         updateEvent={runtime.eventsApi.updateEvent}
-        nowMin={runtime.clock.nowMin}
-        nowDay={runtime.clock.nowDay}
         printShowMemos={runtime.print.prefs.showMemos}
       />
 
       <PrintDialog {...runtime.print.dialog} />
     </div>
+  );
+
+  if (!board.id) return view(EMPTY_PRESENCE);
+
+  const { user, role, guestLabel, settings } = runtime.presenceArgs;
+  return (
+    <BoardPresenceBridge
+      boardId={board.id}
+      user={user}
+      role={role}
+      guestLabel={guestLabel}
+      settings={settings}
+    >
+      {view}
+    </BoardPresenceBridge>
   );
 }

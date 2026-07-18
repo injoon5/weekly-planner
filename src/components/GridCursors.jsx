@@ -66,9 +66,22 @@ export function GridCursors({ room, userCursorColor, paneRef }) {
       });
     };
 
+    let moveRaf = 0;
+    const syncThrottled = () => {
+      if (moveRaf) return;
+      moveRaf = requestAnimationFrame(() => {
+        moveRaf = 0;
+        sync();
+      });
+    };
+
     const clear = () => {
       inside.current = false;
       lastClient.current = null;
+      if (moveRaf) {
+        cancelAnimationFrame(moveRaf);
+        moveRaf = 0;
+      }
       publishPresence({ [spaceId]: undefined });
     };
 
@@ -76,7 +89,7 @@ export function GridCursors({ room, userCursorColor, paneRef }) {
       if (e.pointerType === 'touch') return;
       lastClient.current = { clientX: e.clientX, clientY: e.clientY };
       inside.current = true;
-      sync();
+      syncThrottled();
     };
 
     const onPointerLeave = (e) => {
@@ -84,7 +97,7 @@ export function GridCursors({ room, userCursorColor, paneRef }) {
       clear();
     };
 
-    const onScroll = () => sync();
+    const onScroll = () => syncThrottled();
 
     pane.addEventListener('pointermove', onPointerMove);
     pane.addEventListener('pointerleave', onPointerLeave);
@@ -94,6 +107,7 @@ export function GridCursors({ room, userCursorColor, paneRef }) {
       pane.removeEventListener('pointermove', onPointerMove);
       pane.removeEventListener('pointerleave', onPointerLeave);
       pane.removeEventListener('scroll', onScroll);
+      if (moveRaf) cancelAnimationFrame(moveRaf);
     };
   }, [paneRef, publishPresence, spaceId, userCursorColor]);
 
