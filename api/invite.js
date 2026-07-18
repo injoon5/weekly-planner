@@ -6,35 +6,11 @@ import {
   memberRoleTxs,
 } from '../src/sharing/member-policy.js';
 import { normalizeMemberRole } from '../src/sharing/roles.js';
+import { readBody, sendJson } from '../src/server/http.js';
 import schema from '../src/db/schema.js';
 
 const APP_ID = process.env.INSTANT_APP_ID || process.env.VITE_INSTANT_APP_ID;
 const ADMIN_TOKEN = process.env.INSTANT_ADMIN_TOKEN;
-
-function json(res, status, body) {
-  res.statusCode = status;
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'content-type, token');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.end(JSON.stringify(body));
-}
-
-function readBody(req) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    req.on('data', (c) => chunks.push(c));
-    req.on('end', () => {
-      try {
-        const raw = Buffer.concat(chunks).toString('utf8') || '{}';
-        resolve(JSON.parse(raw));
-      } catch (err) {
-        reject(err);
-      }
-    });
-    req.on('error', reject);
-  });
-}
 
 /**
  * Invite a registered Instant user to a board.
@@ -43,20 +19,20 @@ function readBody(req) {
  */
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
-    return json(res, 204, {});
+    return sendJson(res, 204, {});
   }
   if (req.method !== 'POST') {
-    return json(res, 405, { error: 'Method not allowed' });
+    return sendJson(res, 405, { error: 'Method not allowed' });
   }
   if (!APP_ID || !ADMIN_TOKEN) {
-    return json(res, 500, { error: '서버 설정이 없어요' });
+    return sendJson(res, 500, { error: '서버 설정이 없어요' });
   }
 
   let body;
   try {
     body = await readBody(req);
   } catch {
-    return json(res, 400, { error: '잘못된 요청이에요' });
+    return sendJson(res, 400, { error: '잘못된 요청이에요' });
   }
 
   const refreshToken = req.headers.token || body.refreshToken;
@@ -65,7 +41,7 @@ export default async function handler(req, res) {
   const role = normalizeMemberRole(body.role);
 
   if (!refreshToken || !boardId || !email) {
-    return json(res, 400, { error: '필수 값이 없어요' });
+    return sendJson(res, 400, { error: '필수 값이 없어요' });
   }
 
   const db = init({ appId: APP_ID, adminToken: ADMIN_TOKEN, schema });
@@ -73,7 +49,7 @@ export default async function handler(req, res) {
   try {
     const caller = await db.auth.verifyToken(refreshToken);
     if (!caller?.id) {
-      return json(res, 401, { error: '로그인이 필요해요' });
+      return sendJson(res, 401, { error: '로그인이 필요해요' });
     }
 
     const { boards } = await db.query({
@@ -85,11 +61,11 @@ export default async function handler(req, res) {
     });
     const board = boards?.[0];
     if (!board) {
-      return json(res, 404, { error: '시간표를 찾을 수 없어요' });
+      return sendJson(res, 404, { error: '시간표를 찾을 수 없어요' });
     }
     const ownerId = linkedId(board.owner);
     if (ownerId !== caller.id) {
-      return json(res, 403, { error: '소유자만 초대할 수 있어요' });
+      return sendJson(res, 403, { error: '소유자만 초대할 수 있어요' });
     }
 
     let target;
@@ -99,10 +75,10 @@ export default async function handler(req, res) {
       target = null;
     }
     if (!target?.id) {
-      return json(res, 404, { error: '등록된 사용자만 초대할 수 있어요' });
+      return sendJson(res, 404, { error: '등록된 사용자만 초대할 수 있어요' });
     }
     if (target.id === caller.id) {
-      return json(res, 400, { error: '자기 자신은 초대할 수 없어요' });
+      return sendJson(res, 400, { error: '자기 자신은 초대할 수 없어요' });
     }
 
     const existing = findMemberForUser(board.members, target.id);
@@ -115,7 +91,7 @@ export default async function handler(req, res) {
           role,
         }),
       );
-      return json(res, 200, { ok: true, memberId: existing.id, updated: true });
+      return sendJson(res, 200, { ok: true, memberId: existing.id, updated: true });
     }
 
     const mid = id();
@@ -127,9 +103,9 @@ export default async function handler(req, res) {
       memberId: mid,
     });
     await db.transact(txs);
-    return json(res, 200, { ok: true, memberId: mid, updated: false });
+    return sendJson(res, 200, { ok: true, memberId: mid, updated: false });
   } catch (err) {
     console.error('invite failed', err);
-    return json(res, 500, { error: '초대에 실패했어요' });
+    return sendJson(res, 500, { error: '초대에 실패했어요' });
   }
 }

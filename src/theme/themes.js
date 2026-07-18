@@ -30,4 +30,6 @@ export const darkTheme = stylex.createTheme(colors, {
   sat: '#7AA3E8',
   sb: 'rgba(235,235,245,.20)',
   sbH: 'rgba(235,235,245,.34)',
+  brandCoral: '#E96D4F',
+  brandSky: '#4E9EDB',
 });

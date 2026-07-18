@@ -38,8 +38,8 @@ function useLocalTheme() {
   return { theme, toggle };
 }
 
-const BrandMark = ({ large }) => (
-  <span {...stylex.props(landing.mark, large && landing.markLg)} aria-hidden="true">
+const BrandMark = () => (
+  <span {...stylex.props(landing.mark)} aria-hidden="true">
     <i {...stylex.props(ui.markA)} />
     <i {...stylex.props(ui.markB)} />
   </span>
@@ -320,14 +320,15 @@ export function Landing() {
         <div {...stylex.props(landing.shell)}>
           <section {...stylex.props(landing.hero)}>
             <div {...stylex.props(landing.heroCopy)}>
-              <span {...riseIn()} {...stylex.props(landing.eyebrow)}>
-                실시간으로 함께 쓰는 주간 시간표
-              </span>
               <h1 {...riseIn()} {...stylex.props(landing.h1)}>
-                한 주를,
-                <br />
-                <span {...stylex.props(landing.h1Accent)}>한 화면에.</span>
+                <span {...stylex.props(landing.heroBrand)}>
+                  <BrandMark />
+                  주간 계획표
+                </span>
               </h1>
+              <p {...riseIn()} {...stylex.props(landing.h1Accent)}>
+                한 주를, 한 화면에.
+              </p>
               <p {...riseIn()} {...stylex.props(landing.lede)}>
                 드래그 한 번으로 일정을 만들고, 색으로 분류하고, 링크로 나눠요. 팀과 함께 편집한
                 내용은 그 자리에서 동기화됩니다.

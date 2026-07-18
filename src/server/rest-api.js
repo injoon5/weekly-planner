@@ -16,6 +16,7 @@ import {
   restBoardFields,
   restSegments,
 } from './rest.js';
+import { readBody, sendJson } from './http.js';
 import schema from '../db/schema.js';
 
 const APP_ID = process.env.INSTANT_APP_ID || process.env.VITE_INSTANT_APP_ID;
@@ -30,32 +31,6 @@ const limiter = createRateLimiter({ capacity: 120, refillPeriodMs: 60_000 });
 
 /** Refresh `lastUsedAt` at most once a minute to avoid write amplification. */
 const LAST_USED_STALE_MS = 60_000;
-
-function json(res, status, body, headers = {}) {
-  res.statusCode = status;
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'authorization, content-type');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
-  for (const [k, v] of Object.entries(headers)) res.setHeader(k, v);
-  res.end(JSON.stringify(body));
-}
-
-function readBody(req) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    req.on('data', (c) => chunks.push(c));
-    req.on('end', () => {
-      try {
-        const raw = Buffer.concat(chunks).toString('utf8') || '{}';
-        resolve(JSON.parse(raw));
-      } catch (err) {
-        reject(err);
-      }
-    });
-    req.on('error', reject);
-  });
-}
 
 function boardJson(board, userId) {
   const ownerId = linkedId(board.owner);
@@ -103,8 +78,7 @@ function instantErrorStatus(err) {
 /**
  * Token-authenticated REST API over the planner's Instant data.
  *
- * Entrypoints (Vite/Vercel has no catch-all API routes — one file per depth):
- *   api/v1/[a].js | api/v1/[a]/[b].js | api/v1/[a]/[b]/[c].js
+ * Entrypoint: `api/v1.js` via vercel.json rewrite of `/api/v1/*`.
  *
  * Auth: `Authorization: Bearer wp_…` (create tokens on the account page or
  * via /api/tokens). All reads and writes are executed *as the token's owner*
@@ -129,20 +103,20 @@ function instantErrorStatus(err) {
  */
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
-    return json(res, 204, {});
+    return sendJson(res, 204, {});
   }
   if (!APP_ID || !ADMIN_TOKEN) {
-    return json(res, 500, { error: 'Server is not configured' });
+    return sendJson(res, 500, { error: 'Server is not configured' });
   }
 
   const route = matchRestRoute(req.method, restSegments(req.url));
   if (!route) {
-    return json(res, 404, { error: 'No such endpoint' });
+    return sendJson(res, 404, { error: 'No such endpoint' });
   }
 
   const bearer = parseBearer(req.headers.authorization);
   if (!bearer) {
-    return json(res, 401, { error: 'Missing or malformed bearer token' }, {
+    return sendJson(res, 401, { error: 'Missing or malformed bearer token' }, {
       'WWW-Authenticate': 'Bearer realm="weekly-planner-api"',
     });
   }
@@ -154,7 +128,7 @@ export default async function handler(req, res) {
     const hashes = await apiTokenLookupHashes(bearer, API_TOKEN_PEPPER);
     const gate = limiter.take(hashes[0]);
     if (!gate.ok) {
-      return json(res, 429, { error: 'Rate limit exceeded' }, {
+      return sendJson(res, 429, { error: 'Rate limit exceeded' }, {
         'Retry-After': String(gate.retryAfterSec),
       });
     }
@@ -171,7 +145,7 @@ export default async function handler(req, res) {
     }
     const owner = tokenRow?.owner;
     if (!tokenRow || !owner?.id || !owner.email) {
-      return json(res, 401, { error: 'Invalid token' });
+      return sendJson(res, 401, { error: 'Invalid token' });
     }
 
     // Impersonate the owner so Instant permissions do the authorization.
@@ -188,7 +162,7 @@ export default async function handler(req, res) {
       try {
         body = await readBody(req);
       } catch {
-        return json(res, 400, { error: 'Request body must be JSON' });
+        return sendJson(res, 400, { error: 'Request body must be JSON' });
       }
     }
     const query = new URL(req.url, 'http://localhost').searchParams;
@@ -196,12 +170,12 @@ export default async function handler(req, res) {
 
     switch (route.name) {
       case 'me.get': {
-        return json(res, 200, { id: owner.id, email: owner.email });
+        return sendJson(res, 200, { id: owner.id, email: owner.email });
       }
 
       case 'boards.list': {
         const { boards } = await scoped.query({ boards: { owner: {}, editors: {} } });
-        return json(res, 200, {
+        return sendJson(res, 200, {
           boards: (boards || [])
             .slice()
             .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
@@ -226,7 +200,7 @@ export default async function handler(req, res) {
         const created = await scoped.query({
           boards: { $: { where: { id: bid } }, owner: {}, editors: {} },
         });
-        return json(res, 201, { board: boardJson(created.boards[0], owner.id) });
+        return sendJson(res, 201, { board: boardJson(created.boards[0], owner.id) });
       }
 
       case 'boards.get': {
@@ -234,8 +208,8 @@ export default async function handler(req, res) {
           boards: { $: { where: { id: params.boardId } }, owner: {}, editors: {}, events: {} },
         });
         const board = boards?.[0];
-        if (!board) return json(res, 404, { error: 'Board not found' });
-        return json(res, 200, {
+        if (!board) return sendJson(res, 404, { error: 'Board not found' });
+        return sendJson(res, 200, {
           board: boardJson(board, owner.id),
           events: (board.events || []).map(eventJson),
         });
@@ -244,25 +218,25 @@ export default async function handler(req, res) {
       case 'boards.update': {
         const fields = restBoardFields(body, { partial: true });
         if (!Object.keys(fields).length) {
-          return json(res, 400, { error: 'No editable fields in body' });
+          return sendJson(res, 400, { error: 'No editable fields in body' });
         }
         await scoped.transact(db.tx.boards[params.boardId].update(fields));
         const { boards } = await scoped.query({
           boards: { $: { where: { id: params.boardId } }, owner: {}, editors: {} },
         });
-        return json(res, 200, { board: boardJson(boards[0], owner.id) });
+        return sendJson(res, 200, { board: boardJson(boards[0], owner.id) });
       }
 
       case 'boards.delete': {
         await scoped.transact(db.tx.boards[params.boardId].delete());
-        return json(res, 200, { ok: true });
+        return sendJson(res, 200, { ok: true });
       }
 
       case 'events.list': {
         const { events } = await scoped.query({
           events: { $: { where: { 'board.id': params.boardId } }, board: {} },
         });
-        return json(res, 200, { events: (events || []).map(eventJson) });
+        return sendJson(res, 200, { events: (events || []).map(eventJson) });
       }
 
       case 'events.create': {
@@ -275,7 +249,7 @@ export default async function handler(req, res) {
         const { events } = await scoped.query({
           events: { $: { where: { id: eid } }, board: {} },
         });
-        return json(res, 201, { event: eventJson(events[0]) });
+        return sendJson(res, 201, { event: eventJson(events[0]) });
       }
 
       case 'events.get':
@@ -284,9 +258,9 @@ export default async function handler(req, res) {
           events: { $: { where: { id: params.eventId } }, board: {} },
         });
         const existing = events?.[0];
-        if (!existing) return json(res, 404, { error: 'Event not found' });
+        if (!existing) return sendJson(res, 404, { error: 'Event not found' });
         if (route.name === 'events.get') {
-          return json(res, 200, { event: eventJson(existing) });
+          return sendJson(res, 200, { event: eventJson(existing) });
         }
         // Merge onto the stored row, then re-normalize (clamped day/start/dur,
         // palette-checked color) so partial patches keep app invariants.
@@ -295,32 +269,32 @@ export default async function handler(req, res) {
           if (body[k] !== undefined) patch[k] = body[k];
         }
         if (!Object.keys(patch).length) {
-          return json(res, 400, { error: 'No editable fields in body' });
+          return sendJson(res, 400, { error: 'No editable fields in body' });
         }
         const merged = eventFields({ ...existing, ...patch });
         await scoped.transact(db.tx.events[params.eventId].update(merged));
-        return json(res, 200, { event: eventJson({ ...existing, ...merged }) });
+        return sendJson(res, 200, { event: eventJson({ ...existing, ...merged }) });
       }
 
       case 'events.delete': {
         await scoped.transact(db.tx.events[params.eventId].delete());
-        return json(res, 200, { ok: true });
+        return sendJson(res, 200, { ok: true });
       }
 
       case 'todos.list': {
         const day = query.get('day');
         if (day && !isPlannerDay(day)) {
-          return json(res, 400, { error: 'day must be YYYY-MM-DD' });
+          return sendJson(res, 400, { error: 'day must be YYYY-MM-DD' });
         }
         const { todos } = await scoped.query({
           todos: day ? { $: { where: { day } } } : {},
         });
-        return json(res, 200, { todos: (todos || []).map(todoJson) });
+        return sendJson(res, 200, { todos: (todos || []).map(todoJson) });
       }
 
       case 'todos.create': {
         if (!isPlannerDay(body.day) || typeof body.eventId !== 'string' || !body.eventId) {
-          return json(res, 400, { error: 'day (YYYY-MM-DD) and eventId are required' });
+          return sendJson(res, 400, { error: 'day (YYYY-MM-DD) and eventId are required' });
         }
         const tid = id();
         await scoped.transact(
@@ -328,12 +302,12 @@ export default async function handler(req, res) {
             .update({ day: body.day, eventId: body.eventId, createdAt: Date.now() })
             .link({ owner: owner.id }),
         );
-        return json(res, 201, { todo: todoJson({ id: tid, ...body, createdAt: Date.now() }) });
+        return sendJson(res, 201, { todo: todoJson({ id: tid, ...body, createdAt: Date.now() }) });
       }
 
       case 'todos.delete': {
         await scoped.transact(db.tx.todos[params.todoId].delete());
-        return json(res, 200, { ok: true });
+        return sendJson(res, 200, { ok: true });
       }
 
       case 'token.refresh': {
@@ -348,19 +322,19 @@ export default async function handler(req, res) {
             lastUsedAt: Date.now(),
           }),
         );
-        return json(res, 200, { id: tokenRow.id, token, prefix: apiTokenPrefixOf(token) });
+        return sendJson(res, 200, { id: tokenRow.id, token, prefix: apiTokenPrefixOf(token) });
       }
 
       default:
-        return json(res, 404, { error: 'No such endpoint' });
+        return sendJson(res, 404, { error: 'No such endpoint' });
     }
   } catch (err) {
     if (err instanceof RestValidationError) {
-      return json(res, 400, { error: err.message });
+      return sendJson(res, 400, { error: err.message });
     }
     const status = instantErrorStatus(err);
     if (status === 500) console.error('rest api failed', err);
-    return json(res, status, {
+    return sendJson(res, status, {
       error:
         status === 403
           ? 'Not allowed'

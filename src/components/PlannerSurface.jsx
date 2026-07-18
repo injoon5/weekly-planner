@@ -2,11 +2,11 @@ import { useMemo } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { handleGridGesture } from '../grid/grid-gesture.js';
 import { planner } from '../styles/planner.js';
-import { BoardCanvas } from './BoardCanvas.jsx';
 import { Editor } from './Editor.jsx';
+import { WeekGrid } from './WeekGrid.jsx';
 
 /**
- * Shared planner body: board canvas + editor.
+ * Shared planner body: week grid + editor.
  * Headers / menus stay in each shell; toasts render via the global Toaster.
  */
 export function PlannerSurface({
@@ -37,9 +37,9 @@ export function PlannerSurface({
 
   return (
     <>
-      <BoardCanvas
-        room={presence.room}
-        myColor={presence.myColor}
+      <WeekGrid
+        presenceRoom={presence.room}
+        presenceColor={presence.myColor}
         boardId={boardId}
         events={visibleEvents}
         editing={session.editing}

@@ -33,6 +33,9 @@ export const colors = stylex.defineVars({
   sat: '#3F71C2',
   sb: 'rgba(27,27,32,.18)',
   sbH: 'rgba(27,27,32,.30)',
+  /** Brand accents (auth mark, landing wash) — keep in sync with palette coral/sky. */
+  brandCoral: '#E96D4F',
+  brandSky: '#4E9EDB',
 });
 
 export const layout = stylex.defineVars({

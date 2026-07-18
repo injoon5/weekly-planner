@@ -1,7 +1,7 @@
 /**
- * Shared StyleX media-query strings (copy into each `stylex.create` module).
- * StyleX 0.19 + unplugin cannot import plain constants into `create()` keys,
- * and `defineConsts` media keys currently fail the build — keep literals local.
+ * Shared breakpoint strings — copy the same literals into each `stylex.create`
+ * module (StyleX 0.19 cannot import plain constants into `create()` keys).
+ * Keep numeric BPs aligned with `src/lib/config.js` (`MOBILE_SHEET_BP` = 560).
  */
 export const BREAKPOINTS = {
   mobile720: '@media screen and (max-width: 720px)',
@@ -12,4 +12,12 @@ export const BREAKPOINTS = {
   coarse: '@media (pointer: coarse)',
   reduceMotion: '@media (prefers-reduced-motion: reduce)',
   reduceTransparency: '@media (prefers-reduced-transparency: reduce)',
+};
+
+/** Numeric companions for JS matchMedia / layout (not for StyleX create keys). */
+export const BREAKPOINT_PX = {
+  mobile: 720,
+  sheet: 560,
+  landingNarrow: 760,
+  landingTight: 460,
 };

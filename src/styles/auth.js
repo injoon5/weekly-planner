@@ -9,7 +9,7 @@ export const auth = stylex.create({
     justifyContent: 'center',
     paddingBlock: '24px',
     paddingInline: '16px',
-    backgroundImage: `radial-gradient(1200px 600px at 12% -10%, color-mix(in srgb, #E96D4F 14%, transparent), transparent 60%), radial-gradient(900px 500px at 100% 0%, color-mix(in srgb, #4E9EDB 12%, transparent), transparent 55%)`,
+    backgroundImage: `radial-gradient(1200px 600px at 12% -10%, color-mix(in srgb, ${colors.brandCoral} 14%, transparent), transparent 60%), radial-gradient(900px 500px at 100% 0%, color-mix(in srgb, ${colors.brandSky} 12%, transparent), transparent 55%)`,
     backgroundColor: colors.bg,
   },
   card: {

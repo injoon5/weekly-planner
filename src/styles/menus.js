@@ -391,4 +391,69 @@ export const menus = stylex.create({
     transform: 'scale(.9)',
   },
 
+  shareSheetScrim: {
+    backgroundColor: colors.scrim,
+    WebkitBackdropFilter: 'blur(3px)',
+    backdropFilter: 'blur(3px)',
+  },
+
+  shareSheet: {
+    boxSizing: 'border-box',
+    display: 'flex',
+    flexDirection: 'column',
+    width: 'min(420px, calc(100vw - 24px))',
+    maxHeight: 'min(720px, calc(100dvh - 24px))',
+    backgroundColor: colors.paper,
+    borderRadius: '16px',
+    padding: '6px',
+    boxShadow: `0 0 0 1px ${colors.edge}, 0 8px 24px rgba(20,20,26,.10), 0 40px 80px -24px rgba(20,20,26,.44)`,
+    outline: 'none',
+    overflow: 'hidden',
+    '@media screen and (max-width: 560px)': {
+      width: '100%',
+      maxHeight: 'calc(100dvh - 40px)',
+      borderRadius: '20px 20px 0 0',
+    },
+  },
+
+  shareSheetBody: {
+    flex: 1,
+    minHeight: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    overflowY: 'auto',
+    overscrollBehavior: 'contain',
+  },
+
+  shareSheetHead: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '10px 10px 6px 12px',
+    flexShrink: 0,
+  },
+
+  shareSheetTitle: {
+    flex: 1,
+    margin: 0,
+    fontSize: '15px',
+    fontWeight: 650,
+    letterSpacing: '-0.01em',
+  },
+
+  shareSheetClose: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '32px',
+    height: '32px',
+    padding: 0,
+    borderWidth: 0,
+    borderRadius: '10px',
+    backgroundColor: 'transparent',
+    color: colors.muted,
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+  },
+
 });

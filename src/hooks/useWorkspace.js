@@ -30,6 +30,8 @@ export function useWorkspace() {
   const workspace = db.useQuery({
     boards: {
       owner: {},
+      // Include editors on the list so roleKnown/roleForBoard don't wait on detail.
+      editors: {},
     },
     settings: {},
   });

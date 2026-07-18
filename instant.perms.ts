@@ -21,7 +21,6 @@ const rules = {
     bind: {
       isOwner: "auth.id in data.ref('owner.id')",
       isMember: "auth.id in data.ref('members.user.id')",
-      isEditor: "auth.id in data.ref('editors.id')",
       hasShareSecret:
         "true in data.ref('shares.enabled') && ruleParams.secret in data.ref('shares.secret')",
     },

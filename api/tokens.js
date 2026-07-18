@@ -6,6 +6,7 @@ import {
   hashApiToken,
 } from '../src/server/api-tokens.js';
 import { linkedId } from '../src/lib/links.js';
+import { readBody, sendJson } from '../src/server/http.js';
 import schema from '../src/db/schema.js';
 
 const APP_ID = process.env.INSTANT_APP_ID || process.env.VITE_INSTANT_APP_ID;
@@ -14,31 +15,6 @@ const API_TOKEN_PEPPER = process.env.API_TOKEN_PEPPER || '';
 
 /** Personal-access-token cap per account. */
 const MAX_TOKENS = 10;
-
-function json(res, status, body) {
-  res.statusCode = status;
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'content-type, token');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-  res.end(JSON.stringify(body));
-}
-
-function readBody(req) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    req.on('data', (c) => chunks.push(c));
-    req.on('end', () => {
-      try {
-        const raw = Buffer.concat(chunks).toString('utf8') || '{}';
-        resolve(JSON.parse(raw));
-      } catch (err) {
-        reject(err);
-      }
-    });
-    req.on('error', reject);
-  });
-}
 
 function tokenRowJson(row) {
   return {
@@ -58,18 +34,18 @@ function tokenRowJson(row) {
  *   POST   → { name? } create · { rotate: id } re-generate the secret
  *   DELETE → { id } revoke
  *
- * The plaintext `wp_…` token appears once in the create/rotate response;
- * only its SHA-256 hash is stored.
+ * New hashes always use `API_TOKEN_PEPPER` when set. Lookup still accepts
+ * legacy unpeppered rows until they are rotated (see apiTokenLookupHashes).
  */
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
-    return json(res, 204, {});
+    return sendJson(res, 204, {});
   }
   if (!['GET', 'POST', 'DELETE'].includes(req.method)) {
-    return json(res, 405, { error: 'Method not allowed' });
+    return sendJson(res, 405, { error: 'Method not allowed' });
   }
   if (!APP_ID || !ADMIN_TOKEN) {
-    return json(res, 500, { error: '서버 설정이 없어요' });
+    return sendJson(res, 500, { error: '서버 설정이 없어요' });
   }
 
   let body = {};
@@ -77,13 +53,13 @@ export default async function handler(req, res) {
     try {
       body = await readBody(req);
     } catch {
-      return json(res, 400, { error: '잘못된 요청이에요' });
+      return sendJson(res, 400, { error: '잘못된 요청이에요' });
     }
   }
 
   const refreshToken = req.headers.token || body.refreshToken;
   if (!refreshToken) {
-    return json(res, 401, { error: '로그인이 필요해요' });
+    return sendJson(res, 401, { error: '로그인이 필요해요' });
   }
 
   const db = init({ appId: APP_ID, adminToken: ADMIN_TOKEN, schema });
@@ -91,10 +67,10 @@ export default async function handler(req, res) {
   try {
     const caller = await db.auth.verifyToken(refreshToken);
     if (!caller?.id) {
-      return json(res, 401, { error: '로그인이 필요해요' });
+      return sendJson(res, 401, { error: '로그인이 필요해요' });
     }
     if (!caller.email) {
-      return json(res, 403, { error: '게스트는 API 토큰을 만들 수 없어요' });
+      return sendJson(res, 403, { error: '게스트는 API 토큰을 만들 수 없어요' });
     }
 
     const { apiTokens } = await db.query({
@@ -103,7 +79,7 @@ export default async function handler(req, res) {
     const mine = apiTokens || [];
 
     if (req.method === 'GET') {
-      return json(res, 200, {
+      return sendJson(res, 200, {
         tokens: mine
           .slice()
           .sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0))
@@ -113,28 +89,29 @@ export default async function handler(req, res) {
 
     if (req.method === 'DELETE') {
       const row = mine.find((t) => t.id === body.id);
-      if (!row) return json(res, 404, { error: '토큰을 찾을 수 없어요' });
+      if (!row) return sendJson(res, 404, { error: '토큰을 찾을 수 없어요' });
       await db.transact(db.tx.apiTokens[row.id].delete());
-      return json(res, 200, { ok: true });
+      return sendJson(res, 200, { ok: true });
     }
 
-    // POST { rotate: id } — keep the row, swap the secret.
     if (body.rotate) {
       const row = mine.find((t) => t.id === body.rotate);
       if (!row || linkedId(row.owner) !== caller.id) {
-        return json(res, 404, { error: '토큰을 찾을 수 없어요' });
+        return sendJson(res, 404, { error: '토큰을 찾을 수 없어요' });
       }
       const token = generateApiToken();
       const hash = await hashApiToken(token, API_TOKEN_PEPPER);
       await db.transact(
         db.tx.apiTokens[row.id].update({ hash, prefix: apiTokenPrefixOf(token) }),
       );
-      return json(res, 200, { ...tokenRowJson({ ...row, prefix: apiTokenPrefixOf(token) }), token });
+      return sendJson(res, 200, {
+        ...tokenRowJson({ ...row, prefix: apiTokenPrefixOf(token) }),
+        token,
+      });
     }
 
-    // POST { name? } — create.
     if (mine.length >= MAX_TOKENS) {
-      return json(res, 400, { error: `토큰은 최대 ${MAX_TOKENS}개까지 만들 수 있어요` });
+      return sendJson(res, 400, { error: `토큰은 최대 ${MAX_TOKENS}개까지 만들 수 있어요` });
     }
     const token = generateApiToken();
     const hash = await hashApiToken(token, API_TOKEN_PEPPER);
@@ -146,9 +123,9 @@ export default async function handler(req, res) {
       createdAt: Date.now(),
     };
     await db.transact(db.tx.apiTokens[tid].update(row).link({ owner: caller.id }));
-    return json(res, 200, { ...tokenRowJson({ id: tid, ...row }), token });
+    return sendJson(res, 200, { ...tokenRowJson({ id: tid, ...row }), token });
   } catch (err) {
     console.error('tokens endpoint failed', err);
-    return json(res, 500, { error: '요청을 처리하지 못했어요' });
+    return sendJson(res, 500, { error: '요청을 처리하지 못했어요' });
   }
 }
