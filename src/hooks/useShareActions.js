@@ -12,6 +12,7 @@ import {
 } from '../db/tx/shares.js';
 import {
   activeShareOf,
+  buildShareDisable,
   buildShareSecrets,
   buildShareUpdate,
 } from '../sharing/share-policy.js';
@@ -75,7 +76,9 @@ export function useShareActions({ board, isOwner = true }) {
     if (!isOwner || !board) return fail();
     const share = activeShare();
     if (!share) return fail();
-    const tx = patchShareTx(share.id, { enabled: false });
+    // buildShareDisable scrambles the secret so the revoked link can never
+    // match the share rules again (see share-policy.js for why).
+    const tx = patchShareTx(share.id, buildShareDisable());
     if (tx) await db.transact(tx);
     toast('공유 링크를 껐어요');
     return ok();

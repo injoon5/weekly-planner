@@ -7,10 +7,16 @@ import {
 } from '../src/sharing/member-policy.js';
 import { normalizeMemberRole } from '../src/sharing/roles.js';
 import { createJsonResponder, readJsonBody } from '../src/server/http.js';
+import { createRateLimiter } from '../src/server/rest.js';
 import schema from '../src/db/schema.js';
 
 const APP_ID = process.env.INSTANT_APP_ID || process.env.VITE_INSTANT_APP_ID;
 const ADMIN_TOKEN = process.env.INSTANT_ADMIN_TOKEN;
+
+// Per-caller budget. Invites are rare in normal use; the cap mostly stops a
+// script from using this endpoint as a registered-email oracle
+// (`db.auth.getUser` distinguishes registered from unknown addresses).
+const limiter = createRateLimiter({ capacity: 20, refillPeriodMs: 10 * 60_000 });
 
 const json = createJsonResponder({
   allowHeaders: 'content-type, token',
@@ -55,6 +61,13 @@ export default async function handler(req, res) {
     const caller = await db.auth.verifyToken(refreshToken);
     if (!caller?.id) {
       return json(res, 401, { error: '로그인이 필요해요' });
+    }
+
+    const gate = limiter.take(caller.id);
+    if (!gate.ok) {
+      return json(res, 429, { error: '잠시 후 다시 시도해 주세요' }, {
+        'Retry-After': String(gate.retryAfterSec),
+      });
     }
 
     const { boards } = await db.query({

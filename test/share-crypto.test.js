@@ -6,7 +6,12 @@ import {
   hashSharePasswordPbkdf2,
   randomShareSalt,
 } from '../src/sharing/share.js';
-import { buildShareSecrets, buildShareUpdate } from '../src/sharing/share-policy.js';
+import {
+  SHARE_PASSWORD_MIN,
+  buildShareDisable,
+  buildShareSecrets,
+  buildShareUpdate,
+} from '../src/sharing/share-policy.js';
 
 describe('share password crypto', () => {
   it('legacy hash is deterministic SHA-256(token:password)', async () => {
@@ -64,6 +69,30 @@ describe('share password crypto', () => {
     });
     expect(fields.secret).toBe('legacyhash');
     expect(fields.passwordSalt).toBe(null);
+  });
+
+  it('rejects short share passwords on create and update', async () => {
+    const short = 'x'.repeat(SHARE_PASSWORD_MIN - 1);
+    await expect(
+      buildShareSecrets({ mode: 'password', role: 'viewer', password: short }),
+    ).rejects.toThrow();
+    await expect(
+      buildShareUpdate({
+        share: { token: 'tok', mode: 'open', role: 'viewer', secret: 'tok' },
+        mode: 'password',
+        password: short,
+      }),
+    ).rejects.toThrow();
+  });
+
+  it('buildShareDisable scrambles the secret and drops editSecret', () => {
+    const a = buildShareDisable();
+    const b = buildShareDisable();
+    expect(a.enabled).toBe(false);
+    expect(a.editSecret).toBe(null);
+    expect(a.secret).toMatch(/^revoked:/);
+    // Never a valid token/hash again, and never reused across disables.
+    expect(a.secret).not.toBe(b.secret);
   });
 
   it('buildShareUpdate open mode clears salt', async () => {

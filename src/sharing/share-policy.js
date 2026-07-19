@@ -24,6 +24,32 @@ export function activeShareOf(board) {
   return enabledShareOf(board) || board?.shares?.[0] || null;
 }
 
+/** Minimum length for share passwords. */
+export const SHARE_PASSWORD_MIN = 4;
+
+function assertSharePassword(password) {
+  if (!password) throw new Error('비밀번호를 입력하세요');
+  if (String(password).length < SHARE_PASSWORD_MIN) {
+    throw new Error(`비밀번호는 ${SHARE_PASSWORD_MIN}자 이상이어야 해요`);
+  }
+}
+
+/**
+ * Patch that turns a share off. The permission rules test `enabled` and
+ * `secret` across ALL of a board's share rows independently
+ * (`true in shares.enabled && ruleParams.secret in shares.secret`), so a
+ * disabled row keeping its old secret could still unlock the board while any
+ * other row is enabled. Scramble the secret and drop editSecret so a revoked
+ * link can never match again; re-enabling mints fresh secrets anyway.
+ */
+export function buildShareDisable() {
+  return {
+    enabled: false,
+    secret: `revoked:${randomToken(16)}`,
+    editSecret: null,
+  };
+}
+
 /**
  * Build open or password share payload. editSecret only when role=editor.
  * Password mode always mints a fresh salt + PBKDF2 secret.
@@ -47,7 +73,7 @@ export async function buildShareSecrets({
   /** @type {string | undefined} */
   let passwordSalt;
   if (nextMode === SHARE_MODE.PASSWORD) {
-    if (!password) throw new Error('비밀번호를 입력하세요');
+    assertSharePassword(password);
     passwordSalt = randomShareSalt();
     secret = await hashSharePassword(token, password, passwordSalt);
   } else {
@@ -88,6 +114,7 @@ export async function buildShareUpdate({ share, mode, role, password = '' }) {
   let passwordSalt;
   if (nextMode === SHARE_MODE.PASSWORD) {
     if (password) {
+      assertSharePassword(password);
       passwordSalt = randomShareSalt();
       secret = await hashSharePassword(share.token, password, passwordSalt);
     } else if (normalizeShareMode(share.mode) === SHARE_MODE.PASSWORD) {

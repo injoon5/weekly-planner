@@ -7,6 +7,7 @@ import {
 } from '../src/server/api-tokens.js';
 import { linkedId } from '../src/lib/links.js';
 import { createJsonResponder, readJsonBody } from '../src/server/http.js';
+import { createRateLimiter } from '../src/server/rest.js';
 import schema from '../src/db/schema.js';
 
 const APP_ID = process.env.INSTANT_APP_ID || process.env.VITE_INSTANT_APP_ID;
@@ -15,6 +16,15 @@ const API_TOKEN_PEPPER = process.env.API_TOKEN_PEPPER || '';
 
 /** Personal-access-token cap per account. */
 const MAX_TOKENS = 10;
+
+// Keyed by client IP so guessing refresh tokens is throttled before the
+// Instant verify call; generous enough for any real management UI.
+const limiter = createRateLimiter({ capacity: 60, refillPeriodMs: 10 * 60_000 });
+
+function clientIp(req) {
+  const fwd = req.headers['x-forwarded-for'];
+  return String(fwd || req.socket?.remoteAddress || 'unknown').split(',')[0].trim();
+}
 
 const json = createJsonResponder({
   allowHeaders: 'content-type, token',
@@ -65,6 +75,13 @@ export default async function handler(req, res) {
   const refreshToken = req.headers.token || body.refreshToken;
   if (!refreshToken) {
     return json(res, 401, { error: '로그인이 필요해요' });
+  }
+
+  const gate = limiter.take(clientIp(req));
+  if (!gate.ok) {
+    return json(res, 429, { error: '잠시 후 다시 시도해 주세요' }, {
+      'Retry-After': String(gate.retryAfterSec),
+    });
   }
 
   const db = init({ appId: APP_ID, adminToken: ADMIN_TOKEN, schema });

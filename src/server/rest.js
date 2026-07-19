@@ -12,7 +12,15 @@ export function restSegments(url) {
   if (!m) return null;
   return (m[1] || '')
     .split('/')
-    .map((s) => decodeURIComponent(s))
+    .map((s) => {
+      // Malformed percent-encoding must 404, not throw before the handler's
+      // try/catch — keep the raw segment so no route matches it.
+      try {
+        return decodeURIComponent(s);
+      } catch {
+        return s;
+      }
+    })
     .filter(Boolean);
 }
 
