@@ -7,7 +7,8 @@ import {
   parseBearer,
 } from './api-tokens.js';
 import { linkedId, linkedIds } from '../lib/links.js';
-import { eventFields, nextBoardSortOrder } from '../board/models.js';
+import { eventFields, nextBoardSortOrder, sortBoards } from '../board/models.js';
+import { createJsonResponder, readJsonBody } from './http.js';
 import {
   RestValidationError,
   createRateLimiter,
@@ -31,31 +32,10 @@ const limiter = createRateLimiter({ capacity: 120, refillPeriodMs: 60_000 });
 /** Refresh `lastUsedAt` at most once a minute to avoid write amplification. */
 const LAST_USED_STALE_MS = 60_000;
 
-function json(res, status, body, headers = {}) {
-  res.statusCode = status;
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'authorization, content-type');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
-  for (const [k, v] of Object.entries(headers)) res.setHeader(k, v);
-  res.end(JSON.stringify(body));
-}
-
-function readBody(req) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    req.on('data', (c) => chunks.push(c));
-    req.on('end', () => {
-      try {
-        const raw = Buffer.concat(chunks).toString('utf8') || '{}';
-        resolve(JSON.parse(raw));
-      } catch (err) {
-        reject(err);
-      }
-    });
-    req.on('error', reject);
-  });
-}
+const json = createJsonResponder({
+  allowHeaders: 'authorization, content-type',
+  allowMethods: 'GET, POST, PATCH, DELETE, OPTIONS',
+});
 
 function boardJson(board, userId) {
   const ownerId = linkedId(board.owner);
@@ -88,6 +68,13 @@ function eventJson(event) {
 function todoJson(todo) {
   return { id: todo.id, day: todo.day, eventId: todo.eventId, createdAt: todo.createdAt };
 }
+
+const REST_ERROR_MESSAGES = {
+  400: 'Invalid request',
+  403: 'Not allowed',
+  404: 'Not found',
+  429: 'Rate limit exceeded',
+};
 
 /** Instant errors → REST statuses (permission denied, missing rows, 429s). */
 function instantErrorStatus(err) {
@@ -186,7 +173,7 @@ export default async function handler(req, res) {
     let body = {};
     if (req.method === 'POST' || req.method === 'PATCH') {
       try {
-        body = await readBody(req);
+        body = await readJsonBody(req);
       } catch {
         return json(res, 400, { error: 'Request body must be JSON' });
       }
@@ -202,10 +189,7 @@ export default async function handler(req, res) {
       case 'boards.list': {
         const { boards } = await scoped.query({ boards: { owner: {}, editors: {} } });
         return json(res, 200, {
-          boards: (boards || [])
-            .slice()
-            .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
-            .map((b) => boardJson(b, owner.id)),
+          boards: sortBoards(boards).map((b) => boardJson(b, owner.id)),
         });
       }
 
@@ -360,17 +344,6 @@ export default async function handler(req, res) {
     }
     const status = instantErrorStatus(err);
     if (status === 500) console.error('rest api failed', err);
-    return json(res, status, {
-      error:
-        status === 403
-          ? 'Not allowed'
-          : status === 404
-            ? 'Not found'
-            : status === 429
-              ? 'Rate limit exceeded'
-              : status === 400
-                ? 'Invalid request'
-                : 'Internal error',
-    });
+    return json(res, status, { error: REST_ERROR_MESSAGES[status] || 'Internal error' });
   }
 }

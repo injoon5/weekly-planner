@@ -6,35 +6,16 @@ import {
   memberRoleTxs,
 } from '../src/sharing/member-policy.js';
 import { normalizeMemberRole } from '../src/sharing/roles.js';
+import { createJsonResponder, readJsonBody } from '../src/server/http.js';
 import schema from '../src/db/schema.js';
 
 const APP_ID = process.env.INSTANT_APP_ID || process.env.VITE_INSTANT_APP_ID;
 const ADMIN_TOKEN = process.env.INSTANT_ADMIN_TOKEN;
 
-function json(res, status, body) {
-  res.statusCode = status;
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'content-type, token');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.end(JSON.stringify(body));
-}
-
-function readBody(req) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    req.on('data', (c) => chunks.push(c));
-    req.on('end', () => {
-      try {
-        const raw = Buffer.concat(chunks).toString('utf8') || '{}';
-        resolve(JSON.parse(raw));
-      } catch (err) {
-        reject(err);
-      }
-    });
-    req.on('error', reject);
-  });
-}
+const json = createJsonResponder({
+  allowHeaders: 'content-type, token',
+  allowMethods: 'POST, OPTIONS',
+});
 
 /**
  * Invite a registered Instant user to a board.
@@ -54,7 +35,7 @@ export default async function handler(req, res) {
 
   let body;
   try {
-    body = await readBody(req);
+    body = await readJsonBody(req);
   } catch {
     return json(res, 400, { error: '잘못된 요청이에요' });
   }

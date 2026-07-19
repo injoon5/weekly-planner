@@ -102,6 +102,18 @@ export function pickLeastUsedColor(events) {
   return PALETTE.reduce((a, b) => (cnt[b] < cnt[a] ? b : a));
 }
 
+/** Canonical board ordering: sortOrder, then createdAt as a stable tiebreak. */
+export function boardOrderComparator(a, b) {
+  return (
+    (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || (a.createdAt ?? 0) - (b.createdAt ?? 0)
+  );
+}
+
+/** Boards in canonical order (input untouched). */
+export function sortBoards(boards) {
+  return (boards || []).toSorted(boardOrderComparator);
+}
+
 export function nextBoardSortOrder(boards) {
   return boards.reduce((m, b) => Math.max(m, b.sortOrder ?? 0), -1) + 1;
 }
