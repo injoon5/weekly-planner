@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import { handleGridGesture } from '../grid/grid-gesture.js';
-import { planner } from '../styles/planner.js';
+import { t } from '../strings.js';
 import { BoardCanvas } from './BoardCanvas.jsx';
 import { Editor } from './Editor.jsx';
+import { LoadingStatus } from './ui/LoadingStatus.jsx';
 
 /**
  * Shared planner body: board canvas + editor.
@@ -27,12 +27,7 @@ export function PlannerSurface({
   );
 
   if (surfacePending) {
-    return (
-      <div {...stylex.props(planner.surfacePending)} aria-busy="true" role="status">
-        <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
-        불러오는 중…
-      </div>
-    );
+    return <LoadingStatus>{t.common.loading}</LoadingStatus>;
   }
 
   return (

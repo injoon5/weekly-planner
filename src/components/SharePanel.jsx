@@ -10,6 +10,7 @@ import { ui } from '../styles/ui.js';
 import { linkedId } from '../lib/links.js';
 import { isOk } from '../lib/command-result.js';
 import { sharePath } from '../sharing/share.js';
+import { MenuItemBody } from './ui/MenuItemBody.jsx';
 import { t } from '../strings.js';
 
 const MODE_OPTS = [
@@ -112,10 +113,7 @@ function InviteSection({ busy, refreshToken, onInvite, run }) {
           })();
         }}
       >
-        <span {...stylex.props(menus.miIconWrap)}>
-          <UserPlus size={14} strokeWidth={1.75} />
-        </span>
-        <span {...stylex.props(menus.miLabel)}>{t.share.invite}</span>
+        <MenuItemBody icon={UserPlus} label={t.share.invite} />
       </button>
     </>
   );
@@ -285,12 +283,10 @@ function SharePanelContent({
                       })();
                     }}
                   >
-                    <span {...stylex.props(menus.miIconWrap)}>
-                      <KeyRound size={14} strokeWidth={1.75} />
-                    </span>
-                    <span {...stylex.props(menus.miLabel)}>
-                      {share.mode === 'password' ? t.share.changePassword : t.share.setPassword}
-                    </span>
+                    <MenuItemBody
+                      icon={KeyRound}
+                      label={share.mode === 'password' ? t.share.changePassword : t.share.setPassword}
+                    />
                   </button>
                 </>
               )}
@@ -302,10 +298,7 @@ function SharePanelContent({
             disabled={busy}
             onClick={() => void withBusy(actions.copyShareLink)}
           >
-            <span {...stylex.props(menus.miIconWrap)}>
-              <Copy size={14} strokeWidth={1.75} />
-            </span>
-            <span {...stylex.props(menus.miLabel)}>{t.share.copyLink}</span>
+            <MenuItemBody icon={Copy} label={t.share.copyLink} />
           </button>
           {isOwner && (
             <>
@@ -316,10 +309,7 @@ function SharePanelContent({
                 title={share.mode === 'password' ? t.share.passwordResetTitle : undefined}
                 onClick={() => void withBusy(actions.rotateShare)}
               >
-                <span {...stylex.props(menus.miIconWrap)}>
-                  <RefreshCw size={14} strokeWidth={1.75} />
-                </span>
-                <span {...stylex.props(menus.miLabel)}>{t.share.newLink}</span>
+                <MenuItemBody icon={RefreshCw} label={t.share.newLink} />
               </button>
               <button
                 type="button"
@@ -327,10 +317,7 @@ function SharePanelContent({
                 disabled={busy}
                 onClick={() => void withBusy(actions.disableShare)}
               >
-                <span {...stylex.props(menus.miIconWrap)}>
-                  <Link2Off size={14} strokeWidth={1.75} />
-                </span>
-                <span {...stylex.props(menus.miLabel)}>{t.share.disable}</span>
+                <MenuItemBody icon={Link2Off} label={t.share.disable} />
               </button>
             </>
           )}
@@ -359,10 +346,7 @@ function SharePanelContent({
                 })();
               }}
             >
-              <span {...stylex.props(menus.miIconWrap)}>
-                <Link2 size={14} strokeWidth={1.75} />
-              </span>
-              <span {...stylex.props(menus.miLabel)}>{t.share.createLink}</span>
+              <MenuItemBody icon={Link2} label={t.share.createLink} />
             </button>
           </>
         )
@@ -392,10 +376,7 @@ function SharePanelContent({
             {...stylex.props(menus.mi, menus.miRed)}
             onClick={() => void actions.leaveBoard(myMembershipId, user?.id)}
           >
-            <span {...stylex.props(menus.miIconWrap)}>
-              <LogOut size={14} strokeWidth={1.75} />
-            </span>
-            <span {...stylex.props(menus.miLabel)}>{t.share.leave}</span>
+            <MenuItemBody icon={LogOut} label={t.share.leave} />
           </button>
         </>
       )}

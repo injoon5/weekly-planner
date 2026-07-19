@@ -4,6 +4,7 @@ import * as stylex from '@stylexjs/stylex';
 import { Copy, Eraser, Trash2 } from 'lucide-react';
 import { HoldToConfirm } from './HoldToConfirm.jsx';
 import { UiSelect } from './ui/UiSelect.jsx';
+import { MenuItemBody } from './ui/MenuItemBody.jsx';
 import { menus } from '../styles/menus.js';
 import { ui } from '../styles/ui.js';
 import { t } from '../strings.js';
@@ -98,10 +99,7 @@ export function BoardMenu({ board, solo, canEditMeta = true, onCommit, onDup, on
           <Separator {...stylex.props(menus.mdiv)} />
 
           <button type="button" {...stylex.props(menus.mi)} onClick={onDup}>
-            <span {...stylex.props(menus.miIconWrap)}>
-              <Copy size={14} strokeWidth={1.75} />
-            </span>
-            <span {...stylex.props(menus.miLabel)}>{t.board.duplicate}</span>
+            <MenuItemBody icon={Copy} label={t.board.duplicate} />
           </button>
 
           <HoldToConfirm
@@ -109,10 +107,7 @@ export function BoardMenu({ board, solo, canEditMeta = true, onCommit, onDup, on
             onConfirm={onClear}
             aria-label={t.a11y.clearEventsHold}
           >
-            <span {...stylex.props(menus.miIconWrap)}>
-              <Eraser size={14} strokeWidth={1.75} />
-            </span>
-            <span {...stylex.props(menus.miLabel)}>{t.board.clearAll}</span>
+            <MenuItemBody icon={Eraser} label={t.board.clearAll} />
           </HoldToConfirm>
 
           <HoldToConfirm
@@ -122,10 +117,7 @@ export function BoardMenu({ board, solo, canEditMeta = true, onCommit, onDup, on
             onConfirm={onDelete}
             aria-label={t.a11y.deleteBoardHold}
           >
-            <span {...stylex.props(menus.miIconWrap)}>
-              <Trash2 size={14} strokeWidth={1.75} />
-            </span>
-            <span {...stylex.props(menus.miLabel)}>{t.board.delete}</span>
+            <MenuItemBody icon={Trash2} label={t.board.delete} />
           </HoldToConfirm>
         </>
       )}

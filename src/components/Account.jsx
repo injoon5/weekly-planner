@@ -29,6 +29,7 @@ import { HoldToConfirm } from './HoldToConfirm.jsx';
 import { toast } from './ui/toast.js';
 import { UiSelect } from './ui/UiSelect.jsx';
 import { UpgradeDialog } from './UpgradeDialog.jsx';
+import { LoadingStatus } from './ui/LoadingStatus.jsx';
 
 const THEME_OPTS = [
   { value: 'light', label: t.account.themeLight },
@@ -394,12 +395,7 @@ export function Account() {
 
   if (!user) {
     if (auth.isLoading) {
-      return (
-        <div {...stylex.props(planner.boot)} role="status" aria-live="polite">
-          <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
-          {t.common.loading}
-        </div>
-      );
+      return <LoadingStatus variant="boot">{t.common.loading}</LoadingStatus>;
     }
     return null;
   }
@@ -436,10 +432,7 @@ export function Account() {
         </div>
 
         {isLoading ? (
-          <div {...stylex.props(planner.boot)} role="status" aria-live="polite">
-            <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
-            {t.common.loading}
-          </div>
+          <LoadingStatus variant="boot">{t.common.loading}</LoadingStatus>
         ) : (
           <>
             <ProfileCard index={0} user={user} settings={settings} saveSettings={saveSettings} />

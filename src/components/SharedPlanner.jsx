@@ -12,6 +12,7 @@ import { BoardPresenceBridge } from './BoardPresenceBridge.jsx';
 import { PrintDialog } from './PrintDialog.jsx';
 import { PlannerHeader } from './PlannerHeader.jsx';
 import { PlannerSurface } from './PlannerSurface.jsx';
+import { LoadingStatus } from './ui/LoadingStatus.jsx';
 import { t } from '../strings.js';
 
 /** Header-only shell with a busy status while share metadata / board load. */
@@ -21,10 +22,7 @@ function SharedShellPending() {
       <header {...stylex.props(planner.top)}>
         <h1 {...stylex.props(planner.h1)}>{t.app.name}</h1>
       </header>
-      <div {...stylex.props(planner.surfacePending)} aria-busy="true" role="status">
-        <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
-        {t.common.loading}
-      </div>
+      <LoadingStatus>{t.common.loading}</LoadingStatus>
     </div>
   );
 }

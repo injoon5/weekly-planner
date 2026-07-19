@@ -10,6 +10,7 @@ import { planner } from '../styles/planner.js';
 import { ui } from '../styles/ui.js';
 import { UpgradeDialog } from './UpgradeDialog.jsx';
 import { MenuPopover } from './ui/MenuPopover.jsx';
+import { MenuItemBody } from './ui/MenuItemBody.jsx';
 import { t } from '../strings.js';
 
 function UserMenu({ email, isGuest, onUpgrade, onAccount, onSignOut }) {
@@ -21,10 +22,7 @@ function UserMenu({ email, isGuest, onUpgrade, onAccount, onSignOut }) {
             {t.account_menu.guestMode}
           </div>
           <Popover.Close render={<button {...stylex.props(menus.mi)} onClick={onUpgrade} />}>
-            <span {...stylex.props(menus.miIconWrap)}>
-              <UserPlus size={14} strokeWidth={1.75} />
-            </span>
-            <span {...stylex.props(menus.miLabel)}>{t.account_menu.createAccount}</span>
+            <MenuItemBody icon={UserPlus} label={t.account_menu.createAccount} />
           </Popover.Close>
           <Separator {...stylex.props(menus.mdiv)} />
         </>
@@ -32,16 +30,10 @@ function UserMenu({ email, isGuest, onUpgrade, onAccount, onSignOut }) {
         email && <div {...stylex.props(menus.mcap, menus.mcapFirst)}>{email}</div>
       )}
       <Popover.Close render={<button {...stylex.props(menus.mi)} onClick={onAccount} />}>
-        <span {...stylex.props(menus.miIconWrap)}>
-          <Settings2 size={14} strokeWidth={1.75} />
-        </span>
-        <span {...stylex.props(menus.miLabel)}>{t.account_menu.accountSettings}</span>
+        <MenuItemBody icon={Settings2} label={t.account_menu.accountSettings} />
       </Popover.Close>
       <Popover.Close render={<button {...stylex.props(menus.mi, menus.miRed)} onClick={onSignOut} />}>
-        <span {...stylex.props(menus.miIconWrap)}>
-          <LogOut size={14} strokeWidth={1.75} />
-        </span>
-        <span {...stylex.props(menus.miLabel)}>{t.account_menu.signOut}</span>
+        <MenuItemBody icon={LogOut} label={t.account_menu.signOut} />
       </Popover.Close>
     </>
   );
