@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { isOptimisticBoardId } from '../board/optimistic-board.js';
 import { EMPTY_PRESENCE } from '../hooks/usePlannerRuntime.js';
+import { usePlannerScrollLock } from '../hooks/usePlannerScrollLock.js';
 import { planner } from '../styles/planner.js';
 import { PlannerProvider } from '../planner/PlannerProvider.jsx';
 import { usePlannerContext } from '../planner/usePlannerContext.js';
@@ -15,19 +15,13 @@ import { PrintDialog } from './PrintDialog.jsx';
 import { ShareAction } from './ShareAction.jsx';
 import { TodosAction } from './TodosAction.jsx';
 
-const PLANNER_SCROLL_LOCK = 'planner-scroll-lock';
-
 /**
  * Signed-in workspace shell: loads the workspace, then wires header clusters
  * (BoardNav / AccountMenu / TodosAction / ShareAction) around the shared
  * planner surface. The shared-link shell lives in SharedPlanner.jsx.
  */
 export function Planner() {
-  // Prefer a class over html:has(...) — cheaper style invalidation on mount.
-  useEffect(() => {
-    document.documentElement.classList.add(PLANNER_SCROLL_LOCK);
-    return () => document.documentElement.classList.remove(PLANNER_SCROLL_LOCK);
-  }, []);
+  usePlannerScrollLock();
 
   return (
     <PlannerProvider>

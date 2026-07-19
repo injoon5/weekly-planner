@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { Link, useParams } from '@tanstack/react-router';
 import { EMPTY_PRESENCE, usePlannerRuntime } from '../hooks/usePlannerRuntime.js';
+import { usePlannerScrollLock } from '../hooks/usePlannerScrollLock.js';
 import { useSharedBoard } from '../hooks/useSharedBoard.js';
 import { useTheme } from '../hooks/useTheme.js';
 import { planner } from '../styles/planner.js';
@@ -12,7 +13,20 @@ import { PrintDialog } from './PrintDialog.jsx';
 import { PlannerHeader } from './PlannerHeader.jsx';
 import { PlannerSurface } from './PlannerSurface.jsx';
 
-const PLANNER_SCROLL_LOCK = 'planner-scroll-lock';
+/** Header-only shell with a busy status while share metadata / board load. */
+function SharedShellPending() {
+  return (
+    <div {...stylex.props(planner.app)} data-app-shell="shared">
+      <header {...stylex.props(planner.top)}>
+        <h1 {...stylex.props(planner.h1)}>주간 계획표</h1>
+      </header>
+      <div {...stylex.props(planner.surfacePending)} aria-busy="true" role="status">
+        <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
+        불러오는 중…
+      </div>
+    </div>
+  );
+}
 
 export function SharedPlanner() {
   const { token } = useParams({ from: '/s/$token' });
@@ -31,10 +45,7 @@ export function SharedPlanner() {
     guestLabel: shared.canEdit ? '공유 편집' : '공유 보기',
   });
 
-  useEffect(() => {
-    document.documentElement.classList.add(PLANNER_SCROLL_LOCK);
-    return () => document.documentElement.classList.remove(PLANNER_SCROLL_LOCK);
-  }, []);
+  usePlannerScrollLock();
 
   useEffect(() => {
     const name = shared.board?.name?.trim();
@@ -47,17 +58,7 @@ export function SharedPlanner() {
   }, [shared.board?.name]);
 
   if (shared.isLoading) {
-    return (
-      <div {...stylex.props(planner.app)} data-app-shell="shared">
-        <header {...stylex.props(planner.top)}>
-          <h1 {...stylex.props(planner.h1)}>주간 계획표</h1>
-        </header>
-        <div {...stylex.props(planner.surfacePending)} aria-busy="true" role="status">
-          <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
-          불러오는 중…
-        </div>
-      </div>
-    );
+    return <SharedShellPending />;
   }
   if (shared.error) {
     return (
@@ -117,17 +118,7 @@ export function SharedPlanner() {
   }
 
   if (!shared.board) {
-    return (
-      <div {...stylex.props(planner.app)} data-app-shell="shared">
-        <header {...stylex.props(planner.top)}>
-          <h1 {...stylex.props(planner.h1)}>주간 계획표</h1>
-        </header>
-        <div {...stylex.props(planner.surfacePending)} aria-busy="true" role="status">
-          <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
-          불러오는 중…
-        </div>
-      </div>
-    );
+    return <SharedShellPending />;
   }
 
   const board = shared.board;

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { Plus, ChevronDown } from 'lucide-react';
+import { useOverflowFade, pickFadeStyle } from '../hooks/useOverflowFade.js';
 import { planner } from '../styles/planner.js';
 
 /**
@@ -10,18 +11,11 @@ export function BoardTabs({ boards, activeId, canAdd, onSelect, onOpenActive, on
   const rowRef = useRef(null);
   const btnRefs = useRef(new Map());
   const [pill, setPill] = useState({ x: 0, w: 0, ready: false });
-  const [fade, setFade] = useState({ left: false, right: false });
   const first = useRef(true);
 
   // The scrollbar is hidden, so fade the clipped edge instead — otherwise
   // overflowing tabs on small screens just look cut off / missing.
-  const updateFade = useCallback(() => {
-    const el = rowRef.current;
-    if (!el) return;
-    const left = el.scrollLeft > 2;
-    const right = el.scrollLeft + el.clientWidth < el.scrollWidth - 2;
-    setFade((f) => (f.left === left && f.right === right ? f : { left, right }));
-  }, []);
+  const { fade, updateFade, onWheel } = useOverflowFade(rowRef);
 
   // Pill coordinates live in the strip's content space, so they survive
   // scrolling untouched — only tab/size changes need a re-measure. Keeping
@@ -51,37 +45,24 @@ export function BoardTabs({ boards, activeId, canAdd, onSelect, onOpenActive, on
     btn?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
   }, [activeId]);
 
+  // Fade has its own observer in useOverflowFade; this one re-measures the pill.
   useEffect(() => {
     const row = rowRef.current;
     if (!row) return;
-    const ro = new ResizeObserver(() => {
-      measure();
-      updateFade();
-    });
+    const ro = new ResizeObserver(measure);
     ro.observe(row);
     return () => ro.disconnect();
-  }, [activeId, boards, measure, updateFade]);
-
-  // Plain vertical wheel scrolls the strip sideways (narrow desktop windows
-  // have no other pointer affordance for it). Trackpads already send deltaX.
-  const onWheel = (e) => {
-    const el = rowRef.current;
-    if (!el || el.scrollWidth <= el.clientWidth) return;
-    if (Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return;
-    el.scrollLeft += e.deltaY;
-  };
+  }, [activeId, boards, measure]);
 
   return (
     <nav
       {...stylex.props(
         planner.tabs,
-        fade.left && fade.right
-          ? planner.tabsFadeBoth
-          : fade.left
-            ? planner.tabsFadeLeft
-            : fade.right
-              ? planner.tabsFadeRight
-              : null,
+        pickFadeStyle(fade, {
+          both: planner.tabsFadeBoth,
+          left: planner.tabsFadeLeft,
+          right: planner.tabsFadeRight,
+        }),
       )}
       aria-label="시간표 목록"
       ref={rowRef}
