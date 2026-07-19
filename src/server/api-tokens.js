@@ -7,6 +7,8 @@
  * `API_TOKEN_PEPPER` on the server; leave unset for legacy unpeppered hashes.
  */
 
+import { bytesToHex } from '../lib/hex.js';
+
 export const API_TOKEN_PREFIX = 'wp_';
 /** Random payload bytes → 48 hex chars after the prefix. */
 const TOKEN_BYTES = 24;
@@ -15,15 +17,10 @@ const DISPLAY_CHARS = API_TOKEN_PREFIX.length + 8;
 
 const MAX_NAME = 40;
 
-/** @param {Uint8Array} bytes */
-function hex(bytes) {
-  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
-}
-
 /** @returns {string} a fresh `wp_…` token (plaintext — hash before storing). */
 export function generateApiToken() {
   const bytes = globalThis.crypto.getRandomValues(new Uint8Array(TOKEN_BYTES));
-  return API_TOKEN_PREFIX + hex(bytes);
+  return API_TOKEN_PREFIX + bytesToHex(bytes);
 }
 
 /** @param {string} token @returns {boolean} */
@@ -48,7 +45,7 @@ export async function hashApiToken(token, pepper = '') {
   const material = pepper ? `${pepper}:${token}` : String(token);
   const data = new TextEncoder().encode(material);
   const digest = await globalThis.crypto.subtle.digest('SHA-256', data);
-  return hex(new Uint8Array(digest));
+  return bytesToHex(new Uint8Array(digest));
 }
 
 /**

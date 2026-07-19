@@ -1,29 +1,13 @@
 /** Share-link crypto + URL + session unlock. */
 
+import { bytesToHex, hexToBytes } from '../lib/hex.js';
+
 const TOKEN_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 /** PBKDF2 params for password-mode share secrets (Web Crypto). */
 export const SHARE_PBKDF2_ITERATIONS = 100_000;
 const SALT_BYTES = 16;
 const DERIVED_BITS = 256;
-
-/** @param {Uint8Array} bytes */
-function hex(bytes) {
-  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
-}
-
-/** @param {string} hexStr */
-function fromHex(hexStr) {
-  const clean = String(hexStr || '');
-  if (!/^[0-9a-f]*$/i.test(clean) || clean.length % 2 !== 0) {
-    throw new Error('Invalid salt hex');
-  }
-  const out = new Uint8Array(clean.length / 2);
-  for (let i = 0; i < out.length; i++) {
-    out[i] = parseInt(clean.slice(i * 2, i * 2 + 2), 16);
-  }
-  return out;
-}
 
 /** Short base62 token (~48 bits at 8 chars). Older hex / 10-char tokens stay valid. */
 export function randomToken(length = 8) {
@@ -42,7 +26,7 @@ export function randomToken(length = 8) {
 
 /** Random salt for new password-mode shares (hex). */
 export function randomShareSalt() {
-  return hex(crypto.getRandomValues(new Uint8Array(SALT_BYTES)));
+  return bytesToHex(crypto.getRandomValues(new Uint8Array(SALT_BYTES)));
 }
 
 /**
@@ -52,7 +36,7 @@ export function randomShareSalt() {
 export async function hashSharePasswordLegacy(token, password) {
   const data = new TextEncoder().encode(`${token}:${password}`);
   const digest = await crypto.subtle.digest('SHA-256', data);
-  return hex(new Uint8Array(digest));
+  return bytesToHex(new Uint8Array(digest));
 }
 
 /**
@@ -77,13 +61,13 @@ export async function hashSharePasswordPbkdf2(
     {
       name: 'PBKDF2',
       hash: 'SHA-256',
-      salt: fromHex(saltHex),
+      salt: hexToBytes(saltHex),
       iterations,
     },
     keyMaterial,
     DERIVED_BITS,
   );
-  return hex(new Uint8Array(bits));
+  return bytesToHex(new Uint8Array(bits));
 }
 
 /**

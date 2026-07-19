@@ -9,17 +9,14 @@ import {
   exportFilename,
   parseImportText,
 } from '../board/board-import-export.js';
-import { commitTransaction } from '../db/transaction.js';
+import { commitTx } from '../db/commit.js';
+import { sortBoards } from '../board/models.js';
 
 async function doExport() {
   let exportBoards;
   try {
     const result = await db.queryOnce({ boards: { events: {} } });
-    exportBoards = (result.data?.boards || []).toSorted(
-      (a, b) =>
-        (a.sortOrder ?? 0) - (b.sortOrder ?? 0) ||
-        (a.createdAt ?? 0) - (b.createdAt ?? 0),
-    );
+    exportBoards = sortBoards(result.data?.boards);
   } catch (error) {
     console.error(error);
     toast('내보낼 시간표를 불러오지 못했어요');
@@ -62,10 +59,7 @@ export function useBoardTransfer({ user, boards, setActiveId, isOwner = true }) 
         toast(built.error);
         return;
       }
-      const result = await commitTransaction((tx) => db.transact(tx), built.txs, {
-        message: '파일을 가져오지 못했어요',
-        onError: toast,
-      });
+      const result = await commitTx(built.txs, '파일을 가져오지 못했어요');
       if (!isOk(result)) return;
       setActiveId(built.firstId);
       toast(

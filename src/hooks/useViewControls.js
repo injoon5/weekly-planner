@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { isOk } from '../lib/command-result.js';
 import { COLOR_LABELS_KO, PALETTE } from '../lib/config.js';
-import { toast } from '../lib/notify.js';
-import { db } from '../db/instant.js';
 import {
   defaultViewPrefs,
   parseColorLabels,
@@ -10,7 +8,7 @@ import {
   serializeColorLabels,
   serializeHiddenColors,
 } from '../board/prefs.js';
-import { commitTransaction } from '../db/transaction.js';
+import { commitTx } from '../db/commit.js';
 import { patchBoardTx } from '../db/tx/boards.js';
 import { upsertBoardPrefsTx } from '../db/tx/prefs.js';
 
@@ -75,12 +73,7 @@ export function useViewControls({
       if (!user || !boardId) return false;
       const tx = upsertBoardPrefsTx(boardPrefs?.id, user.id, boardId, patch);
       if (!tx) return true;
-      return isOk(
-        await commitTransaction((transaction) => db.transact(transaction), tx, {
-          message: '보기 설정을 저장하지 못했어요',
-          onError: toast,
-        }),
-      );
+      return isOk(await commitTx(tx, '보기 설정을 저장하지 못했어요'));
     },
     [user, boardId, boardPrefs?.id],
   );
@@ -132,12 +125,7 @@ export function useViewControls({
       if (!label.trim()) delete next[color];
       const tx = patchBoardTx(boardId, { colorLabels: serializeColorLabels(next) });
       if (!tx) return true;
-      return isOk(
-        await commitTransaction((transaction) => db.transact(transaction), tx, {
-          message: '색상 이름을 저장하지 못했어요',
-          onError: toast,
-        }),
-      );
+      return isOk(await commitTx(tx, '색상 이름을 저장하지 못했어요'));
     },
     [canRenameColors, boardId, labelsFromBoard],
   );

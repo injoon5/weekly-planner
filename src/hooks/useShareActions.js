@@ -1,4 +1,6 @@
 import { fail, ok } from '../lib/command-result.js';
+import { copyToClipboard } from '../lib/clipboard.js';
+import { sessionRequest } from '../lib/session-api.js';
 import { toast } from '../lib/notify.js';
 import { db } from '../db/instant.js';
 import { memberRoleTxs, removeMemberTxs } from '../sharing/member-policy.js';
@@ -15,15 +17,6 @@ import {
 } from '../sharing/share-policy.js';
 import { SHARE_MODE, normalizeShareRole } from '../sharing/roles.js';
 import { shareUrl } from '../sharing/share.js';
-
-async function copyUrl(url) {
-  try {
-    await navigator.clipboard.writeText(url);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 /** Share-policy validation errors carry user-facing Korean messages; prefer them. */
 function errorMessage(err, fallback) {
@@ -51,7 +44,7 @@ export function useShareActions({ board, isOwner = true }) {
       });
       await db.transact(replaceShareTxs(board.id, existing?.id, { ...built, enabled: true }));
       const url = shareUrl(built.token);
-      await copyUrl(url);
+      await copyToClipboard(url);
       toast('공유 링크를 켰어요');
       return ok(url);
     } catch (err) {
@@ -107,7 +100,7 @@ export function useShareActions({ board, isOwner = true }) {
         createShareTx(board.id, { ...built, enabled: true }).tx,
       ]);
       const url = shareUrl(built.token);
-      await copyUrl(url);
+      await copyToClipboard(url);
       toast('새 링크를 만들었어요');
       return ok(url);
     } catch (err) {
@@ -122,7 +115,7 @@ export function useShareActions({ board, isOwner = true }) {
       return fail('먼저 공유를 켜주세요');
     }
     const url = shareUrl(share.token);
-    if (await copyUrl(url)) {
+    if (await copyToClipboard(url)) {
       toast('링크를 복사했어요');
       return ok(url);
     }
@@ -165,25 +158,13 @@ export function useShareActions({ board, isOwner = true }) {
   const inviteMember = async ({ email, role, refreshToken }) => {
     if (!isOwner || !board) return fail();
     try {
-      const res = await fetch('/api/invite', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          token: refreshToken || '',
-        },
-        body: JSON.stringify({
-          boardId: board.id,
-          email,
-          role,
-        }),
+      const { ok: sent, payload } = await sessionRequest('/api/invite', {
+        refreshToken,
+        body: { boardId: board.id, email, role },
       });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        toast(body.error || '초대에 실패했어요');
-        return fail(body.error || '초대에 실패했어요');
-      }
-      toast(body.updated ? '역할을 업데이트했어요' : '초대했어요');
-      return ok({ updated: Boolean(body.updated), memberId: body.memberId });
+      if (!sent) return failWith(payload.error || '초대에 실패했어요');
+      toast(payload.updated ? '역할을 업데이트했어요' : '초대했어요');
+      return ok({ updated: Boolean(payload.updated), memberId: payload.memberId });
     } catch (error) {
       return failWith('초대에 실패했어요', error);
     }

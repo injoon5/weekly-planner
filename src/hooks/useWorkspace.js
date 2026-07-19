@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { db } from '../db/instant.js';
 import { roleForBoard, shouldShowViewerBanner } from '../sharing/member-policy.js';
-import { boardCoversDate, fromInstantEvents } from '../board/models.js';
+import { boardCoversDate, fromInstantEvents, sortBoards } from '../board/models.js';
 import {
   isOptimisticBoardId,
   makeOptimisticBoard,
@@ -35,12 +35,7 @@ export function useWorkspace() {
   });
 
   const boards = useMemo(
-    () =>
-      (workspace.data?.boards || []).toSorted(
-        (a, b) =>
-          (a.sortOrder ?? 0) - (b.sortOrder ?? 0) ||
-          (a.createdAt ?? 0) - (b.createdAt ?? 0),
-      ),
+    () => sortBoards(workspace.data?.boards),
     [workspace.data?.boards],
   );
   const settings = workspace.data?.settings?.[0] || null;

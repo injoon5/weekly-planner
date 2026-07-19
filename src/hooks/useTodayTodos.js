@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { db } from '../db/instant.js';
 import { buildTodayTodos, weekdayFromPlannerDate } from '../board/models.js';
-import { commitTransaction } from '../db/transaction.js';
+import { commitTx } from '../db/commit.js';
 import { checkTodoTx, uncheckTodoTx } from '../db/tx/todos.js';
-import { toast } from '../lib/notify.js';
 import { plannerDate } from '../lib/time.js';
 
 /**
@@ -64,25 +63,19 @@ export function useTodayTodos(user, events) {
     [events, weekday, checkedBy],
   );
 
-  const api = useMemo(() => {
-    const run = (tx, message) =>
-      commitTransaction((transaction) => db.transact(transaction), tx, {
-        message,
-        onError: toast,
-      });
-
-    return {
+  const api = useMemo(
+    () => ({
       toggle(id) {
         if (!user?.id) return;
         const rows = checkedBy.get(id);
-        if (rows?.length) {
-          run(uncheckTodoTx(rows), '할 일을 변경하지 못했어요');
-        } else {
-          run(checkTodoTx(user.id, { day, eventId: id }).tx, '할 일을 변경하지 못했어요');
-        }
+        const tx = rows?.length
+          ? uncheckTodoTx(rows)
+          : checkTodoTx(user.id, { day, eventId: id }).tx;
+        commitTx(tx, '할 일을 변경하지 못했어요');
       },
-    };
-  }, [day, checkedBy, user?.id]);
+    }),
+    [day, checkedBy, user?.id],
+  );
 
   return { todos, date: day, ...api };
 }

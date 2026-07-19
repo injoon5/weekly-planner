@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { useNavigate } from '@tanstack/react-router';
 import {
@@ -14,10 +14,13 @@ import {
   X,
 } from 'lucide-react';
 import { db, id } from '../db/instant.js';
-import { commitTransaction } from '../db/transaction.js';
+import { commitTx } from '../db/commit.js';
+import { useOverflowFade, pickFadeStyle } from '../hooks/useOverflowFade.js';
 import { useTheme } from '../hooks/useTheme.js';
-import { PEER_COLORS, peerColor } from '../hooks/useBoardPresence.js';
+import { PEER_COLORS, peerColor } from '../presence/identity.js';
+import { copyToClipboard } from '../lib/clipboard.js';
 import { DOCS_URL } from '../lib/config.js';
+import { sessionRequest } from '../lib/session-api.js';
 import { account } from '../styles/account.js';
 import { planner } from '../styles/planner.js';
 import { ui } from '../styles/ui.js';
@@ -45,27 +48,19 @@ function fmtStamp(ms) {
   }
 }
 
+function lastUsedLabel(ms) {
+  const stamp = fmtStamp(ms);
+  return stamp ? ` · 마지막 사용 ${stamp}` : ' · 사용 전';
+}
+
 async function copyText(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-    toast('복사했어요');
-  } catch {
-    toast('복사하지 못했어요');
-  }
+  toast((await copyToClipboard(text)) ? '복사했어요' : '복사하지 못했어요');
 }
 
 /** POST/DELETE against /api/tokens with the session refresh token. */
 async function tokensRequest(refreshToken, { method = 'POST', body } = {}) {
-  const res = await fetch('/api/tokens', {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      token: refreshToken || '',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  const payload = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(payload.error || '요청을 처리하지 못했어요');
+  const { ok, payload } = await sessionRequest('/api/tokens', { method, refreshToken, body });
+  if (!ok) throw new Error(payload.error || '요청을 처리하지 못했어요');
   return payload;
 }
 
@@ -80,44 +75,13 @@ function Card({ index = 0, children }) {
 /** Presence color strip — always one line; soft edge fades when clipped. */
 function ColorSwatches({ activeColor, autoColor, onPick }) {
   const rowRef = useRef(null);
-  const [fade, setFade] = useState({ left: false, right: false });
+  const { fade, updateFade, onWheel } = useOverflowFade(rowRef);
 
-  const updateFade = useCallback(() => {
-    const el = rowRef.current;
-    if (!el) return;
-    const left = el.scrollLeft > 2;
-    const right = el.scrollLeft + el.clientWidth < el.scrollWidth - 2;
-    setFade((f) => (f.left === left && f.right === right ? f : { left, right }));
-  }, []);
-
-  useLayoutEffect(() => {
-    updateFade();
-  }, [updateFade]);
-
-  useEffect(() => {
-    const row = rowRef.current;
-    if (!row) return;
-    const ro = new ResizeObserver(updateFade);
-    ro.observe(row);
-    return () => ro.disconnect();
-  }, [updateFade]);
-
-  // Vertical wheel → sideways scroll when the strip overflows (narrow windows).
-  const onWheel = (e) => {
-    const el = rowRef.current;
-    if (!el || el.scrollWidth <= el.clientWidth) return;
-    if (Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return;
-    el.scrollLeft += e.deltaY;
-  };
-
-  const fadeStyle =
-    fade.left && fade.right
-      ? account.swatchesFadeBoth
-      : fade.left
-        ? account.swatchesFadeLeft
-        : fade.right
-          ? account.swatchesFadeRight
-          : null;
+  const fadeStyle = pickFadeStyle(fade, {
+    both: account.swatchesFadeBoth,
+    left: account.swatchesFadeLeft,
+    right: account.swatchesFadeRight,
+  });
 
   return (
     <div
@@ -307,8 +271,7 @@ function TokensCard({ index, refreshToken }) {
           <div {...stylex.props(account.tokenMeta)}>
             <span {...stylex.props(account.tokenName)}>{t.name || '이름 없는 토큰'}</span>
             <span {...stylex.props(account.tokenSub)}>
-              {t.prefix}…
-              {fmtStamp(t.lastUsedAt) ? ` · 마지막 사용 ${fmtStamp(t.lastUsedAt)}` : ' · 사용 전'}
+              {t.prefix}…{lastUsedLabel(t.lastUsedAt)}
             </span>
           </div>
           <button
@@ -450,10 +413,7 @@ export function Account() {
     const tx = settings?.id
       ? db.tx.settings[settings.id].update(patch)
       : db.tx.settings[id()].update({ theme, ...patch }).link({ owner: user.id });
-    const result = await commitTransaction((t) => db.transact(t), tx, {
-      message: '저장하지 못했어요',
-      onError: toast,
-    });
+    const result = await commitTx(tx, '저장하지 못했어요');
     if (result.ok && message) toast(message);
     return result;
   };

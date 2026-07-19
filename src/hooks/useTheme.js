@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { isOk } from '../lib/command-result.js';
 import { THEME_KEY } from '../lib/config.js';
-import { toast } from '../lib/notify.js';
-import { db } from '../db/instant.js';
 import { applyDocumentTheme, readBootTheme } from '../theme/theme-dom.js';
-import { commitTransaction } from '../db/transaction.js';
+import { commitTx } from '../db/commit.js';
 import { persistThemeTx } from '../db/tx/theme.js';
 
 /**
@@ -47,10 +45,7 @@ export function useTheme(settings) {
     setTheme(next);
     const tx = persistThemeTx(settings, next);
     if (!tx) return true;
-    const result = await commitTransaction((transaction) => db.transact(transaction), tx, {
-      message: '테마를 저장하지 못했어요',
-      onError: toast,
-    });
+    const result = await commitTx(tx, '테마를 저장하지 못했어요');
     if (!isOk(result)) setTheme(previous);
     return isOk(result);
   };
