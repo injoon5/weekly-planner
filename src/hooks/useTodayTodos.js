@@ -4,6 +4,7 @@ import { buildTodayTodos, weekdayFromPlannerDate } from '../board/models.js';
 import { commitTx } from '../db/commit.js';
 import { checkTodoTx, uncheckTodoTx } from '../db/tx/todos.js';
 import { plannerDate } from '../lib/time.js';
+import { t } from '../strings.js';
 
 /**
  * Today's to-do list = the active board's events scheduled for today, in start
@@ -71,7 +72,7 @@ export function useTodayTodos(user, events) {
         const tx = rows?.length
           ? uncheckTodoTx(rows)
           : checkTodoTx(user.id, { day, eventId: id }).tx;
-        commitTx(tx, '할 일을 변경하지 못했어요');
+        commitTx(tx, t.todos.toast.toggleFailed);
       },
     }),
     [day, checkedBy, user?.id],

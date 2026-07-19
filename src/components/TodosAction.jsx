@@ -5,6 +5,7 @@ import { useTodayTodos } from '../hooks/useTodayTodos.js';
 import { planner } from '../styles/planner.js';
 import { todos as todoStyles } from '../styles/todos.js';
 import { TodoPanel } from './TodoPanel.jsx';
+import { t } from '../strings.js';
 
 /**
  * Header trigger for today's to-do panel; the badge counts what's left.
@@ -20,7 +21,7 @@ export function TodosAction({ user, events }) {
       <button
         {...stylex.props(planner.ibtn, todoStyles.trigger)}
         type="button"
-        aria-label="오늘 할 일"
+        aria-label={t.a11y.todayTodos}
         aria-expanded={open}
         onClick={() => setOpen(true)}
       >

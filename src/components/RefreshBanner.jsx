@@ -3,6 +3,7 @@ import * as stylex from '@stylexjs/stylex';
 import { useAppUpdate } from '../hooks/useAppUpdate.js';
 import { colors } from '../styles/tokens.stylex.js';
 import { ui } from '../styles/ui.js';
+import { t } from '../strings.js';
 
 const MOBILE = '@media screen and (max-width: 720px)';
 
@@ -131,8 +132,8 @@ export function RefreshBanner() {
       {...stylex.props(s.banner)}
     >
       <div {...stylex.props(s.copy)} data-ui-refresh-copy="">
-        <p {...stylex.props(s.title)}>앱 업데이트가 있어요</p>
-        <p {...stylex.props(s.desc)}>새로고침해서 최신 버전을 사용하세요</p>
+        <p {...stylex.props(s.title)}>{t.update.title}</p>
+        <p {...stylex.props(s.desc)}>{t.update.detail}</p>
       </div>
       <button
         type="button"
@@ -143,7 +144,7 @@ export function RefreshBanner() {
         <span {...stylex.props(s.actionIcon)} aria-hidden>
           <RefreshCw size={15} strokeWidth={2.25} />
         </span>
-        새로고침
+        {t.update.action}
       </button>
     </div>
   );

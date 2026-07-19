@@ -2,6 +2,7 @@ import * as stylex from '@stylexjs/stylex';
 import { isOptimisticBoardId } from '../board/optimistic-board.js';
 import { EMPTY_PRESENCE } from '../hooks/usePlannerRuntime.js';
 import { usePlannerScrollLock } from '../hooks/usePlannerScrollLock.js';
+import { t } from '../strings.js';
 import { planner } from '../styles/planner.js';
 import { PlannerProvider } from '../planner/PlannerProvider.jsx';
 import { usePlannerContext } from '../planner/usePlannerContext.js';
@@ -54,14 +55,14 @@ function PlannerShell() {
   // Optimistic seed provides `board` so guest create skips this gate.
   if (error || isLoading || !board) {
     const message = error
-      ? `오류: ${error.message}`
+      ? t.common.errorPrefix(error.message)
       : isLoading
-        ? '불러오는 중…'
-        : '시간표를 준비하는 중…';
+        ? t.common.loading
+        : t.common.boardLoading;
     return (
       <div {...stylex.props(planner.app)} data-app-shell="planner">
         <header {...stylex.props(planner.top)}>
-          <h1 {...stylex.props(planner.h1)}>주간 계획표</h1>
+          <h1 {...stylex.props(planner.h1)}>{t.app.name}</h1>
           <div {...stylex.props(planner.hbtns)}>
             {user ? <AccountMenu user={user} /> : null}
           </div>
@@ -86,8 +87,8 @@ function PlannerShell() {
     <div {...stylex.props(planner.app)} data-app-shell="planner">
       {showViewerBanner && (
         <div {...stylex.props(planner.banner)}>
-          <span {...stylex.props(planner.bannerStrong)}>보기 전용</span>
-          <span>이 시간표는 보기만 할 수 있어요</span>
+          <span {...stylex.props(planner.bannerStrong)}>{t.banner.viewerOnly}</span>
+          <span>{t.banner.viewerOnlyDetail}</span>
         </div>
       )}
 

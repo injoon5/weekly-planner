@@ -8,6 +8,7 @@ import {
   deleteEventRowsTx,
   patchBoardTx,
 } from '../db/tx/boards.js';
+import { t } from '../strings.js';
 
 /** Owner board CRUD. JSON export/import lives in useBoardTransfer.js. */
 export function useBoardLifecycle({
@@ -28,14 +29,14 @@ export function useBoardLifecycle({
       { name: nextBoardName(boards), from: range.from, to: range.to, events: [] },
       sortOrder,
     );
-    if (isOk(await commitTx(txs, '시간표를 만들지 못했어요'))) setActiveId(bid);
+    if (isOk(await commitTx(txs, t.board.toast.addFailed))) setActiveId(bid);
   };
 
   const commitBoard = async (patch) => {
     if (!isOwner || !board) return;
     const tx = patchBoardTx(board.id, patch);
     if (!tx) return;
-    await commitTx(tx, '시간표 설정을 저장하지 못했어요');
+    await commitTx(tx, t.board.toast.settingsSaveFailed);
   };
 
   const duplicateBoard = async () => {
@@ -44,7 +45,7 @@ export function useBoardLifecycle({
     const { bid, txs } = boardTx(
       user.id,
       {
-        name: (board.name || '시간표') + ' 사본',
+        name: (board.name || t.app.board) + t.board.copySuffix,
         from: board.from || '',
         to: board.to || '',
         repeatEvery: board.repeatEvery || 0,
@@ -53,7 +54,7 @@ export function useBoardLifecycle({
       },
       sortOrder,
     );
-    if (isOk(await commitTx(txs, '시간표를 복제하지 못했어요'))) {
+    if (isOk(await commitTx(txs, t.board.toast.duplicateFailed))) {
       setActiveId(bid);
       closeMenu();
     }
@@ -62,14 +63,14 @@ export function useBoardLifecycle({
   const clearBoard = async () => {
     if (!isOwner || !board) return;
     const txs = deleteEventRowsTx(events.map((e) => e.id));
-    if (!txs.length || isOk(await commitTx(txs, '일정을 비우지 못했어요'))) closeMenu();
+    if (!txs.length || isOk(await commitTx(txs, t.board.toast.clearFailed))) closeMenu();
   };
 
   const deleteBoard = async () => {
     if (!isOwner || !board || boards.length <= 1) return;
     const i = boards.findIndex((b) => b.id === board.id);
     const next = boards.filter((b) => b.id !== board.id);
-    if (isOk(await commitTx(deleteBoardTx(board.id), '시간표를 삭제하지 못했어요'))) {
+    if (isOk(await commitTx(deleteBoardTx(board.id), t.board.toast.deleteFailed))) {
       setActiveId(next[Math.max(0, i - 1)]?.id || null);
       closeMenu();
     }

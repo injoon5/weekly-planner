@@ -12,6 +12,7 @@ import { Sheet } from './ui/sheet.js';
 import { editor } from '../styles/editor.js';
 import { planner } from '../styles/planner.js';
 import { ui } from '../styles/ui.js';
+import { t } from '../strings.js';
 
 /**
  * Draft-until-save editor (Dialog on desktop, Drawer on mobile).
@@ -86,9 +87,9 @@ export function Editor({
           >
           <div {...stylex.props(editor.dhead)}>
             <Sheet.Title {...stylex.props(editor.dttl)}>
-              {readOnly ? '일정' : isNew ? '새 일정' : '일정 편집'}
+              {readOnly ? t.editor.event : isNew ? t.editor.newEvent : t.editor.editEvent}
             </Sheet.Title>
-            <Sheet.Close {...stylex.props(editor.icobtn)} aria-label="닫기">
+            <Sheet.Close {...stylex.props(editor.icobtn)} aria-label={t.common.close}>
               <X size={16} strokeWidth={2} />
             </Sheet.Close>
           </div>
@@ -96,7 +97,7 @@ export function Editor({
           <input
             ref={titleRef}
             {...stylex.props(editor.inpt, editor.inptTitle)}
-            placeholder="제목"
+            placeholder={t.editor.titlePlaceholder}
             value={local.title}
             readOnly={readOnly}
             onInput={(e) => patch({ title: e.target.value })}
@@ -104,11 +105,11 @@ export function Editor({
 
           <div {...stylex.props(editor.field)}>
             <div {...stylex.props(editor.lrow)}>
-              <span {...stylex.props(editor.lbl)}>색상</span>
+              <span {...stylex.props(editor.lbl)}>{t.editor.color}</span>
             </div>
             <RadioGroup
               {...stylex.props(editor.swrow)}
-              aria-label="색상"
+              aria-label={t.editor.color}
               value={local.color}
               disabled={readOnly}
               onValueChange={(c) => patch({ color: c })}
@@ -120,7 +121,7 @@ export function Editor({
                   data-color={c}
                   data-ui-swatch=""
                   {...stylex.props(editor.sw)}
-                  aria-label={(colorLabel ? colorLabel(c) : null) || '색상 ' + c}
+                  aria-label={(colorLabel ? colorLabel(c) : null) || t.a11y.swatch(c)}
                 >
                   <i
                     data-ui-swatch-dot=""
@@ -133,11 +134,11 @@ export function Editor({
 
           <div {...stylex.props(editor.field)}>
             <div {...stylex.props(editor.lrow)}>
-              <span {...stylex.props(editor.lbl)}>요일</span>
+              <span {...stylex.props(editor.lbl)}>{t.editor.day}</span>
             </div>
             <RadioGroup
               {...stylex.props(editor.dayrow)}
-              aria-label="요일"
+              aria-label={t.editor.day}
               value={local.day}
               disabled={readOnly}
               onValueChange={(d) => patch({ day: d })}
@@ -161,12 +162,12 @@ export function Editor({
 
           <div {...stylex.props(editor.field)}>
             <div {...stylex.props(editor.lrow)}>
-              <span {...stylex.props(editor.lbl)}>시간</span>
+              <span {...stylex.props(editor.lbl)}>{t.editor.time}</span>
               <span {...stylex.props(editor.ldur)}>{fmtDur(local.dur)}</span>
             </div>
             <div {...stylex.props(editor.timerow)}>
               <UiSelect
-                ariaLabel="시작 시간"
+                ariaLabel={t.editor.startTime}
                 items={startOpts}
                 value={local.start}
                 disabled={readOnly}
@@ -177,7 +178,7 @@ export function Editor({
               />
               <span {...stylex.props(editor.arrow)}>→</span>
               <UiSelect
-                ariaLabel="종료 시간"
+                ariaLabel={t.editor.endTime}
                 items={endOpts}
                 value={local.start + local.dur}
                 disabled={readOnly}
@@ -189,12 +190,12 @@ export function Editor({
 
           <div {...stylex.props(editor.field)}>
             <div {...stylex.props(editor.lrow)}>
-              <span {...stylex.props(editor.lbl)}>메모</span>
+              <span {...stylex.props(editor.lbl)}>{t.editor.memo}</span>
             </div>
             <textarea
               {...stylex.props(editor.inpt, editor.inptTextarea)}
               rows={2}
-              placeholder="선택 사항"
+              placeholder={t.editor.memoPlaceholder}
               value={local.memo || ''}
               readOnly={readOnly}
               onInput={(e) => patch({ memo: e.target.value })}
@@ -206,18 +207,18 @@ export function Editor({
               <>
                 <span {...stylex.props(editor.sp)} />
                 <Sheet.Close {...stylex.props(planner.btn, ui.btnPrimary)}>
-                  닫기
+                  {t.common.close}
                 </Sheet.Close>
               </>
             ) : isNew ? (
-              <Sheet.Close {...stylex.props(planner.btn, ui.btnGhost)}>취소</Sheet.Close>
+              <Sheet.Close {...stylex.props(planner.btn, ui.btnGhost)}>{t.common.cancel}</Sheet.Close>
             ) : (
               <HoldToConfirm
                 {...stylex.props(planner.btn, planner.btnDanger)}
                 onConfirm={onDelete}
-                aria-label="일정 삭제 — 길게 눌러 확인"
+                aria-label={t.a11y.deleteEventHold}
               >
-                삭제
+                {t.editor.delete}
               </HoldToConfirm>
             )}
             {!readOnly && (
@@ -228,7 +229,7 @@ export function Editor({
                   {...stylex.props(planner.btn, ui.btnPrimary)}
                   onClick={() => onSave(local)}
                 >
-                  {isNew ? '추가' : '완료'}
+                  {isNew ? t.common.add : t.common.done}
                 </button>
               </>
             )}

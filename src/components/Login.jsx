@@ -3,6 +3,7 @@ import { useMagicCodeAuth } from '../hooks/useMagicCodeAuth.js';
 import { auth } from '../styles/auth.js';
 import { ui } from '../styles/ui.js';
 import { CodeInputs } from './CodeInputs.jsx';
+import { t } from '../strings.js';
 
 export function Login() {
   const {
@@ -29,9 +30,9 @@ export function Login() {
 
         {!sentEmail ? (
           <div key="email" {...stylex.props(auth.step, auth.stepEnter)}>
-            <h1 {...stylex.props(auth.title)}>주간 계획표</h1>
+            <h1 {...stylex.props(auth.title)}>{t.auth.title}</h1>
             <p {...stylex.props(auth.copy)}>
-              이메일로 로그인 코드를 보내드려요. 계정이 없으면 자동으로 만들어집니다.
+              {t.auth.emailHint}
             </p>
             {err && (
               <div {...stylex.props(auth.err)} role="alert">
@@ -55,15 +56,15 @@ export function Login() {
                 type="submit"
                 disabled={busy}
               >
-                {busy ? '보내는 중…' : '코드 받기'}
+                {busy ? t.common.sending : t.auth.sendCode}
               </button>
             </form>
           </div>
         ) : (
           <div key="code" {...stylex.props(auth.step, auth.stepEnter)}>
-            <h1 {...stylex.props(auth.title)}>코드 입력</h1>
+            <h1 {...stylex.props(auth.title)}>{t.auth.codeTitle}</h1>
             <p {...stylex.props(auth.copy)}>
-              <strong>{sentEmail}</strong>으로 보낸 6자리 코드를 입력하세요.
+              <strong>{sentEmail}</strong>{t.auth.codeSentSuffix}
             </p>
             {err && (
               <div {...stylex.props(auth.err)} role="alert">
@@ -91,7 +92,7 @@ export function Login() {
                 disabled={busy || !isCodeComplete}
                 aria-disabled={busy || !isCodeComplete}
               >
-                {busy ? '확인 중…' : '로그인'}
+                {busy ? t.common.checking : t.common.login}
               </button>
             </form>
             <button
@@ -100,7 +101,7 @@ export function Login() {
               disabled={busy}
               onClick={backToEmail}
             >
-              다른 이메일
+              {t.auth.backToEmail}
             </button>
           </div>
         )}

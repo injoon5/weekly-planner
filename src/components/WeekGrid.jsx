@@ -14,6 +14,7 @@ import { compactLayout, layout } from '../styles/tokens.stylex.js';
 import { grid } from '../styles/grid.js';
 import { planner } from '../styles/planner.js';
 import { ui } from '../styles/ui.js';
+import { t } from '../strings.js';
 import { GridCursors } from './GridCursors.jsx';
 import { RefreshBanner } from './RefreshBanner.jsx';
 import { WeekGridCanvas } from './WeekGridCanvas.jsx';
@@ -224,9 +225,9 @@ export function WeekGrid({
       {!readOnly && events.length === 0 && !drag && (
         <div {...stylex.props(grid.emptyHint)} aria-hidden>
           <span {...stylex.props(ui.hintFine)}>
-            빈 칸을 클릭하거나 드래그해 일정을 만들어요
+            {t.editor.emptyHintFine}
           </span>
-          <span {...stylex.props(ui.hintCoarse)}>빈 칸을 탭해 일정을 추가해요</span>
+          <span {...stylex.props(ui.hintCoarse)}>{t.editor.emptyHintCoarse}</span>
         </div>
       )}
     </main>

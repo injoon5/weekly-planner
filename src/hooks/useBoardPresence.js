@@ -7,6 +7,7 @@ import {
   sessionSeed,
   shortName,
 } from '../presence/identity.js';
+import { t } from '../strings.js';
 
 /**
  * Instant room presence for a board (presence-and-topics).
@@ -19,7 +20,7 @@ export function useBoardPresence({ boardId, user, role, guestLabel, settings }) 
   const room = db.room('board', boardId);
 
   const customName = settings?.displayName?.trim();
-  const name = customName || (user?.email ? shortName(user.email) : guestLabel || '손님');
+  const name = customName || (user?.email ? shortName(user.email) : guestLabel || t.app.guest);
   const color = PEER_COLORS.includes(settings?.presenceColor)
     ? settings.presenceColor
     : peerColor(user?.email || sessionSeed());

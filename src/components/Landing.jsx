@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { db } from '../db/instant.js';
 import { applyDocumentTheme, readBootTheme } from '../theme/theme-dom.js';
+import { t } from '../strings.js';
 import { landing } from '../styles/landing.js';
 import { ui } from '../styles/ui.js';
 import { useLandingPresence } from '../hooks/useLandingPresence.js';
@@ -45,38 +46,9 @@ const BrandMark = ({ large }) => (
   </span>
 );
 
-const FEATURES = [
-  {
-    icon: Users,
-    title: '실시간 협업',
-    body: '같은 시간표를 여럿이 함께 편집해요. 커서와 접속 중인 사람이 바로 보이고, 모든 변경이 즉시 동기화됩니다.',
-  },
-  {
-    icon: Tags,
-    title: '색상 라벨',
-    body: '일정마다 색을 지정하고 이름을 붙여 분류하세요. 한 주의 균형이 색으로 한눈에 들어와요.',
-  },
-  {
-    icon: Share2,
-    title: '링크 공유',
-    body: '보기 전용 또는 편집 링크를 만들어 공유하고, 비밀번호로 보호할 수 있어요.',
-  },
-  {
-    icon: Printer,
-    title: '인쇄 · PDF',
-    body: '화면 그대로 깔끔하게 인쇄되도록 다듬었어요. 벽에 붙일 한 장짜리 시간표로 바로 출력하세요.',
-  },
-  {
-    icon: WifiOff,
-    title: '오프라인 지원',
-    body: '연결이 끊겨도 계속 쓸 수 있어요. 다시 온라인이 되면 변경 사항이 알아서 동기화됩니다.',
-  },
-  {
-    icon: CalendarRange,
-    title: '유연한 기간',
-    body: '특정 주의 날짜부터 반복되는 주간표까지. 여러 개의 보드로 학기, 프로젝트, 일상을 나눠 관리해요.',
-  },
-];
+// Icons pair with copy by index; the text lives in the strings catalog.
+const FEATURE_ICONS = [Users, Tags, Share2, Printer, WifiOff, CalendarRange];
+const FEATURES = FEATURE_ICONS.map((icon, i) => ({ icon, ...t.landing.features[i] }));
 
 // A mini of the real planner grid — same weekday rail, today pill, hour lines,
 // event blocks and now-line the app uses. Laid out over a 09:00–18:00 window.
@@ -116,9 +88,9 @@ function PlannerPreview() {
   const todayCol = previewTodayCol();
   const [nowStart] = useState(previewNowStart);
   return (
-    <div {...stylex.props(landing.preview)} role="img" aria-label="주간 시간표 미리보기">
+    <div {...stylex.props(landing.preview)} role="img" aria-label={t.landing.previewLabel}>
       <div {...stylex.props(landing.pHead)}>
-        <div {...stylex.props(landing.pCorner)}>시간</div>
+        <div {...stylex.props(landing.pCorner)}>{t.landing.gutterTime}</div>
         {DAYS.map(([ko, en], col) => (
           <div key={ko} {...stylex.props(landing.pDay)}>
             <span {...stylex.props(landing.pDko, col === todayCol && landing.pToday)}>
@@ -172,7 +144,7 @@ function PlannerPreview() {
 
 function GuestButton({
   variant = 'primary',
-  label = '게스트로 시작하기',
+  label = t.landing.startGuest,
   style,
   onSignedIn,
   showArrow = true,
@@ -188,7 +160,7 @@ function GuestButton({
       onSignedIn?.();
     } catch (ex) {
       setBusy(false);
-      toast(ex?.body?.message || ex?.message || '시작하지 못했어요. 다시 시도해 주세요');
+      toast(ex?.body?.message || ex?.message || t.landing.startFailed);
     }
   };
 
@@ -207,7 +179,7 @@ function GuestButton({
       {busy ? (
         <>
           <span {...stylex.props(landing.spinner)} aria-hidden="true" />
-          시작하는 중…
+          {t.landing.starting}
         </>
       ) : (
         <>
@@ -221,7 +193,7 @@ function GuestButton({
   );
 }
 
-function OpenPlannerButton({ variant = 'primary', label = '시간표 열기', style, onClick }) {
+function OpenPlannerButton({ variant = 'primary', label = t.landing.openPlanner, style, onClick }) {
   return (
     <button
       type="button"
@@ -238,11 +210,7 @@ function OpenPlannerButton({ variant = 'primary', label = '시간표 열기', st
   );
 }
 
-const STEPS = [
-  { title: '게스트로 시작', body: '이메일도, 비밀번호도 없이 버튼 한 번으로 바로 들어와요.' },
-  { title: '자유롭게 사용', body: '시간표를 만들고, 편집하고, 공유해 보세요. 전부 실제로 저장돼요.' },
-  { title: '이메일로 저장', body: '마음에 들면 이메일을 연결하세요. 만든 데이터는 그대로 이어집니다.' },
-];
+const STEPS = t.landing.steps;
 
 export function Landing() {
   const navigate = useNavigate();
@@ -287,13 +255,13 @@ export function Landing() {
         <nav {...stylex.props(landing.nav)}>
           <span {...stylex.props(landing.brand)}>
             <BrandMark />
-            주간 계획표
+            {t.landing.brand}
           </span>
           <div {...stylex.props(landing.navRight)}>
             <button
               type="button"
               onClick={toggle}
-              aria-label={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
+              aria-label={theme === 'dark' ? t.landing.toggleLight : t.landing.toggleDark}
               {...stylex.props(landing.iconBtn)}
             >
               <IconSwap
@@ -304,11 +272,11 @@ export function Landing() {
             </button>
             {signedIn ? (
               <button type="button" onClick={toPlanner} {...stylex.props(landing.navLink)}>
-                시간표 열기
+                {t.landing.openPlanner}
               </button>
             ) : (
               <button type="button" onClick={toLogin} {...stylex.props(landing.navLink)}>
-                로그인
+                {t.common.login}
               </button>
             )}
           </div>
@@ -321,16 +289,15 @@ export function Landing() {
           <section {...stylex.props(landing.hero)}>
             <div {...stylex.props(landing.heroCopy)}>
               <span {...riseIn()} {...stylex.props(landing.eyebrow)}>
-                실시간으로 함께 쓰는 주간 시간표
+                {t.landing.heroTagline}
               </span>
               <h1 {...riseIn()} {...stylex.props(landing.h1)}>
-                한 주를,
+                {t.landing.heroTitle1}
                 <br />
-                <span {...stylex.props(landing.h1Accent)}>한 화면에.</span>
+                <span {...stylex.props(landing.h1Accent)}>{t.landing.heroTitleAccent}</span>
               </h1>
               <p {...riseIn()} {...stylex.props(landing.lede)}>
-                드래그 한 번으로 일정을 만들고, 색으로 분류하고, 링크로 나눠요. 팀과 함께 편집한
-                내용은 그 자리에서 동기화됩니다.
+                {t.landing.heroLede}
               </p>
               <div {...riseIn()} {...stylex.props(landing.ctaRow)}>
                 {signedIn ? (
@@ -342,7 +309,7 @@ export function Landing() {
                       onClick={toLogin}
                       {...stylex.props(landing.btn, landing.btnPrimary)}
                     >
-                      이메일로 로그인
+                      {t.landing.loginEmail}
                       <ArrowRight size={17} strokeWidth={2} {...stylex.props(landing.btnArrow)} />
                     </button>
                     <GuestButton
@@ -355,8 +322,8 @@ export function Landing() {
               </div>
               <p {...riseIn()} {...stylex.props(landing.ctaNote)}>
                 {signedIn
-                  ? '이미 로그인되어 있어요. 시간표로 바로 이동할 수 있습니다.'
-                  : '이메일로 로그인하거나 · 게스트로 바로 시작해도 괜찮아요.'}
+                  ? t.landing.ctaSignedIn
+                  : t.landing.ctaSignedOut}
               </p>
             </div>
 
@@ -373,11 +340,10 @@ export function Landing() {
         <div {...stylex.props(landing.shell)}>
           <section {...stylex.props(landing.section)} id="features">
             <div {...stylex.props(landing.sectionHead)}>
-              <p {...stylex.props(landing.kicker)}>기능</p>
-              <h2 {...stylex.props(landing.h2)}>한 주를 계획하는 데 필요한 전부</h2>
+              <p {...stylex.props(landing.kicker)}>{t.landing.featuresKicker}</p>
+              <h2 {...stylex.props(landing.h2)}>{t.landing.featuresTitle}</h2>
               <p {...stylex.props(landing.sectionSub)}>
-                복잡한 설정 없이, 딱 필요한 것만. 매일 여는 도구인 만큼 빠르고 조용하게 동작하도록
-                만들었어요.
+                {t.landing.featuresSub}
               </p>
             </div>
             <div {...stylex.props(landing.features)}>
@@ -401,10 +367,10 @@ export function Landing() {
               <div {...stylex.props(landing.guestCopy)}>
                 {signedIn ? (
                   <>
-                    <p {...stylex.props(landing.kicker)}>바로 시작</p>
-                    <h2 {...stylex.props(landing.h2)}>시간표로 돌아가기</h2>
+                    <p {...stylex.props(landing.kicker)}>{t.landing.startNowKicker}</p>
+                    <h2 {...stylex.props(landing.h2)}>{t.landing.backToPlannerTitle}</h2>
                     <p {...stylex.props(landing.sectionSub)}>
-                      로그인된 상태예요. 만든 보드와 일정은 그대로 기다리고 있습니다.
+                      {t.landing.signedInSub}
                     </p>
                     <div {...stylex.props(landing.guestCta)}>
                       <OpenPlannerButton onClick={toPlanner} />
@@ -412,12 +378,10 @@ export function Landing() {
                   </>
                 ) : (
                   <>
-                    <p {...stylex.props(landing.kicker)}>게스트 모드</p>
-                    <h2 {...stylex.props(landing.h2)}>가입 없이, 지금 바로 써보세요</h2>
+                    <p {...stylex.props(landing.kicker)}>{t.landing.guestKicker}</p>
+                    <h2 {...stylex.props(landing.h2)}>{t.landing.guestTitle}</h2>
                     <p {...stylex.props(landing.sectionSub)}>
-                      게스트로 시작하면 계정을 만드는 순간을 미룰 수 있어요. 먼저 충분히 써보고,
-                      마음에 들면 그때 이메일을 연결하면 됩니다. 게스트로 만든 시간표는 계정으로
-                      그대로 이어져요.
+                      {t.landing.guestSub}
                     </p>
                     <div {...stylex.props(landing.guestCta)}>
                       <GuestButton onSignedIn={afterGuestSignIn} />
@@ -453,9 +417,9 @@ export function Landing() {
         <div {...stylex.props(landing.footerInner)}>
           <span {...stylex.props(landing.brand)}>
             <BrandMark />
-            주간 계획표
+            {t.landing.brand}
           </span>
-          <span {...stylex.props(landing.footerTxt)}>실시간으로 함께 쓰는 주간 시간표</span>
+          <span {...stylex.props(landing.footerTxt)}>{t.landing.footerTagline}</span>
         </div>
       </footer>
     </div>

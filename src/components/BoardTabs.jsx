@@ -3,6 +3,7 @@ import * as stylex from '@stylexjs/stylex';
 import { Plus, ChevronDown } from 'lucide-react';
 import { useOverflowFade, pickFadeStyle } from '../hooks/useOverflowFade.js';
 import { planner } from '../styles/planner.js';
+import { t } from '../strings.js';
 
 /**
  * Board tab strip with a sliding active pill.
@@ -64,7 +65,7 @@ export function BoardTabs({ boards, activeId, canAdd, onSelect, onOpenActive, on
           right: planner.tabsFadeRight,
         }),
       )}
-      aria-label="시간표 목록"
+      aria-label={t.a11y.boardList}
       ref={rowRef}
       onScroll={updateFade}
       onWheel={onWheel}
@@ -87,15 +88,15 @@ export function BoardTabs({ boards, activeId, canAdd, onSelect, onOpenActive, on
           {...stylex.props(planner.tab, b.id === activeId && planner.tabOn)}
           data-active-tab={b.id === activeId ? 'true' : undefined}
           aria-current={b.id === activeId ? 'true' : 'false'}
-          title={b.id === activeId ? '시간표 설정' : b.name}
+          title={b.id === activeId ? t.a11y.boardSettings : b.name}
           onClick={(e) => (b.id === activeId ? onOpenActive(e) : onSelect(b.id))}
         >
-          <span {...stylex.props(planner.tabName)}>{b.name || '시간표'}</span>
+          <span {...stylex.props(planner.tabName)}>{b.name || t.app.board}</span>
           {b.id === activeId && <ChevronDown size={11} strokeWidth={2} />}
         </button>
       ))}
       {canAdd && (
-        <button {...stylex.props(planner.tadd)} aria-label="새 시간표 추가" onClick={onAdd}>
+        <button {...stylex.props(planner.tadd)} aria-label={t.a11y.addBoard} onClick={onAdd}>
           <Plus size={13} strokeWidth={2} />
         </button>
       )}

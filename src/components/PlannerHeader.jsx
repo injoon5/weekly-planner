@@ -10,6 +10,7 @@ import { PrintMeta } from './PrintMeta.jsx';
 import { ViewControls } from './ViewControls.jsx';
 import { IconSwap } from './ui/IconSwap.jsx';
 import { MenuPopover } from './ui/MenuPopover.jsx';
+import { t } from '../strings.js';
 
 export function PlannerHeader({
   board,
@@ -28,8 +29,8 @@ export function PlannerHeader({
   return (
     <header {...stylex.props(planner.top)}>
       <h1 {...stylex.props(planner.h1)}>
-        주간 계획표
-        <span {...stylex.props(planner.pbname)}> · {board.name || '시간표'}</span>
+        {t.app.name}
+        <span {...stylex.props(planner.pbname)}> · {board.name || t.app.board}</span>
       </h1>
 
       {(board.from || board.to) && (
@@ -52,7 +53,7 @@ export function PlannerHeader({
         <button
           {...stylex.props(planner.ibtn)}
           type="button"
-          aria-label={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
+          aria-label={theme === 'dark' ? t.a11y.toLightMode : t.a11y.toDarkMode}
           onClick={onToggleTheme}
         >
           <IconSwap
@@ -66,7 +67,7 @@ export function PlannerHeader({
         <MenuPopover
           width={264}
           trigger={
-            <button {...stylex.props(planner.ibtn)} type="button" aria-label="더보기">
+            <button {...stylex.props(planner.ibtn)} type="button" aria-label={t.a11y.more}>
               <MoreHorizontal size={15} strokeWidth={1.75} />
             </button>
           }
@@ -79,11 +80,11 @@ export function PlannerHeader({
         <button
           {...stylex.props(planner.btn, ui.btnPlain)}
           type="button"
-          aria-label="인쇄"
+          aria-label={t.a11y.print}
           onClick={onPrint}
         >
           <Printer size={14} strokeWidth={1.75} />
-          <span {...stylex.props(planner.btnLabelHide)}>인쇄</span>
+          <span {...stylex.props(planner.btnLabelHide)}>{t.a11y.print}</span>
         </button>
       </div>
     </header>

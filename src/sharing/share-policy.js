@@ -5,6 +5,7 @@ import {
   SHARE_ROLE,
 } from './roles.js';
 import { hashSharePassword, randomShareSalt, randomToken } from './share.js';
+import { t } from '../strings.js';
 
 /**
  * The share row whose link is currently live, or null. The share panel keys
@@ -28,9 +29,9 @@ export function activeShareOf(board) {
 export const SHARE_PASSWORD_MIN = 4;
 
 function assertSharePassword(password) {
-  if (!password) throw new Error('비밀번호를 입력하세요');
+  if (!password) throw new Error(t.share.err.enterPassword);
   if (String(password).length < SHARE_PASSWORD_MIN) {
-    throw new Error(`비밀번호는 ${SHARE_PASSWORD_MIN}자 이상이어야 해요`);
+    throw new Error(t.share.err.passwordTooShort(SHARE_PASSWORD_MIN));
   }
 }
 
@@ -106,7 +107,7 @@ export async function buildShareSecrets({
  * }} args
  */
 export async function buildShareUpdate({ share, mode, role, password = '' }) {
-  if (!share?.token) throw new Error('공유 링크가 없어요');
+  if (!share?.token) throw new Error(t.share.err.noLink);
   const nextMode = normalizeShareMode(mode ?? share.mode);
   const nextRole = normalizeShareRole(role ?? share.role);
   let secret;
@@ -121,7 +122,7 @@ export async function buildShareUpdate({ share, mode, role, password = '' }) {
       secret = share.secret;
       passwordSalt = share.passwordSalt || null;
     }
-    if (!secret) throw new Error('비밀번호를 입력하세요');
+    if (!secret) throw new Error(t.share.err.enterPassword);
   } else {
     secret = share.token;
     passwordSalt = null;

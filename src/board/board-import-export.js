@@ -2,6 +2,7 @@ import { normBoards } from './legacy.js';
 import { nextBoardSortOrder } from './models.js';
 import { defaultBoardRange, pad } from '../lib/time.js';
 import { boardTx } from '../db/tx/boards.js';
+import { t } from '../strings.js';
 
 /** Build the JSON export payload from Instant board rows. */
 export function buildExportPayload(exportBoards) {
@@ -46,7 +47,7 @@ export function downloadJson(payload, filename = exportFilename()) {
  */
 export function buildImportTransactions(json, { userId, existingBoards }) {
   const importedBoards = normBoards(json);
-  if (!importedBoards?.length) return { error: '가져올 시간표가 없어요' };
+  if (!importedBoards?.length) return { error: t.transfer.noBoards };
 
   const base = nextBoardSortOrder(existingBoards);
   const range = defaultBoardRange();
@@ -72,6 +73,6 @@ export async function parseImportText(text) {
   try {
     return { json: JSON.parse(text) };
   } catch {
-    return { error: 'JSON 파일을 읽을 수 없어요' };
+    return { error: t.transfer.readFailed };
   }
 }

@@ -4,6 +4,7 @@ import * as stylex from '@stylexjs/stylex';
 import { Download, Upload } from 'lucide-react';
 import { menus } from '../styles/menus.js';
 import { ui } from '../styles/ui.js';
+import { t } from '../strings.js';
 
 /** Extra actions for the header's ⋯ popover: JSON export/import + usage hints. */
 export function MoreMenu({ onExport, onImport }) {
@@ -13,25 +14,19 @@ export function MoreMenu({ onExport, onImport }) {
         <span {...stylex.props(menus.miIconWrap)}>
           <Download size={14} strokeWidth={1.75} />
         </span>
-        <span {...stylex.props(menus.miLabel)}>JSON 내보내기</span>
+        <span {...stylex.props(menus.miLabel)}>{t.transfer.exportJson}</span>
       </Popover.Close>
       {onImport && (
         <Popover.Close render={<button {...stylex.props(menus.mi)} onClick={onImport} />}>
           <span {...stylex.props(menus.miIconWrap)}>
             <Upload size={14} strokeWidth={1.75} />
           </span>
-          <span {...stylex.props(menus.miLabel)}>JSON 가져오기</span>
+          <span {...stylex.props(menus.miLabel)}>{t.transfer.importJson}</span>
         </Popover.Close>
       )}
       <Separator {...stylex.props(menus.mdiv)} />
-      <div {...stylex.props(menus.mcap, ui.hintFine)}>
-        빈 칸을 클릭하거나 드래그해 일정을 만들고, 블록을 끌어 옮기거나 위·아래 가장자리로 길이를 조절할 수
-        있어요. 모든 변경은 계정에 실시간 동기화됩니다.
-      </div>
-      <div {...stylex.props(menus.mcap, ui.hintCoarse)}>
-        빈 칸을 탭해 일정을 추가하고, 블록을 길게 눌러 옮길 수 있어요. 모든 변경은 계정에 실시간
-        동기화됩니다.
-      </div>
+      <div {...stylex.props(menus.mcap, ui.hintFine)}>{t.transfer.hint}</div>
+      <div {...stylex.props(menus.mcap, ui.hintCoarse)}>{t.transfer.hintCoarse}</div>
     </>
   );
 }

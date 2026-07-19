@@ -4,6 +4,7 @@ import { THEME_KEY } from '../lib/config.js';
 import { applyDocumentTheme, readBootTheme } from '../theme/theme-dom.js';
 import { commitTx } from '../db/commit.js';
 import { persistThemeTx } from '../db/tx/theme.js';
+import { t } from '../strings.js';
 
 /**
  * Single theme owner after boot: Instant settings → local cache → DOM.
@@ -45,7 +46,7 @@ export function useTheme(settings) {
     setTheme(next);
     const tx = persistThemeTx(settings, next);
     if (!tx) return true;
-    const result = await commitTx(tx, '테마를 저장하지 못했어요');
+    const result = await commitTx(tx, t.theme.saveFailed);
     if (!isOk(result)) setTheme(previous);
     return isOk(result);
   };

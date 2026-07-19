@@ -11,6 +11,7 @@ import {
 import { fmt } from '../lib/time.js';
 import { grid } from '../styles/grid.js';
 import { GridEventBlock } from './GridEventBlock.jsx';
+import { t } from '../strings.js';
 
 /** One hover highlight per day — replaces 48 slot nodes × N days. */
 function DayColumn({ day, colRef, first }) {
@@ -114,7 +115,7 @@ export function WeekGridCanvas({
                 width: x.width,
               }}
             >
-              <div {...stylex.props(grid.bt)}>새 일정</div>
+              <div {...stylex.props(grid.bt)}>{t.grid.newEvent}</div>
             </div>
           );
         })()}

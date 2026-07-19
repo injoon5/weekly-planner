@@ -11,6 +11,7 @@ import {
 } from '../board/board-import-export.js';
 import { commitTx } from '../db/commit.js';
 import { sortBoards } from '../board/models.js';
+import { t } from '../strings.js';
 
 async function doExport() {
   let exportBoards;
@@ -19,11 +20,11 @@ async function doExport() {
     exportBoards = sortBoards(result.data?.boards);
   } catch (error) {
     console.error(error);
-    toast('내보낼 시간표를 불러오지 못했어요');
+    toast(t.transfer.exportFailed);
     return;
   }
   downloadJson(buildExportPayload(exportBoards), exportFilename());
-  toast('JSON 파일로 내보냈어요');
+  toast(t.transfer.exported);
 }
 
 /**
@@ -59,16 +60,16 @@ export function useBoardTransfer({ user, boards, setActiveId, isOwner = true }) 
         toast(built.error);
         return;
       }
-      const result = await commitTx(built.txs, '파일을 가져오지 못했어요');
+      const result = await commitTx(built.txs, t.transfer.importFailed);
       if (!isOk(result)) return;
       setActiveId(built.firstId);
       toast(
         built.boards.length === 1
-          ? `'${built.boards[0].name}' 시간표를 가져왔어요`
-          : `시간표 ${built.boards.length}개를 가져왔어요`,
+          ? t.transfer.importedOne(built.boards[0].name)
+          : t.transfer.importedMany(built.boards.length),
       );
     } catch {
-      toast('파일을 가져오지 못했어요');
+      toast(t.transfer.importFailed);
     }
   };
 

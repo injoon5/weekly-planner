@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { db } from '../db/instant.js';
+import { t } from '../strings.js';
 
 /**
  * Shared magic-code email auth flow for Login + UpgradeDialog.
@@ -32,7 +33,7 @@ export function useMagicCodeAuth({ onVerified } = {}) {
       setSentEmail(email);
       setCode('');
     } catch (ex) {
-      setErr(ex?.body?.message || ex?.message || '코드를 보내지 못했어요');
+      setErr(ex?.body?.message || ex?.message || t.auth.err.sendCode);
     } finally {
       setBusy(false);
     }
@@ -48,7 +49,7 @@ export function useMagicCodeAuth({ onVerified } = {}) {
       await db.auth.signInWithMagicCode({ email: sentEmail, code: c });
       onVerified?.();
     } catch (ex) {
-      setErr(ex?.body?.message || ex?.message || '코드가 올바르지 않아요');
+      setErr(ex?.body?.message || ex?.message || t.auth.err.badCode);
       setShake((s) => s + 1);
       setCode('');
     } finally {

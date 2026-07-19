@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { db } from '../db/instant.js';
 import { normalizePeers, peerColor, sessionSeed, shortName } from '../presence/identity.js';
+import { t } from '../strings.js';
 
 /** Fixed Instant room id for marketing-page presence (not a real board). */
 export const LANDING_ROOM_ID = 'landing';
@@ -16,7 +17,7 @@ export function useLandingPresence() {
   const room = db.room('board', LANDING_ROOM_ID);
 
   const seed = user?.email || user?.id || sessionSeed();
-  const name = user?.email ? shortName(user.email) : '손님';
+  const name = user?.email ? shortName(user.email) : t.app.guest;
   const color = peerColor(seed);
 
   const { peers: rawPeers, publishPresence } = db.rooms.usePresence(room, {

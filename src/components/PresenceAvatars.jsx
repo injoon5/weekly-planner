@@ -2,9 +2,10 @@ import * as stylex from '@stylexjs/stylex';
 import { menus } from '../styles/menus.js';
 import { planner } from '../styles/planner.js';
 import { MenuPopover } from './ui/MenuPopover.jsx';
+import { t } from '../strings.js';
 
 function roleLabel(role) {
-  return role === 'editor' ? '편집' : '보기';
+  return role === 'editor' ? t.share.roleEditor : t.share.roleViewer;
 }
 
 function AvatarStack({ peers, max }) {
@@ -38,15 +39,15 @@ export function PresenceAvatars({ peers, max = 4 }) {
         <button
           {...stylex.props(planner.presenceBtn)}
           type="button"
-          aria-label={`접속 중 ${peers.length}명 — 이름 보기`}
-          title={`접속 중 ${peers.length}명`}
+          aria-label={t.a11y.presenceNames(peers.length)}
+          title={t.a11y.presenceCount(peers.length)}
         >
           <AvatarStack peers={peers} max={max} />
         </button>
       }
     >
       <div {...stylex.props(menus.mcap, menus.mcapStrong, menus.mcapFirst)}>
-        접속 중 · {peers.length}명
+        {t.a11y.presenceHeading(peers.length)}
       </div>
       {peers.map((p) => (
         <div key={p.id} {...stylex.props(planner.peerRow)}>

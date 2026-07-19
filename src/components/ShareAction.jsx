@@ -5,6 +5,7 @@ import { db } from '../db/instant.js';
 import { findMemberForUser } from '../sharing/member-policy.js';
 import { planner } from '../styles/planner.js';
 import { MenuPopover } from './ui/MenuPopover.jsx';
+import { t } from '../strings.js';
 
 const SharePanel = lazy(() =>
   import('./SharePanel.jsx').then((m) => ({ default: m.SharePanel })),
@@ -43,13 +44,13 @@ export function ShareAction({ board, user, isOwner }) {
       open={open}
       onOpenChange={setOpen}
       trigger={
-        <button {...stylex.props(planner.ibtn)} type="button" aria-label="공유">
+        <button {...stylex.props(planner.ibtn)} type="button" aria-label={t.a11y.share}>
           <Share2 size={15} strokeWidth={1.75} />
         </button>
       }
     >
       {open ? (
-        <Suspense fallback={<div {...stylex.props(planner.boot)}>불러오는 중…</div>}>
+        <Suspense fallback={<div {...stylex.props(planner.boot)}>{t.common.loading}</div>}>
           <SharePanel
             board={richBoard}
             isOwner={isOwner}

@@ -11,6 +11,7 @@ import {
 import { commitTx } from '../db/commit.js';
 import { patchBoardTx } from '../db/tx/boards.js';
 import { upsertBoardPrefsTx } from '../db/tx/prefs.js';
+import { t } from '../strings.js';
 
 const guestKey = (boardKey) => `weekly-planner.view.${boardKey || 'guest'}`;
 
@@ -73,7 +74,7 @@ export function useViewControls({
       if (!user || !boardId) return false;
       const tx = upsertBoardPrefsTx(boardPrefs?.id, user.id, boardId, patch);
       if (!tx) return true;
-      return isOk(await commitTx(tx, '보기 설정을 저장하지 못했어요'));
+      return isOk(await commitTx(tx, t.viewPrefs.saveFailed));
     },
     [user, boardId, boardPrefs?.id],
   );
@@ -125,7 +126,7 @@ export function useViewControls({
       if (!label.trim()) delete next[color];
       const tx = patchBoardTx(boardId, { colorLabels: serializeColorLabels(next) });
       if (!tx) return true;
-      return isOk(await commitTx(tx, '색상 이름을 저장하지 못했어요'));
+      return isOk(await commitTx(tx, t.viewPrefs.colorNameSaveFailed));
     },
     [canRenameColors, boardId, labelsFromBoard],
   );

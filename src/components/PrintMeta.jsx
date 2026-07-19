@@ -1,3 +1,4 @@
+import { t } from '../strings.js';
 import * as stylex from '@stylexjs/stylex';
 import { fmtRange } from '../lib/time.js';
 import { planner } from '../styles/planner.js';
@@ -26,11 +27,11 @@ export function PrintMeta({ prefs }) {
   return (
     <div {...stylex.props(planner.printMeta)}>
       {prefs.showName && (
-        <MetaField label="이름" value={prefs.name?.trim() || ''} blank={!prefs.name?.trim()} />
+        <MetaField label={t.print.name} value={prefs.name?.trim() || ''} blank={!prefs.name?.trim()} />
       )}
-      {prefs.showDate && <MetaField label="날짜" value={dateVal} blank={dateBlank} />}
+      {prefs.showDate && <MetaField label={t.print.date} value={dateVal} blank={dateBlank} />}
       {prefs.showTime && (
-        <MetaField label="시간" value={prefs.time?.trim() || ''} blank={!prefs.time?.trim()} />
+        <MetaField label={t.print.time} value={prefs.time?.trim() || ''} blank={!prefs.time?.trim()} />
       )}
     </div>
   );

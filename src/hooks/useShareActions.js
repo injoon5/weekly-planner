@@ -18,6 +18,7 @@ import {
 } from '../sharing/share-policy.js';
 import { SHARE_MODE, normalizeShareRole } from '../sharing/roles.js';
 import { shareUrl } from '../sharing/share.js';
+import { t } from '../strings.js';
 
 /** Share-policy validation errors carry user-facing Korean messages; prefer them. */
 function errorMessage(err, fallback) {
@@ -34,7 +35,7 @@ function failWith(message, error) {
 export function useShareActions({ board, isOwner = true }) {
   const activeShare = () => activeShareOf(board);
   const enableShare = async ({ mode = 'open', role = 'viewer', password = '' } = {}) => {
-    if (!isOwner || !board) return fail('소유자만 공유할 수 있어요');
+    if (!isOwner || !board) return fail(t.share.err.ownerOnly);
     const existing = activeShare();
     try {
       const built = await buildShareSecrets({
@@ -46,10 +47,10 @@ export function useShareActions({ board, isOwner = true }) {
       await db.transact(replaceShareTxs(board.id, existing?.id, { ...built, enabled: true }));
       const url = shareUrl(built.token);
       await copyToClipboard(url);
-      toast('공유 링크를 켰어요');
+      toast(t.share.toast.enabled);
       return ok(url);
     } catch (err) {
-      return failWith(errorMessage(err, '공유를 켜지 못했어요'), err);
+      return failWith(errorMessage(err, t.share.err.enableFailed), err);
     }
   };
 
@@ -65,10 +66,10 @@ export function useShareActions({ board, isOwner = true }) {
     try {
       const fields = await buildShareUpdate({ share, mode, role, password });
       await db.transact(replaceShareTxs(board.id, share.id, fields));
-      toast('공유 설정을 바꿨어요');
+      toast(t.share.toast.updated);
       return ok();
     } catch (err) {
-      return failWith(errorMessage(err, '공유 설정을 바꾸지 못했어요'), err);
+      return failWith(errorMessage(err, t.share.err.updateFailed), err);
     }
   };
 
@@ -80,7 +81,7 @@ export function useShareActions({ board, isOwner = true }) {
     // match the share rules again (see share-policy.js for why).
     const tx = patchShareTx(share.id, buildShareDisable());
     if (tx) await db.transact(tx);
-    toast('공유 링크를 껐어요');
+    toast(t.share.toast.disabled);
     return ok();
   };
 
@@ -89,8 +90,8 @@ export function useShareActions({ board, isOwner = true }) {
     const share = activeShare();
     if (!share) return fail();
     if (share.mode === SHARE_MODE.PASSWORD) {
-      toast('비밀번호 공유는 새 비밀번호로 다시 설정하세요');
-      return fail('비밀번호 공유는 새 비밀번호로 다시 설정하세요');
+      toast(t.share.err.passwordResetNeeded);
+      return fail(t.share.err.passwordResetNeeded);
     }
     try {
       const built = await buildShareSecrets({
@@ -104,22 +105,22 @@ export function useShareActions({ board, isOwner = true }) {
       ]);
       const url = shareUrl(built.token);
       await copyToClipboard(url);
-      toast('새 링크를 만들었어요');
+      toast(t.share.toast.newLink);
       return ok(url);
     } catch (err) {
-      return failWith(errorMessage(err, '링크를 바꾸지 못했어요'), err);
+      return failWith(errorMessage(err, t.share.err.rotateFailed), err);
     }
   };
 
   const copyShareLink = async () => {
     const share = activeShare();
     if (!share?.token) {
-      toast('먼저 공유를 켜주세요');
-      return fail('먼저 공유를 켜주세요');
+      toast(t.share.err.firstEnable);
+      return fail(t.share.err.firstEnable);
     }
     const url = shareUrl(share.token);
     if (await copyToClipboard(url)) {
-      toast('링크를 복사했어요');
+      toast(t.share.toast.linkCopied);
       return ok(url);
     }
     toast(url);
@@ -132,7 +133,7 @@ export function useShareActions({ board, isOwner = true }) {
       await db.transact(memberRoleTxs(db.tx, { boardId: board.id, memberId, userId, role }));
       return ok();
     } catch (error) {
-      return failWith('멤버 역할을 바꾸지 못했어요', error);
+      return failWith(t.share.err.roleChangeFailed, error);
     }
   };
 
@@ -140,10 +141,10 @@ export function useShareActions({ board, isOwner = true }) {
     if (!isOwner || !board) return fail();
     try {
       await db.transact(removeMemberTxs(db.tx, { boardId: board.id, memberId, userId }));
-      toast('멤버를 제거했어요');
+      toast(t.share.toast.memberRemoved);
       return ok();
     } catch (error) {
-      return failWith('멤버를 제거하지 못했어요', error);
+      return failWith(t.share.err.removeFailed, error);
     }
   };
 
@@ -151,10 +152,10 @@ export function useShareActions({ board, isOwner = true }) {
     if (!memberId || !board) return fail();
     try {
       await db.transact(removeMemberTxs(db.tx, { boardId: board.id, memberId, userId }));
-      toast('시간표에서 나갔어요');
+      toast(t.share.toast.left);
       return ok();
     } catch (error) {
-      return failWith('시간표에서 나가지 못했어요', error);
+      return failWith(t.share.err.leaveFailed, error);
     }
   };
 
@@ -165,11 +166,11 @@ export function useShareActions({ board, isOwner = true }) {
         refreshToken,
         body: { boardId: board.id, email, role },
       });
-      if (!sent) return failWith(payload.error || '초대에 실패했어요');
-      toast(payload.updated ? '역할을 업데이트했어요' : '초대했어요');
+      if (!sent) return failWith(payload.error || t.share.err.inviteFailed);
+      toast(payload.updated ? t.share.toast.roleUpdated : t.share.toast.invited);
       return ok({ updated: Boolean(payload.updated), memberId: payload.memberId });
     } catch (error) {
-      return failWith('초대에 실패했어요', error);
+      return failWith(t.share.err.inviteFailed, error);
     }
   };
 

@@ -7,6 +7,7 @@ import {
   readShareUnlock,
   writeShareUnlock,
 } from '../sharing/share.js';
+import { t } from '../strings.js';
 
 /**
  * Public share route: metadata by token, board via ruleParams.secret.
@@ -85,7 +86,7 @@ export function useSharedBoard(token) {
       writeShareUnlock(token, hashed);
       setManualSecret(hashed);
     } catch {
-      setUnlockError('잠금 해제에 실패했어요');
+      setUnlockError(t.auth.unlockFailed);
     } finally {
       setBusy(false);
     }

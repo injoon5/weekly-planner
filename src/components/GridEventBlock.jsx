@@ -4,6 +4,7 @@ import { DAYS_KO, SLOT_MIN } from '../lib/config.js';
 import { geoX, slotHeight, slotTop } from '../grid/grid-layout.js';
 import { fmt } from '../lib/time.js';
 import { grid } from '../styles/grid.js';
+import { t } from '../strings.js';
 
 function GridEventBlockImpl({
   ev,
@@ -39,17 +40,13 @@ function GridEventBlockImpl({
       data-color={ev.color || 'graphite'}
       role="button"
       tabIndex={0}
-      aria-label={
-        (ev.title || '일정') +
-        (label ? ', ' + label : '') +
-        ', ' +
-        DAYS_KO[ev.day] +
-        '요일 ' +
-        fmt(ev.start) +
-        '부터 ' +
-        fmt(ev.start + ev.dur) +
-        '까지'
-      }
+      aria-label={t.a11y.eventAt(
+        ev.title || t.app.event,
+        label,
+        DAYS_KO[ev.day],
+        fmt(ev.start),
+        fmt(ev.start + ev.dur),
+      )}
       onPointerEnter={() => setHov(true)}
       onPointerLeave={() => setHov(false)}
       onKeyDown={(e) => {
@@ -71,7 +68,7 @@ function GridEventBlockImpl({
           showHandles && grid.hhVisible,
         )}
       />
-      <div {...stylex.props(grid.bt, isTall && grid.btTall)}>{ev.title || '일정'}</div>
+      <div {...stylex.props(grid.bt, isTall && grid.btTall)}>{ev.title || t.app.event}</div>
       {ev.dur >= SLOT_MIN * 2 && (
         <div {...stylex.props(grid.bm)}>
           {fmt(ev.start)} – {fmt(ev.start + ev.dur)}

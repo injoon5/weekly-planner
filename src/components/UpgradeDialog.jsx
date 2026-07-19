@@ -6,6 +6,7 @@ import { auth } from '../styles/auth.js';
 import { editor } from '../styles/editor.js';
 import { ui } from '../styles/ui.js';
 import { CodeInputs } from './CodeInputs.jsx';
+import { t } from '../strings.js';
 import { Sheet } from './ui/sheet.js';
 
 /**
@@ -47,9 +48,9 @@ export function UpgradeDialog({ open, onOpenChange }) {
           <Sheet.Popup {...stylex.props(editor.dlg)}>
             <div {...stylex.props(editor.dhead)}>
               <Sheet.Title {...stylex.props(editor.dttl)}>
-                {sentEmail ? '코드 입력' : '계정 만들기'}
+                {sentEmail ? t.upgrade.codeTitle : t.upgrade.createAccount}
               </Sheet.Title>
-              <Sheet.Close {...stylex.props(editor.icobtn)} aria-label="닫기">
+              <Sheet.Close {...stylex.props(editor.icobtn)} aria-label={t.common.close}>
                 <X size={16} strokeWidth={2} />
               </Sheet.Close>
             </div>
@@ -57,8 +58,7 @@ export function UpgradeDialog({ open, onOpenChange }) {
             {!sentEmail ? (
               <div key="email" {...stylex.props(auth.step, auth.stepEnter)}>
                 <p {...stylex.props(auth.copy)} style={{ marginTop: 0 }}>
-                  이메일을 연결하면 지금까지 만든 시간표를 그대로 유지하면서 어느 기기에서나 로그인할
-                  수 있어요.
+                  {t.upgrade.intro}
                 </p>
                 {err && (
                   <div {...stylex.props(auth.err)} role="alert">
@@ -82,14 +82,14 @@ export function UpgradeDialog({ open, onOpenChange }) {
                     type="submit"
                     disabled={busy}
                   >
-                    {busy ? '보내는 중…' : '코드 받기'}
+                    {busy ? t.common.sending : t.auth.sendCode}
                   </button>
                 </form>
               </div>
             ) : (
               <div key="code" {...stylex.props(auth.step, auth.stepEnter)}>
                 <p {...stylex.props(auth.copy)} style={{ marginTop: 0 }}>
-                  <strong>{sentEmail}</strong>으로 보낸 6자리 코드를 입력하세요.
+                  <strong>{sentEmail}</strong>{t.auth.codeSentSuffix}
                 </p>
                 {err && (
                   <div {...stylex.props(auth.err)} role="alert">
@@ -117,7 +117,7 @@ export function UpgradeDialog({ open, onOpenChange }) {
                     disabled={busy || !isCodeComplete}
                     aria-disabled={busy || !isCodeComplete}
                   >
-                    {busy ? '확인 중…' : '계정 저장하기'}
+                    {busy ? t.common.checking : t.upgrade.saveAccount}
                   </button>
                 </form>
                 <button
@@ -126,7 +126,7 @@ export function UpgradeDialog({ open, onOpenChange }) {
                   disabled={busy}
                   onClick={backToEmail}
                 >
-                  다른 이메일
+                  {t.auth.backToEmail}
                 </button>
               </div>
             )}

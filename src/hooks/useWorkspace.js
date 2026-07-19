@@ -13,6 +13,7 @@ import {
 import { BOARD_ROLE } from '../sharing/roles.js';
 import { isoDate } from '../lib/time.js';
 import { ensureWorkspace } from '../board/workspace-ensure.js';
+import { t } from '../strings.js';
 
 /**
  * Instant query + active board + one-shot workspace bootstrap.
@@ -141,10 +142,10 @@ export function useWorkspace() {
           hasSettings: Boolean(settings),
         });
         if (cancelled) return;
-        if (result.migrated) setBootNote('이 기기의 시간표를 계정으로 옮겼어요');
+        if (result.migrated) setBootNote(t.board.toast.migrated);
       } catch (ex) {
         console.error(ex);
-        if (!cancelled) setBootNote('초기 시간표를 만들지 못했어요');
+        if (!cancelled) setBootNote(t.board.toast.bootFailed);
       } finally {
         if (!cancelled) setReady(true);
       }

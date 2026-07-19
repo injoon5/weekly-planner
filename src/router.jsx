@@ -13,6 +13,7 @@ import { db } from './db/instant.js';
 import { Toaster } from './components/ui/Toaster.jsx';
 import { AppUpdateProvider } from './hooks/AppUpdateProvider.jsx';
 import { reset } from './styles/ui.js';
+import { t } from './strings.js';
 
 // Split Landing vs Planner so signed-in cold loads don't pull marketing JS
 // (and vice versa). Compact BootStatus covers the brief chunk gap.
@@ -48,7 +49,7 @@ function RootLayout() {
   // Don't blank every route while Instant auth resolves — only `/` needs a
   // compact gate (IndexPage). Login/landing/share paint immediately.
   if (auth.error) {
-    return <BootStatus error>오류: {auth.error.message}</BootStatus>;
+    return <BootStatus error>{t.common.errorPrefix(auth.error.message)}</BootStatus>;
   }
   return <Outlet />;
 }
@@ -76,7 +77,7 @@ const indexRoute = createRoute({
     // Compact status only when we have no user yet — Instant often restores
     // a cached session with `user` set while `isLoading` is still true.
     if (auth.isLoading && !auth.user) {
-      return <BootStatus>불러오는 중…</BootStatus>;
+      return <BootStatus>{t.common.loading}</BootStatus>;
     }
     // Signed-out visitors get the marketing landing page (with guest sign-in);
     // signed-in users — including guests — go straight to their planner.
@@ -123,7 +124,7 @@ const router = createRouter({
   },
   defaultPreload: 'intent',
   // Compact status while lazy Landing/Planner/secondary chunks resolve.
-  defaultPendingComponent: () => <BootStatus>불러오는 중…</BootStatus>,
+  defaultPendingComponent: () => <BootStatus>{t.common.loading}</BootStatus>,
 });
 
 function InnerApp() {

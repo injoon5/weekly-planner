@@ -1,3 +1,4 @@
+import { t } from '../strings.js';
 import { useState, useRef, useEffect } from 'react';
 import { OTPField } from '@base-ui/react/otp-field';
 import * as stylex from '@stylexjs/stylex';
@@ -41,7 +42,7 @@ export function CodeInputs({ value, disabled, shake, onComplete, onChange }) {
       onValueComplete={(v) => onComplete?.(v)}
       {...stylex.props(auth.otp, shake && auth.otpShake)}
       data-ready={ready || undefined}
-      aria-label="인증 코드"
+      aria-label={t.auth.codeInputLabel}
     >
       {Array.from({ length: LENGTH }, (_, i) => (
         <OTPField.Input
@@ -52,7 +53,7 @@ export function CodeInputs({ value, disabled, shake, onComplete, onChange }) {
             opacity: ready ? 1 : 0,
             transform: ready ? 'translateY(0) scale(1)' : 'translateY(6px) scale(.96)',
           }}
-          aria-label={`${i + 1}번째 자리`}
+          aria-label={t.auth.codeDigit(i + 1)}
         />
       ))}
     </OTPField.Root>

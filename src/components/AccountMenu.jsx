@@ -10,6 +10,7 @@ import { planner } from '../styles/planner.js';
 import { ui } from '../styles/ui.js';
 import { UpgradeDialog } from './UpgradeDialog.jsx';
 import { MenuPopover } from './ui/MenuPopover.jsx';
+import { t } from '../strings.js';
 
 function UserMenu({ email, isGuest, onUpgrade, onAccount, onSignOut }) {
   return (
@@ -17,13 +18,13 @@ function UserMenu({ email, isGuest, onUpgrade, onAccount, onSignOut }) {
       {isGuest ? (
         <>
           <div {...stylex.props(menus.mcap, menus.mcapFirst)}>
-            게스트 모드 · 아직 저장되지 않았어요
+            {t.account_menu.guestMode}
           </div>
           <Popover.Close render={<button {...stylex.props(menus.mi)} onClick={onUpgrade} />}>
             <span {...stylex.props(menus.miIconWrap)}>
               <UserPlus size={14} strokeWidth={1.75} />
             </span>
-            <span {...stylex.props(menus.miLabel)}>계정 만들기</span>
+            <span {...stylex.props(menus.miLabel)}>{t.account_menu.createAccount}</span>
           </Popover.Close>
           <Separator {...stylex.props(menus.mdiv)} />
         </>
@@ -34,13 +35,13 @@ function UserMenu({ email, isGuest, onUpgrade, onAccount, onSignOut }) {
         <span {...stylex.props(menus.miIconWrap)}>
           <Settings2 size={14} strokeWidth={1.75} />
         </span>
-        <span {...stylex.props(menus.miLabel)}>계정 설정</span>
+        <span {...stylex.props(menus.miLabel)}>{t.account_menu.accountSettings}</span>
       </Popover.Close>
       <Popover.Close render={<button {...stylex.props(menus.mi, menus.miRed)} onClick={onSignOut} />}>
         <span {...stylex.props(menus.miIconWrap)}>
           <LogOut size={14} strokeWidth={1.75} />
         </span>
-        <span {...stylex.props(menus.miLabel)}>로그아웃</span>
+        <span {...stylex.props(menus.miLabel)}>{t.account_menu.signOut}</span>
       </Popover.Close>
     </>
   );
@@ -65,7 +66,7 @@ export function AccountMenu({ user }) {
           onClick={() => setUpgradeOpen(true)}
         >
           <UserPlus size={14} strokeWidth={1.75} />
-          <span {...stylex.props(planner.btnLabelHide)}>계정 만들기</span>
+          <span {...stylex.props(planner.btnLabelHide)}>{t.account_menu.createAccount}</span>
         </button>
       )}
       <MenuPopover
@@ -73,8 +74,8 @@ export function AccountMenu({ user }) {
           <button
             {...stylex.props(planner.ibtn)}
             type="button"
-            title={user.email || (isGuest ? '게스트' : '계정')}
-            aria-label="계정 메뉴"
+            title={user.email || (isGuest ? t.a11y.guest : t.a11y.account)}
+            aria-label={t.a11y.accountMenu}
           >
             <CircleUserRound size={15} strokeWidth={1.75} />
           </button>

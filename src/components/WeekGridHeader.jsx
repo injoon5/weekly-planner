@@ -1,3 +1,4 @@
+import { t } from '../strings.js';
 import * as stylex from '@stylexjs/stylex';
 import { DAYS_KO, DAYS_EN } from '../lib/config.js';
 import { grid } from '../styles/grid.js';
@@ -18,7 +19,7 @@ export function WeekGridHeader({
       ref={headClipRef}
       style={{ gridTemplateColumns: headColTemplate }}
     >
-      <div {...stylex.props(grid.corner, ui.glassOpaque)}>시간</div>
+      <div {...stylex.props(grid.corner, ui.glassOpaque)}>{t.grid.gutterTime}</div>
       <div {...stylex.props(grid.headMask)}>
         <div
           {...stylex.props(grid.headTrack)}

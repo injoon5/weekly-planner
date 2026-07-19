@@ -8,12 +8,13 @@ import { CalendarClock, X } from 'lucide-react';
 import { DAYS_KO } from '../lib/config.js';
 import { useMobileSheet } from '../hooks/useMobileSheet.js';
 import { todos as s } from '../styles/todos.js';
+import { t } from '../strings.js';
 
 function subtitle(iso) {
   const [y, m, d] = iso.split('-').map(Number);
   if (!y || !m || !d) return '';
   const dow = DAYS_KO[new Date(y, m - 1, d).getDay()];
-  return `${m}월 ${d}일 ${dow}요일`;
+  return t.todos.subtitle(m, d, dow);
 }
 
 function TodoRow({ todo, index, onToggle }) {
@@ -38,7 +39,7 @@ function TodoRow({ todo, index, onToggle }) {
             <span {...stylex.props(s.time, todo.done && s.timeOn)}>{todo.time}</span>
             <span {...stylex.props(s.labelWrap)}>
               <span {...stylex.props(s.label, todo.done && s.labelOn)}>
-                {todo.text || '제목 없음'}
+                {todo.text || t.todos.untitled}
               </span>
               <span {...stylex.props(s.strike, todo.done && s.strikeOn)} aria-hidden="true" />
             </span>
@@ -63,13 +64,13 @@ function PanelBody({ api, TitleTag, CloseTag }) {
 
       <header {...stylex.props(s.head)}>
         <div {...stylex.props(s.headText)}>
-          <TitleTag {...stylex.props(s.title)}>오늘 할 일</TitleTag>
+          <TitleTag {...stylex.props(s.title)}>{t.todos.title}</TitleTag>
           <span {...stylex.props(s.sub)}>
             {subtitle(date)}
-            {total > 0 && ` · ${done}/${total} 완료`}
+            {total > 0 && t.todos.doneOf(done, total)}
           </span>
         </div>
-        <CloseTag {...stylex.props(s.close)} aria-label="닫기">
+        <CloseTag {...stylex.props(s.close)} aria-label={t.common.close}>
           <X size={17} strokeWidth={1.9} />
         </CloseTag>
       </header>
@@ -83,9 +84,9 @@ function PanelBody({ api, TitleTag, CloseTag }) {
           <span {...stylex.props(s.emptyIcon)} aria-hidden="true">
             <CalendarClock size={20} strokeWidth={1.75} />
           </span>
-          <span {...stylex.props(s.emptyTitle)}>오늘 일정이 없어요</span>
+          <span {...stylex.props(s.emptyTitle)}>{t.todos.empty}</span>
           <span {...stylex.props(s.emptyHint)}>
-            시간표에 오늘 일정을 추가하면 여기에서 하나씩 체크할 수 있어요.
+            {t.todos.emptyHint}
           </span>
         </div>
       ) : (

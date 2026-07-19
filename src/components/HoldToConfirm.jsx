@@ -1,3 +1,4 @@
+import { t } from '../strings.js';
 import { useEffect, useRef, useState } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import { menus } from '../styles/menus.js';
@@ -5,7 +6,7 @@ import { toast } from './ui/toast.js';
 
 const HOLD_MS = 900;
 const EASE_BACK = 'clip-path 180ms cubic-bezier(0.2, 0, 0, 1)';
-const HOLD_HINT = '길게 누르고 있으세요';
+const HOLD_HINT = t.auth.holdOn;
 /** Only hint when the press looked like a tap, not a deliberate cancel. */
 const HINT_BELOW = 0.5;
 

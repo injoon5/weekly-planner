@@ -12,17 +12,18 @@ import { BoardPresenceBridge } from './BoardPresenceBridge.jsx';
 import { PrintDialog } from './PrintDialog.jsx';
 import { PlannerHeader } from './PlannerHeader.jsx';
 import { PlannerSurface } from './PlannerSurface.jsx';
+import { t } from '../strings.js';
 
 /** Header-only shell with a busy status while share metadata / board load. */
 function SharedShellPending() {
   return (
     <div {...stylex.props(planner.app)} data-app-shell="shared">
       <header {...stylex.props(planner.top)}>
-        <h1 {...stylex.props(planner.h1)}>주간 계획표</h1>
+        <h1 {...stylex.props(planner.h1)}>{t.app.name}</h1>
       </header>
       <div {...stylex.props(planner.surfacePending)} aria-busy="true" role="status">
         <span {...stylex.props(planner.surfacePendingSpinner)} aria-hidden="true" />
-        불러오는 중…
+        {t.common.loading}
       </div>
     </div>
   );
@@ -42,7 +43,7 @@ export function SharedPlanner() {
     canRenameColors: false,
     storageKey: token,
     role: shared.role,
-    guestLabel: shared.canEdit ? '공유 편집' : '공유 보기',
+    guestLabel: shared.canEdit ? t.share.sharedEditor : t.share.sharedViewer,
   });
 
   usePlannerScrollLock();
@@ -51,7 +52,7 @@ export function SharedPlanner() {
     const name = shared.board?.name?.trim();
     if (!name) return undefined;
     const prev = document.title;
-    document.title = `${name} · 주간 계획표`;
+    document.title = t.share.docTitle(name);
     return () => {
       document.title = prev;
     };
@@ -63,7 +64,7 @@ export function SharedPlanner() {
   if (shared.error) {
     return (
       <div {...stylex.props(planner.boot)} role="alert">
-        오류: {shared.error.message}
+        {t.common.errorPrefix(shared.error.message)}
       </div>
     );
   }
@@ -71,9 +72,9 @@ export function SharedPlanner() {
     return (
       <div {...stylex.props(planner.boot)}>
         <div {...stylex.props(planner.bootStack)}>
-          <div>공유 링크를 찾을 수 없어요</div>
+          <div>{t.share.notFound}</div>
           <Link to="/login" {...stylex.props(planner.btn, ui.btnPlain)}>
-            로그인
+            {t.common.login}
           </Link>
         </div>
       </div>
@@ -90,15 +91,15 @@ export function SharedPlanner() {
             shared.tryPassword();
           }}
         >
-          <h1 {...stylex.props(authStyles.title)}>비밀번호</h1>
-          <p {...stylex.props(authStyles.copy)}>이 시간표는 비밀번호로 보호되어 있어요</p>
+          <h1 {...stylex.props(authStyles.title)}>{t.auth.passwordTitle}</h1>
+          <p {...stylex.props(authStyles.copy)}>{t.auth.passwordProtected}</p>
           <input
             {...stylex.props(ui.input)}
             type="password"
             autoFocus
             value={shared.password}
             onChange={(e) => shared.setPassword(e.target.value)}
-            placeholder="비밀번호"
+            placeholder={t.auth.password}
           />
           {shared.unlockError && (
             <div {...stylex.props(authStyles.err)} role="alert">
@@ -110,7 +111,7 @@ export function SharedPlanner() {
             {...stylex.props(ui.btn, ui.btnPrimary, authStyles.formPrimary)}
             disabled={shared.busy || !shared.password}
           >
-            {shared.busy ? '확인 중…' : '열기'}
+            {shared.busy ? t.common.checking : t.common.open}
           </button>
         </form>
       </div>
@@ -128,9 +129,9 @@ export function SharedPlanner() {
     <div {...stylex.props(planner.app)} data-app-shell="planner">
       <div {...stylex.props(planner.banner)}>
         <span {...stylex.props(planner.bannerStrong)}>
-          {readOnly ? '보기 전용' : '공유 편집'}
+          {readOnly ? t.share.viewerOnly : t.share.sharedEditor}
         </span>
-        <span>{board.name || '시간표'}</span>
+        <span>{board.name || t.app.board}</span>
       </div>
 
       <PlannerHeader

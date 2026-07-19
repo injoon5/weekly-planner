@@ -5,6 +5,7 @@ import * as stylex from '@stylexjs/stylex';
 import { menus } from '../styles/menus.js';
 import { ui } from '../styles/ui.js';
 import { SwitchRow } from './ui/SwitchRow.jsx';
+import { t } from '../strings.js';
 
 function ColorLabelInput({ color, label, onCommit }) {
   const [draft, setDraft] = useState(label);
@@ -21,7 +22,7 @@ function ColorLabelInput({ color, label, onCommit }) {
       {...stylex.props(ui.input, ui.inputSm, menus.drowInput, menus.colorLabelInput)}
       value={draft}
       maxLength={20}
-      aria-label={`${color} 이름`}
+      aria-label={t.a11y.colorName(color)}
       onChange={(event) => setDraft(event.target.value)}
       onBlur={() => void commit()}
       onKeyDown={(event) => {
@@ -38,18 +39,18 @@ export function ViewControls({ views }) {
 
   return (
     <>
-      <div {...stylex.props(menus.mcap, menus.mcapStrong, menus.mcapFirst)}>보기</div>
+      <div {...stylex.props(menus.mcap, menus.mcapStrong, menus.mcapFirst)}>{t.view.heading}</div>
 
       <SwitchRow
-        label="주말 숨기기"
+        label={t.view.hideWeekend}
         checked={views.hideWeekend}
         onChange={views.setHideWeekend}
       />
-      <SwitchRow label="촘촘하게" checked={views.compact} onChange={views.setCompact} />
-      <SwitchRow label="메모 표시" checked={views.showMemos} onChange={views.setShowMemos} />
+      <SwitchRow label={t.view.compact} checked={views.compact} onChange={views.setCompact} />
+      <SwitchRow label={t.view.showMemos} checked={views.showMemos} onChange={views.setShowMemos} />
 
       <Separator {...stylex.props(menus.mdiv)} />
-      <div {...stylex.props(menus.mcap, menus.mcapStrong)}>색상 필터 · 이름</div>
+      <div {...stylex.props(menus.mcap, menus.mcapStrong)}>{t.view.colorFilter}</div>
 
       {views.palette.map((c) => {
         const on = !hidden.has(c);
@@ -59,8 +60,8 @@ export function ViewControls({ views }) {
               {...stylex.props(menus.swatch)}
               data-color={c}
               pressed={on}
-              aria-label={`${views.colorLabel(c)} ${on ? '숨기기' : '보이기'}`}
-              title={on ? '숨기기' : '보이기'}
+              aria-label={t.a11y.colorToggle(views.colorLabel(c), on)}
+              title={on ? t.common.hide : t.common.show}
               onPressedChange={() => views.toggleColor(c)}
             >
               <span {...stylex.props(menus.swatchDot, !on && menus.swatchDotOff)} />
