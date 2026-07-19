@@ -25,11 +25,15 @@ export function mergeDragView(events, drag) {
 
 /** Pack non-dragged events per day for overlap columns. */
 export function packView(view, drag) {
+  const byDay = new Map();
+  for (const e of view) {
+    if (drag && drag.kind === 'ev' && drag.id === e.id) continue;
+    const list = byDay.get(e.day);
+    if (list) list.push(e);
+    else byDay.set(e.day, [e]);
+  }
   const m = new Map();
-  for (let d = 0; d < 7; d++) {
-    const list = view.filter(
-      (e) => e.day === d && !(drag && drag.kind === 'ev' && drag.id === e.id),
-    );
+  for (const list of byDay.values()) {
     for (const [k, v] of packOverlappingEvents(list)) m.set(k, v);
   }
   return m;

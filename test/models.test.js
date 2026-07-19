@@ -9,6 +9,7 @@ import {
   nextBoardSortOrder,
   pickLeastUsedColor,
   repeatWeeksOf,
+  sortBoards,
   weekdayFromPlannerDate,
 } from '../src/board/models.js';
 import { packOverlappingEvents } from '../src/grid/event-packing.js';
@@ -115,6 +116,18 @@ describe('event packing and board helpers', () => {
   it('selects stable least-used values and next board metadata', () => {
     expect(pickLeastUsedColor([{ color: 'coral' }, { color: 'coral' }])).toBe('amber');
     expect(nextBoardSortOrder([{ sortOrder: 2 }, { sortOrder: 8 }, {}])).toBe(9);
+  });
+
+  it('sorts boards by sortOrder then createdAt without mutating input', () => {
+    const boards = [
+      { id: 'b', sortOrder: 1, createdAt: 5 },
+      { id: 'a', sortOrder: 0, createdAt: 9 },
+      { id: 'c', sortOrder: 1, createdAt: 2 },
+      { id: 'd' },
+    ];
+    expect(sortBoards(boards).map((b) => b.id)).toEqual(['d', 'a', 'c', 'b']);
+    expect(boards[0].id).toBe('b');
+    expect(sortBoards(null)).toEqual([]);
     expect(nextBoardName([{ name: '시간표 1' }, { name: '시간표 3' }])).toBe('시간표 2');
   });
 });

@@ -181,4 +181,22 @@ describe('rate limiter', () => {
     expect(limiter.take('a').ok).toBe(true);
     expect(limiter.take('a').ok).toBe(false);
   });
+
+  it('keeps limiting keys that are still hot after an eviction sweep', () => {
+    let t = 0;
+    const limiter = createRateLimiter({
+      capacity: 2,
+      refillPeriodMs: 60_000,
+      now: () => t,
+    });
+    limiter.take('hot');
+    limiter.take('hot');
+    // Grow past the sweep threshold with idle keys; the sweep must evict only
+    // fully-refilled buckets, so 'hot' stays rejected.
+    for (let i = 0; i < 1100; i++) limiter.take(`idle-${i}`);
+    expect(limiter.take('hot').ok).toBe(false);
+    // Once fully refilled, 'hot' behaves as if freshly seen — eviction-safe.
+    t += 120_000;
+    expect(limiter.take('hot').ok).toBe(true);
+  });
 });

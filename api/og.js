@@ -3,12 +3,12 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ImageResponse } from '@vercel/og';
 import {
+  clipWithEllipsis,
   decodeOgEvents,
   ogImageSubtitle,
   sanitizeOgImageTitle,
   sanitizeOgOwner,
   OG_DAY_ORIGIN,
-  OG_ELLIPSIS,
 } from '../src/server/og-meta.js';
 
 const fontDir = join(dirname(fileURLToPath(import.meta.url)), 'fonts');
@@ -110,21 +110,13 @@ const h = (type, style, ...children) => ({
 const abs = (style, ...children) =>
   h('div', { position: 'absolute', display: 'flex', ...style }, ...children);
 
-/** Fit a label into ~`max` visible chars with an ASCII `...` (Satori-safe). */
-function fitLabel(raw, max) {
-  const s = String(raw || '');
-  if (s.length <= max) return s;
-  const room = Math.max(0, max - OG_ELLIPSIS.length);
-  return `${s.slice(0, room)}${OG_ELLIPSIS}`;
-}
-
 const block = (d, h1, m1, h2, m2, color, title) => {
   const [bg, fg, accent] = EV[color] || EV.sky;
   const dur = h2 - h1 + (m2 - m1) / 60;
   if (dur <= 0) return null;
   // ~7 Korean glyphs fit the mini column at 18px; truncate ourselves so we
   // never rely on Satori's U+2026 text-overflow glyph.
-  const label = fitLabel(title, 7);
+  const label = clipWithEllipsis(title, 7);
   // 30-min slots are too short for title + time — title only, optically centered.
   const short = dur <= 0.5;
   const kids = [
@@ -473,7 +465,7 @@ const page = ({ title, subtitle, eventBlocks, showNow, locked }) =>
           overflow: 'hidden',
           fontFeatureSettings: '"liga" 0, "clig" 0',
         },
-        fitLabel(title, title.length <= 6 ? 8 : title.length <= 12 ? 11 : 14),
+        clipWithEllipsis(title, title.length <= 6 ? 8 : title.length <= 12 ? 11 : 14),
       ),
       h(
         'div',
@@ -489,7 +481,7 @@ const page = ({ title, subtitle, eventBlocks, showNow, locked }) =>
           fontFeatureSettings: '"liga" 0, "clig" 0',
         },
         subtitle
-          ? fitLabel(subtitle, 22)
+          ? clipWithEllipsis(subtitle, 22)
           : locked
             ? '비밀번호가 필요한\n공유 시간표'
             : '실시간으로 함께 쓰는\n주간 시간표',

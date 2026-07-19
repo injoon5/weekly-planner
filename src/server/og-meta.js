@@ -28,7 +28,16 @@ export function isSocialCrawler(userAgent) {
 /** Satori/Pretendard liga collapses `...` → U+2026 (missing → `.`). Keep dots separate. */
 export const OG_ELLIPSIS = '.\u200B.\u200B.';
 
-function clipWithEllipsis(clean, max) {
+// eslint-disable-next-line no-control-regex
+const CONTROL_CHARS_RE = /[\u0000-\u001F\u007F]/g;
+
+function stripControlChars(raw) {
+  return String(raw || '').replace(CONTROL_CHARS_RE, '');
+}
+
+/** Fit a label into ~`max` visible chars with the Satori-safe ellipsis. */
+export function clipWithEllipsis(raw, max) {
+  const clean = String(raw || '');
   if (clean.length <= max) return clean;
   const room = Math.max(0, max - OG_ELLIPSIS.length);
   return `${clean.slice(0, room)}${OG_ELLIPSIS}`;
@@ -36,19 +45,13 @@ function clipWithEllipsis(clean, max) {
 
 /** Strip control chars and cap length for OG image titles. */
 export function sanitizeOgImageTitle(raw, fallback = DEFAULT_OG_IMAGE_TITLE) {
-  // eslint-disable-next-line no-control-regex
-  const clean = String(raw || '')
-    .replace(/[\u0000-\u001F\u007F]/g, '')
-    .trim();
+  const clean = stripControlChars(raw).trim();
   return clean ? clipWithEllipsis(clean, 24) : fallback;
 }
 
 /** Public owner label — never a raw email. */
 export function sanitizeOgOwner(raw) {
-  // eslint-disable-next-line no-control-regex
-  const clean = String(raw || '')
-    .replace(/[\u0000-\u001F\u007F]/g, '')
-    .trim();
+  const clean = stripControlChars(raw).trim();
   if (!clean) return '';
   const local = clean.includes('@') ? clean.split('@')[0] : clean;
   return clipWithEllipsis(local, OG_OWNER_MAX);
@@ -94,11 +97,7 @@ function normalizeOgEvent(raw) {
   const dur = clampInt(raw.dur, 30, 1440, NaN);
   if (!Number.isFinite(day) || !Number.isFinite(start) || !Number.isFinite(dur)) return null;
   const color = PALETTE.has(raw.color) ? raw.color : 'sky';
-  // eslint-disable-next-line no-control-regex
-  const title = String(raw.title || '')
-    .replace(/[\u0000-\u001F\u007F]/g, '')
-    .trim()
-    .slice(0, OG_EVENT_TITLE_MAX);
+  const title = stripControlChars(raw.title).trim().slice(0, OG_EVENT_TITLE_MAX);
   return { day, start, dur, color, title: title || '일정' };
 }
 

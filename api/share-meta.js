@@ -1,9 +1,6 @@
 import { init } from '@instantdb/admin';
 import schema from '../src/db/schema.js';
 import {
-  DEFAULT_OG_DESCRIPTION,
-  DEFAULT_OG_TITLE,
-  DEFAULT_OG_IMAGE_TITLE,
   buildOgImageUrl,
   ownerLabelFrom,
   renderShareOgHtml,
@@ -72,18 +69,8 @@ export default async function handler(req, res) {
   const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
   const token = (url.searchParams.get('token') || '').trim();
   const origin = originFromReq(req);
-  const card = token
-    ? await lookupShareCard(token)
-    : {
-        title: DEFAULT_OG_TITLE,
-        description: DEFAULT_OG_DESCRIPTION,
-        imageTitle: DEFAULT_OG_IMAGE_TITLE,
-        owner: '',
-        eventCount: 0,
-        events: [],
-        useRealSchedule: false,
-        locked: false,
-      };
+  // lookupShareCard falls back to the generic card when the token is empty.
+  const card = await lookupShareCard(token);
 
   const pageUrl = token ? `${origin}/s/${encodeURIComponent(token)}` : `${origin}/`;
   const imageUrl = buildOgImageUrl(origin, card);

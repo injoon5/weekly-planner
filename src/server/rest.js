@@ -69,11 +69,22 @@ export function createRateLimiter({ capacity, refillPeriodMs, refillAmount = cap
   /** @type {Map<string, { tokens: number, at: number }>} */
   const buckets = new Map();
   const perMs = refillAmount / refillPeriodMs;
+  // A fully-refilled bucket is indistinguishable from no bucket, so idle keys
+  // can be dropped. Sweep on a size threshold to keep long-lived instances
+  // from accumulating one entry per token seen since boot.
+  const SWEEP_THRESHOLD = 1024;
+
+  const sweep = (t) => {
+    for (const [key, bucket] of buckets) {
+      if (bucket.tokens + (t - bucket.at) * perMs >= capacity) buckets.delete(key);
+    }
+  };
 
   return {
     /** @param {string} key @param {number} [cost] */
     take(key, cost = 1) {
       const t = now();
+      if (buckets.size >= SWEEP_THRESHOLD) sweep(t);
       const bucket = buckets.get(key) || { tokens: capacity, at: t };
       bucket.tokens = Math.min(capacity, bucket.tokens + (t - bucket.at) * perMs);
       bucket.at = t;
