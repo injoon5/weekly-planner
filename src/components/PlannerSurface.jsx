@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { handleGridGesture } from '../grid/grid-gesture.js';
 import { t } from '../strings.js';
-import { BoardCanvas } from './BoardCanvas.jsx';
 import { Editor } from './Editor.jsx';
+import { WeekGrid } from './WeekGrid.jsx';
 import { LoadingStatus } from './ui/LoadingStatus.jsx';
 
 /**
@@ -32,9 +32,9 @@ export function PlannerSurface({
 
   return (
     <>
-      <BoardCanvas
-        room={presence.room}
-        myColor={presence.myColor}
+      <WeekGrid
+        presenceRoom={presence.room}
+        presenceColor={presence.myColor}
         boardId={boardId}
         events={visibleEvents}
         editing={session.editing}

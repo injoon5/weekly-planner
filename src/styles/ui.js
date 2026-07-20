@@ -179,13 +179,13 @@ export const ui = stylex.create({
   },
   markA: {
     borderRadius: '3px',
-    backgroundColor: '#E96D4F',
+    backgroundColor: colors.brandCoral,
     alignSelf: 'end',
     height: '14px',
   },
   markB: {
     borderRadius: '3px',
-    backgroundColor: '#4E9EDB',
+    backgroundColor: colors.brandSky,
     alignSelf: 'start',
     height: '12px',
   },

@@ -21,7 +21,9 @@ const rules = {
     bind: {
       isOwner: "auth.id in data.ref('owner.id')",
       isMember: "auth.id in data.ref('members.user.id')",
-      isEditor: "auth.id in data.ref('editors.id')",
+      // Board metadata (name/dates) is owner-only. Editors' write power is
+      // scoped to events (see the events `isBoardEditor` bind), so there is
+      // deliberately no board-level editor bind here.
       hasShareSecret:
         "true in data.ref('shares.enabled') && ruleParams.secret in data.ref('shares.secret')",
     },

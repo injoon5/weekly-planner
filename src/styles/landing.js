@@ -3,8 +3,9 @@ import { colors, layout } from './tokens.stylex.js';
 
 // Strong ease-out (starts fast → responsive entrances). Matches the auth card.
 const EASE_OUT = 'cubic-bezier(.23,1,.32,1)';
-const CORAL = '#E96D4F';
-const BLUE = '#4E9EDB';
+// Brand marks live in tokens.stylex.js; alias them for the gradients below.
+const CORAL = colors.brandCoral;
+const BLUE = colors.brandSky;
 const REDUCE = '@media (prefers-reduced-motion: reduce)';
 const NARROW = '@media (max-width: 760px)';
 const TIGHT = '@media (max-width: 460px)';

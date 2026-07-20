@@ -27,6 +27,9 @@ export const colors = stylex.defineVars({
   chipFg: '#FFFFFF',
   now: '#E5484D',
   nowHalo: 'rgba(255,255,255,.85)',
+  // Brand marks — the two-tone logo blocks, hero gradients, auth tints.
+  brandCoral: '#E96D4F',
+  brandSky: '#4E9EDB',
   // Red for danger *text* (delete, errors): `now` at 3.9:1 fails AA on paper.
   danger: '#CF323C',
   sun: '#C7433E',
